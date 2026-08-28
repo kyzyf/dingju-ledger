@@ -2606,6 +2606,7 @@ const CLOUD_CONFIG_KEY = 'dingju_cloud_config';
 let supabaseClient = null;
 let cloudSyncEnabled = false;
 let isSyncing = false;
+let skipCloudSync = false;
 
 function initCloudSync() {
   try {
@@ -2905,7 +2906,9 @@ function saveData() {
     showToast('保存失败，请检查存储空间', 'error');
   }
   // 云端同步（异步，不阻塞界面）
-  if (typeof cloudSyncEnabled !== 'undefined' && cloudSyncEnabled && !isSyncing) {
+  if (skipCloudSync) {
+    skipCloudSync = false;
+  } else if (typeof cloudSyncEnabled !== 'undefined' && cloudSyncEnabled && !isSyncing) {
     setTimeout(syncToCloud, 500);
   }
 }
@@ -4351,14 +4354,15 @@ function bindEvents() {
 
   // 设置 - 清空数据
   document.getElementById('clearDataBtn').addEventListener('click', () => {
-    if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+    if (confirm('确定要清空本地所有数据吗？\n\n注意：仅清空本地浏览器数据，云端数据不受影响。\n此操作不可恢复！')) {
       const count = state.records.length;
-      addAuditLog('clear', `清空全部数据（共${count}条）`);
+      addAuditLog('clear', `清空本地全部数据（共${count}条，云端保留）`);
       state.records = [];
+      skipCloudSync = true;  // 关键：清空本地时跳过自动云端同步，避免覆盖云端数据
       saveData();
       renderAll();
       closeModal('settingsModal');
-      showToast('所有数据已清空', 'success');
+      showToast('本地数据已清空（云端数据保留）', 'success');
     }
   });
 
