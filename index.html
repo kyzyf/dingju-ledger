@@ -4535,6 +4535,10 @@ function doLogin() {
     errorEl.textContent = '';
     hideLogin();
     addAuditLog('login', '用户登录', username);
+    // 单点登录：更新用户会话，记录当前设备
+    updateUserSession(username);
+    // 启动会话检查定时器
+    startSessionCheck();
     // 登录成功后触发新手引导（仅首次）
     if (!localStorage.getItem('dingju_guide_shown')) {
       setTimeout(startGuide, 600);
@@ -4550,7 +4554,89 @@ function doLogout() {
   addAuditLog('logout', '用户退出', getCurrentUser());
   sessionStorage.removeItem(LOGIN_KEY);
   sessionStorage.removeItem(CURRENT_USER_KEY);
+  // 停止会话检查定时器
+  if (window._sessionCheckTimer) {
+    clearInterval(window._sessionCheckTimer);
+    window._sessionCheckTimer = null;
+  }
   showLogin();
+}
+
+// ===== 单点登录：设备ID与会话管理 =====
+const DEVICE_ID_KEY = 'dingju_device_id';
+const SESSION_RECORD_ID = 'dingju_user_sessions';
+
+// 获取或生成设备唯一ID
+function getDeviceId() {
+  let deviceId = localStorage.getItem(DEVICE_ID_KEY);
+  if (!deviceId) {
+    deviceId = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 8);
+    localStorage.setItem(DEVICE_ID_KEY, deviceId);
+  }
+  return deviceId;
+}
+
+// 更新用户会话（登录时调用，记录当前设备）
+async function updateUserSession(username) {
+  if (!supabaseClient || !username) return;
+  try {
+    const deviceId = getDeviceId();
+    // 读取现有会话记录
+    const { data: existing } = await supabaseClient
+      .from('ledger_sync')
+      .select('data')
+      .eq('id', SESSION_RECORD_ID)
+      .maybeSingle();
+    
+    let sessions = existing && existing.data ? existing.data : {};
+    sessions[username] = {
+      device_id: deviceId,
+      login_time: new Date().toISOString()
+    };
+    
+    // 写回会话记录
+    await supabaseClient
+      .from('ledger_sync')
+      .upsert({ id: SESSION_RECORD_ID, data: sessions, updated_at: new Date().toISOString() });
+  } catch (e) {
+    console.warn('更新用户会话失败:', e);
+  }
+}
+
+// 检查当前用户会话是否有效（是否被其他设备踢下线）
+async function checkUserSession() {
+  if (!supabaseClient || !checkLogin()) return;
+  try {
+    const username = getCurrentUser();
+    const currentDeviceId = getDeviceId();
+    
+    const { data } = await supabaseClient
+      .from('ledger_sync')
+      .select('data')
+      .eq('id', SESSION_RECORD_ID)
+      .maybeSingle();
+    
+    if (data && data.data && data.data[username]) {
+      const session = data.data[username];
+      if (session.device_id !== currentDeviceId) {
+        // 当前设备与登录设备不一致，说明在其他设备登录了
+        const loginTime = new Date(session.login_time);
+        const timeStr = loginTime.toLocaleString('zh-CN');
+        alert('您的账号已在其他设备登录（' + timeStr + '），当前设备已被踢下线。');
+        doLogout();
+      }
+    }
+  } catch (e) {
+    console.warn('检查用户会话失败:', e);
+  }
+}
+
+// 启动会话检查定时器（每30秒检查一次）
+function startSessionCheck() {
+  if (window._sessionCheckTimer) {
+    clearInterval(window._sessionCheckTimer);
+  }
+  window._sessionCheckTimer = setInterval(checkUserSession, 30000);
 }
 
 function bindLoginEvents() {
@@ -4577,6 +4663,8 @@ function init() {
   } else {
     // 更新当前用户显示
     updateCurrentUserDisplay();
+    // 单点登录：启动会话检查定时器
+    startSessionCheck();
     // 登录后触发新手引导（仅首次）
     if (!localStorage.getItem('dingju_guide_shown')) {
       setTimeout(startGuide, 800);
