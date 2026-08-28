@@ -2640,7 +2640,7 @@ function updateSyncStatus(text) {
   if (el) el.textContent = text;
 }
 
-// 合并两组记录：按ID去重，相同ID以更新时间较新的为准
+// 合并两组记录：按ID去重，相同ID以更新时间较新的为准，保留 deleted 标记
 function mergeRecords(localRecords, cloudRecords) {
   const map = {};
   // 先加入云端记录
@@ -2663,6 +2663,22 @@ function mergeRecords(localRecords, cloudRecords) {
     }
   });
   return Object.values(map);
+}
+
+// 从合并后的完整记录中分离出活跃记录和已删除记录
+function separateRecords(allRecords) {
+  const active = [];
+  const deleted = [];
+  (allRecords || []).forEach(r => {
+    if (r && r.deleted) {
+      deleted.push(r);
+    } else if (r) {
+      // 确保没有 deleted 标记
+      if (r.deleted !== undefined) delete r.deleted;
+      active.push(r);
+    }
+  });
+  return { active, deleted };
 }
 
 async function syncToCloud() {
@@ -2688,26 +2704,29 @@ async function syncToCloud() {
       console.log('云端无现有数据，直接上传');
     }
     
-    // 合并本地与云端数据
-    const mergedRecords = mergeRecords(state.records, cloudRecords);
+    // 合并本地与云端数据（包含活跃和已删除）
+    const localAll = [...state.records, ...state.deletedRecords];
+    const mergedAll = mergeRecords(localAll, cloudRecords);
     const mergedSettings = {...cloudSettings, ...state.settings};
     
     const payload = {
       id: 'dingju_ledger_data',
-      records: mergedRecords,
+      records: mergedAll,  // 上传完整数据（含已删除标记）
       settings: mergedSettings,
       updated_at: new Date().toISOString()
     };
     const { error } = await supabaseClient.from('ledger_sync').upsert(payload);
     if (error) throw error;
     
-    // 同步后将合并结果写回本地，确保本地与云端一致
-    state.records = mergedRecords;
+    // 同步后将合并结果分离写回本地，确保本地与云端一致
+    const separated = separateRecords(mergedAll);
+    state.records = separated.active;
+    state.deletedRecords = separated.deleted;
     saveData();
     renderAll();
     
     updateSyncStatus('已同步 ' + new Date().toLocaleTimeString());
-    addAuditLog('cloud_sync', `推送到云端（合并后${mergedRecords.length}条，本地${state.records.length}条）`);
+    addAuditLog('cloud_sync', `推送到云端（合并后${mergedAll.length}条，活跃${state.records.length}条，已删除${state.deletedRecords.length}条）`);
   } catch(e) {
     console.error('云端同步失败:', e);
     updateSyncStatus('同步失败: ' + (e.message || '未知错误'));
@@ -2731,17 +2750,21 @@ async function pullFromCloud() {
       return;
     }
     if (data.records) {
-      // 合并云端数据到本地（而不是覆盖）
-      const beforeCount = state.records.length;
-      const mergedRecords = mergeRecords(state.records, data.records);
-      state.records = mergedRecords;
+      // 合并云端数据到本地（包含活跃和已删除）
+      const beforeActive = state.records.length;
+      const beforeDeleted = state.deletedRecords.length;
+      const localAll = [...state.records, ...state.deletedRecords];
+      const mergedAll = mergeRecords(localAll, data.records);
+      const separated = separateRecords(mergedAll);
+      state.records = separated.active;
+      state.deletedRecords = separated.deleted;
       if (data.settings) state.settings = {...state.settings, ...data.settings};
-      const addedCount = mergedRecords.length - beforeCount;
-      addAuditLog('cloud_pull', `从云端拉取合并数据（云端${data.records.length}条，合并后${mergedRecords.length}条，新增${addedCount}条）`);
+      const addedActive = state.records.length - beforeActive;
+      addAuditLog('cloud_pull', `从云端拉取合并数据（云端${data.records.length}条，合并后活跃${state.records.length}条，已删除${state.deletedRecords.length}条）`);
       saveData();
       renderAll();
       updateSyncStatus('拉取成功 ' + new Date().toLocaleTimeString());
-      alert(`云端数据已合并到本地\n\n云端：${data.records.length}条\n本地原有：${beforeCount}条\n合并后：${mergedRecords.length}条\n新增：${addedCount}条`);
+      alert(`云端数据已合并到本地\n\n云端：${data.records.length}条\n本地原有：活跃${beforeActive}条 / 已删除${beforeDeleted}条\n合并后：活跃${state.records.length}条 / 已删除${state.deletedRecords.length}条\n新增活跃：${addedActive}条`);
     } else {
       alert('云端暂无数据');
       updateSyncStatus('云端暂无数据');
@@ -2911,6 +2934,7 @@ const SETTINGS_KEY = 'dingju_ledger_settings';
 
 let state = {
   records: [],
+  deletedRecords: [],  // 软删除：已删除但未永久清除的记录（带 deleted: true 标记）
   currentDate: new Date(),
   currentView: 'records',
   searchQuery: '',
@@ -2933,15 +2957,25 @@ function loadData() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      state.records = JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      // 兼容新旧格式：旧格式是纯数组，新格式是 {records, deletedRecords}
+      if (Array.isArray(parsed)) {
+        state.records = parsed;
+        state.deletedRecords = [];
+      } else {
+        state.records = parsed.records || [];
+        state.deletedRecords = parsed.deletedRecords || [];
+      }
     } else {
       // 首次使用，加载初始数据
       state.records = JSON.parse(JSON.stringify(INITIAL_RECORDS));
+      state.deletedRecords = [];
       saveData();
     }
   } catch (e) {
     console.error('加载数据失败', e);
     state.records = JSON.parse(JSON.stringify(INITIAL_RECORDS));
+    state.deletedRecords = [];
     saveData();
   }
   try {
@@ -2957,7 +2991,10 @@ function loadData() {
 // 保存数据
 function saveData() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.records));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      records: state.records,
+      deletedRecords: state.deletedRecords
+    }));
   } catch (e) {
     console.error('保存数据失败', e);
     showToast('保存失败，请检查存储空间', 'error');
@@ -3530,11 +3567,15 @@ function deleteRecord(recordId) {
   const record = state.records.find(r => r.id === recordId);
   if (!record) return;
 
-  // 先从数组移除
+  // 软删除：从活跃数组移除，加入已删除数组，标记 deleted: true
   const index = state.records.findIndex(r => r.id === recordId);
   if (index === -1) return;
 
   const deletedRecord = state.records.splice(index, 1)[0];
+  deletedRecord.deleted = true;
+  deletedRecord.updatedAt = new Date().toISOString();
+  state.deletedRecords.push(deletedRecord);
+  
   addAuditLog('delete', `删除单据：${deletedRecord.customerName}，金额¥${(deletedRecord.totalAmount||0).toFixed(2)}`);
   saveData();
   renderAll();
@@ -3542,7 +3583,13 @@ function deleteRecord(recordId) {
 
   // 显示撤销toast（8秒后自动消失，期间可撤销）
   showToast('单据已删除', 'info', 8000, () => {
-    // 撤销操作
+    // 撤销操作：从已删除数组移除，取消标记，加回活跃数组
+    const delIndex = state.deletedRecords.findIndex(r => r.id === deletedRecord.id);
+    if (delIndex !== -1) {
+      state.deletedRecords.splice(delIndex, 1);
+    }
+    delete deletedRecord.deleted;
+    deletedRecord.updatedAt = new Date().toISOString();
     state.records.push(deletedRecord);
     addAuditLog('create', `恢复已删除单据：${deletedRecord.customerName}`);
     saveData();
@@ -4413,8 +4460,10 @@ function bindEvents() {
   document.getElementById('clearDataBtn').addEventListener('click', () => {
     if (confirm('确定要清空本地所有数据吗？\n\n注意：仅清空本地浏览器数据，云端数据不受影响。\n此操作不可恢复！')) {
       const count = state.records.length;
-      addAuditLog('clear', `清空本地全部数据（共${count}条，云端保留）`);
+      const delCount = state.deletedRecords.length;
+      addAuditLog('clear', `清空本地全部数据（活跃${count}条，已删除${delCount}条，云端保留）`);
       state.records = [];
+      state.deletedRecords = [];
       skipCloudSync = true;  // 关键：清空本地时跳过自动云端同步，避免覆盖云端数据
       saveData();
       renderAll();
