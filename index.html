@@ -2640,21 +2640,74 @@ function updateSyncStatus(text) {
   if (el) el.textContent = text;
 }
 
+// 合并两组记录：按ID去重，相同ID以更新时间较新的为准
+function mergeRecords(localRecords, cloudRecords) {
+  const map = {};
+  // 先加入云端记录
+  (cloudRecords || []).forEach(r => {
+    if (r && r.id) map[r.id] = r;
+  });
+  // 再加入本地记录，相同ID比较更新时间
+  (localRecords || []).forEach(r => {
+    if (!r || !r.id) return;
+    const existing = map[r.id];
+    if (!existing) {
+      map[r.id] = r;
+    } else {
+      // 比较更新时间，取较新的
+      const localTime = new Date(r.updatedAt || r.createdAt || 0).getTime();
+      const cloudTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
+      if (localTime >= cloudTime) {
+        map[r.id] = r;
+      }
+    }
+  });
+  return Object.values(map);
+}
+
 async function syncToCloud() {
   if (!cloudSyncEnabled || !supabaseClient || isSyncing) return;
   isSyncing = true;
   updateSyncStatus('同步中...');
   try {
+    // 先从云端拉取当前数据，合并后再上传（避免覆盖其他设备的数据）
+    let cloudRecords = [];
+    let cloudSettings = {};
+    try {
+      const { data: existing } = await supabaseClient
+        .from('ledger_sync')
+        .select('*')
+        .eq('id', 'dingju_ledger_data')
+        .maybeSingle();
+      if (existing && existing.records) {
+        cloudRecords = existing.records;
+        cloudSettings = existing.settings || {};
+      }
+    } catch(e) {
+      // 云端无数据或查询失败，使用空数组
+      console.log('云端无现有数据，直接上传');
+    }
+    
+    // 合并本地与云端数据
+    const mergedRecords = mergeRecords(state.records, cloudRecords);
+    const mergedSettings = {...cloudSettings, ...state.settings};
+    
     const payload = {
       id: 'dingju_ledger_data',
-      records: state.records,
-      settings: state.settings,
+      records: mergedRecords,
+      settings: mergedSettings,
       updated_at: new Date().toISOString()
     };
     const { error } = await supabaseClient.from('ledger_sync').upsert(payload);
     if (error) throw error;
+    
+    // 同步后将合并结果写回本地，确保本地与云端一致
+    state.records = mergedRecords;
+    saveData();
+    renderAll();
+    
     updateSyncStatus('已同步 ' + new Date().toLocaleTimeString());
-    addAuditLog('cloud_sync', `推送到云端（${state.records.length}条）`);
+    addAuditLog('cloud_sync', `推送到云端（合并后${mergedRecords.length}条，本地${state.records.length}条）`);
   } catch(e) {
     console.error('云端同步失败:', e);
     updateSyncStatus('同步失败: ' + (e.message || '未知错误'));
@@ -2667,7 +2720,7 @@ async function pullFromCloud() {
     alert('请先配置云端同步');
     return;
   }
-  if (!confirm('确定要用云端数据覆盖本地数据吗？本地未同步的数据将丢失！')) return;
+  if (!confirm('确定要从云端拉取数据吗？\n\n云端数据将与本地数据合并（按单据ID去重），本地独有数据不会丢失。')) return;
   updateSyncStatus('拉取中...');
   try {
     const { data, error } = await supabaseClient.from('ledger_sync').select('*').eq('id', 'dingju_ledger_data').maybeSingle();
@@ -2678,13 +2731,17 @@ async function pullFromCloud() {
       return;
     }
     if (data.records) {
-      state.records = data.records;
+      // 合并云端数据到本地（而不是覆盖）
+      const beforeCount = state.records.length;
+      const mergedRecords = mergeRecords(state.records, data.records);
+      state.records = mergedRecords;
       if (data.settings) state.settings = {...state.settings, ...data.settings};
-      addAuditLog('cloud_pull', `从云端拉取数据（${data.records.length}条）`);
+      const addedCount = mergedRecords.length - beforeCount;
+      addAuditLog('cloud_pull', `从云端拉取合并数据（云端${data.records.length}条，合并后${mergedRecords.length}条，新增${addedCount}条）`);
       saveData();
       renderAll();
       updateSyncStatus('拉取成功 ' + new Date().toLocaleTimeString());
-      alert('云端数据已拉取到本地');
+      alert(`云端数据已合并到本地\n\n云端：${data.records.length}条\n本地原有：${beforeCount}条\n合并后：${mergedRecords.length}条\n新增：${addedCount}条`);
     } else {
       alert('云端暂无数据');
       updateSyncStatus('云端暂无数据');
