@@ -2774,9 +2774,19 @@ async function syncToCloud() {
       // 步骤2：合并本地与云端数据（包含活跃和已删除）
       const localAll = [...state.records, ...state.deletedRecords];
       const mergeResult = mergeRecords(localAll, cloudRecords);
-      const mergedAll = mergeResult.records;
+      let mergedAll = mergeResult.records;
       lastConflictCount = mergeResult.conflicts.length;
       const mergedSettings = {...cloudSettings, ...state.settings};
+      
+      // 关键：从合并结果中移除待永久删除的记录（确保云端也删除）
+      if (state.pendingPermanentDeletes.length > 0) {
+        const beforeCount = mergedAll.length;
+        mergedAll = mergedAll.filter(r => !state.pendingPermanentDeletes.includes(r.id));
+        const removedCount = beforeCount - mergedAll.length;
+        if (removedCount > 0) {
+          console.log(`永久删除同步：从云端数据中移除 ${removedCount} 条记录`);
+        }
+      }
       
       // 步骤3：上传合并结果
       const myUpdatedAt = new Date().toISOString();
@@ -2812,6 +2822,10 @@ async function syncToCloud() {
       const separated = separateRecords(mergedAll);
       state.records = separated.active;
       state.deletedRecords = separated.deleted;
+      // 同步成功后清空待永久删除列表（云端已删除）
+      if (state.pendingPermanentDeletes.length > 0) {
+        state.pendingPermanentDeletes = [];
+      }
       saveData();
       renderAll();
       
@@ -3048,6 +3062,7 @@ const SETTINGS_KEY = 'dingju_ledger_settings';
 let state = {
   records: [],
   deletedRecords: [],  // 软删除：已删除但未永久清除的记录（带 deleted: true 标记）
+  pendingPermanentDeletes: [],  // 待永久删除的记录ID列表，同步时从云端数据中移除
   currentDate: new Date(),
   currentView: 'records',
   searchQuery: '',
@@ -3078,17 +3093,20 @@ function loadData() {
       } else {
         state.records = parsed.records || [];
         state.deletedRecords = parsed.deletedRecords || [];
+        state.pendingPermanentDeletes = parsed.pendingPermanentDeletes || [];
       }
     } else {
       // 首次使用，加载初始数据
       state.records = JSON.parse(JSON.stringify(INITIAL_RECORDS));
       state.deletedRecords = [];
+      state.pendingPermanentDeletes = [];
       saveData();
     }
   } catch (e) {
     console.error('加载数据失败', e);
     state.records = JSON.parse(JSON.stringify(INITIAL_RECORDS));
     state.deletedRecords = [];
+    state.pendingPermanentDeletes = [];
     saveData();
   }
   try {
@@ -3106,7 +3124,8 @@ function saveData() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       records: state.records,
-      deletedRecords: state.deletedRecords
+      deletedRecords: state.deletedRecords,
+      pendingPermanentDeletes: state.pendingPermanentDeletes
     }));
   } catch (e) {
     console.error('保存数据失败', e);
@@ -5140,6 +5159,11 @@ function permanentDeleteRecord(recordId) {
   const index = state.deletedRecords.findIndex(r => r.id === recordId);
   if (index !== -1) {
     state.deletedRecords.splice(index, 1);
+  }
+  
+  // 关键：记录待永久删除的ID，同步时从云端数据中移除
+  if (!state.pendingPermanentDeletes.includes(recordId)) {
+    state.pendingPermanentDeletes.push(recordId);
   }
   
   addAuditLog('permanent_delete', `永久删除单据：${record.customerName}，金额¥${(record.totalAmount||0).toFixed(2)}`);
