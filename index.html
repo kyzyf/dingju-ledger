@@ -2664,9 +2664,14 @@ async function pullFromCloud() {
   if (!confirm('确定要用云端数据覆盖本地数据吗？本地未同步的数据将丢失！')) return;
   updateSyncStatus('拉取中...');
   try {
-    const { data, error } = await supabaseClient.from('ledger_sync').select('*').eq('id', 'dingju_ledger_data').single();
+    const { data, error } = await supabaseClient.from('ledger_sync').select('*').eq('id', 'dingju_ledger_data').maybeSingle();
     if (error) throw error;
-    if (data && data.records) {
+    if (!data) {
+      alert('云端暂无数据');
+      updateSyncStatus('云端暂无数据');
+      return;
+    }
+    if (data.records) {
       state.records = data.records;
       if (data.settings) state.settings = {...state.settings, ...data.settings};
       addAuditLog('cloud_pull', `从云端拉取数据（${data.records.length}条）`);
@@ -2675,12 +2680,18 @@ async function pullFromCloud() {
       updateSyncStatus('拉取成功 ' + new Date().toLocaleTimeString());
       alert('云端数据已拉取到本地');
     } else {
-      alert('云端没有数据');
+      alert('云端暂无数据');
+      updateSyncStatus('云端暂无数据');
     }
   } catch(e) {
     console.error('云端拉取失败:', e);
-    alert('拉取失败: ' + (e.message || '未知错误'));
-    updateSyncStatus('拉取失败');
+    if (e.code === 'PGRST116') {
+      alert('云端暂无数据');
+      updateSyncStatus('云端暂无数据');
+    } else {
+      alert('拉取失败: ' + (e.message || '未知错误'));
+      updateSyncStatus('拉取失败');
+    }
   }
 }
 
