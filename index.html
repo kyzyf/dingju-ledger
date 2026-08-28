@@ -4428,7 +4428,11 @@ function sha256(message) {
   let padded = new Uint8Array(len+padLen+8);
   padded.set(msg);
   padded[len] = 0x80;
-  for(let i=0;i<8;i++) padded[len+padLen+i] = (bitLen>>>BigInt(56-i*8))&0xff;
+  // 64位大端长度（高32位+低32位）
+  const high = Math.floor(bitLen / 0x100000000);
+  const low = bitLen >>> 0;
+  for(let i=0;i<4;i++) padded[len+padLen+i] = (high >>> (24-i*8)) & 0xff;
+  for(let i=0;i<4;i++) padded[len+padLen+4+i] = (low >>> (24-i*8)) & 0xff;
   for(let i=0;i<padded.length;i+=64){
     const w = new Uint32Array(64);
     for(let j=0;j<16;j++) w[j] = (padded[i+j*4]<<24)|(padded[i+j*4+1]<<16)|(padded[i+j*4+2]<<8)|padded[i+j*4+3];
