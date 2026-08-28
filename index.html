@@ -2676,7 +2676,7 @@ async function pullFromCloud() {
       if (data.settings) state.settings = {...state.settings, ...data.settings};
       addAuditLog('cloud_pull', `从云端拉取数据（${data.records.length}条）`);
       saveData();
-      renderCurrentView();
+      renderAll();
       updateSyncStatus('拉取成功 ' + new Date().toLocaleTimeString());
       alert('云端数据已拉取到本地');
     } else {
