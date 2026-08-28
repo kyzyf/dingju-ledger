@@ -3981,8 +3981,18 @@ function exportToExcel(records, filename) {
     ];
 
     XLSX.utils.book_append_sheet(wb, ws, '鼎炬账本');
-    XLSX.writeFile(wb, filename);
-    showToast('Excel导出成功', 'success');
+    // 使用 Blob 方式下载，兼容电脑端和手机端浏览器
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const dlUrl = URL.createObjectURL(blob);
+    const dlLink = document.createElement('a');
+    dlLink.href = dlUrl;
+    dlLink.download = filename;
+    document.body.appendChild(dlLink);
+    dlLink.click();
+    document.body.removeChild(dlLink);
+    setTimeout(() => URL.revokeObjectURL(dlUrl), 1500);
+    showToast('Excel导出成功，已开始下载', 'success');
   } catch (e) {
     console.error('Excel导出失败', e);
     showToast('导出失败：' + e.message, 'error');
