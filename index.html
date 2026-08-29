@@ -2581,6 +2581,14 @@ body::before {
           <div class="settings-item-label">从云端拉取</div>
           <div class="settings-item-desc">用云端数据覆盖本地</div>
         </div>
+        <div class="settings-item" style="flex-direction:column;align-items:stretch;gap:8px;border-top:1px solid var(--border-color);padding-top:12px;">
+          <div class="settings-item-label" style="color:var(--danger);">按客户名删除云端数据</div>
+          <div class="settings-item-desc">输入客户名，彻底删除云端该客户的所有单据（不可恢复）</div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="deleteCustomerInput" placeholder="输入客户名，如：洪友" style="flex:1;padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text-primary);font-size:13px;">
+            <button id="deleteCustomerCloudBtn" style="padding:8px 16px;background:var(--danger);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;">删除</button>
+          </div>
+        </div>
       </div>
 <div class="settings-group">
         <div class="settings-group-title">关于</div>
@@ -2932,6 +2940,96 @@ async function pullFromCloud() {
   }
 }
 
+// 按客户名彻底删除云端数据（包括活跃和已删除单据）
+async function deleteCustomerFromCloud() {
+  const customerName = document.getElementById('deleteCustomerInput').value.trim();
+  if (!customerName) {
+    alert('请输入要删除的客户名');
+    return;
+  }
+  if (!cloudSyncEnabled || !supabaseClient) {
+    alert('云端同步未配置或未启用');
+    return;
+  }
+  if (!confirm(`确定要彻底删除云端所有客户名为"${customerName}"的单据吗？
+
+此操作不可恢复，将同时删除活跃单据和回收站中的已删除单据！`)) return;
+  
+  try {
+    updateSyncStatus('正在删除云端数据...');
+    // 步骤1：从云端获取当前最新数据
+    const { data, error } = await supabaseClient
+      .from('ledger_sync')
+      .select('*')
+      .eq('id', 'dingju_ledger_data')
+      .maybeSingle();
+    
+    if (error) throw error;
+    
+    if (!data || !data.records) {
+      alert('云端暂无数据');
+      updateSyncStatus('云端暂无数据');
+      return;
+    }
+    
+    const allRecords = data.records || [];
+    // 统计要删除的数量
+    const toDelete = allRecords.filter(r => 
+      r.customerName && r.customerName.includes(customerName)
+    );
+    const deletedCount = toDelete.length;
+    
+    if (deletedCount === 0) {
+      alert(`云端未找到客户名为"${customerName}"的单据`);
+      updateSyncStatus('未找到匹配数据');
+      return;
+    }
+    
+    // 过滤掉要删除的单据
+    const remainingRecords = allRecords.filter(r => 
+      !(r.customerName && r.customerName.includes(customerName))
+    );
+    
+    // 步骤2：把过滤后的数据写回云端
+    const payload = {
+      id: 'dingju_ledger_data',
+      records: remainingRecords,
+      settings: data.settings || state.settings,
+      updated_at: new Date().toISOString()
+    };
+    
+    const { error: upsertError } = await supabaseClient
+      .from('ledger_sync')
+      .upsert(payload);
+    
+    if (upsertError) throw upsertError;
+    
+    // 步骤3：同时更新本地数据
+    state.records = remainingRecords.filter(r => !r.deleted);
+    state.deletedRecords = remainingRecords.filter(r => r.deleted);
+    saveData();
+    renderAll();
+    
+    addAuditLog('cloud_delete_customer', `按客户名删除云端数据：${customerName}，共删除${deletedCount}条，剩余${remainingRecords.length}条`);
+    
+    updateSyncStatus('删除成功 ' + new Date().toLocaleTimeString());
+    alert(`删除成功！
+
+已彻底删除云端客户"${customerName}"的 ${deletedCount} 条单据
+云端剩余 ${remainingRecords.length} 条单据
+
+本地数据已同步更新。`);
+    
+    // 清空输入框
+    document.getElementById('deleteCustomerInput').value = '';
+    
+  } catch(e) {
+    console.error('按客户名删除云端数据失败:', e);
+    alert('删除失败: ' + (e.message || '未知错误'));
+    updateSyncStatus('删除失败');
+  }
+}
+
 function saveCloudConfig() {
   const url = document.getElementById('cloudUrlInput').value.trim();
   const key = document.getElementById('cloudKeyInput').value.trim();
@@ -2955,6 +3053,8 @@ function bindCloudSyncEvents() {
   if (saveBtn) saveBtn.addEventListener('click', saveCloudConfig);
   if (syncBtn) syncBtn.addEventListener('click', syncToCloud);
   if (pullBtn) pullBtn.addEventListener('click', pullFromCloud);
+  const deleteCustomerBtn = document.getElementById('deleteCustomerCloudBtn');
+  if (deleteCustomerBtn) deleteCustomerBtn.addEventListener('click', deleteCustomerFromCloud);
 }
 
 // ===== 操作审计日志 =====
