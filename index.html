@@ -2383,11 +2383,11 @@ body::before {
 <div class="modal-overlay" id="trashDetailModal">
   <div class="modal">
     <div class="modal-header">
-      <button class="modal-back-btn" style="display:flex;width:32px;height:32px;border:none;background:transparent;color:var(--text-muted);border-radius:var(--radius-sm);cursor:pointer;align-items:center;justify-content:center;margin-right:8px;" onclick="navigateTo('trashModal')">
+      <button class="modal-back-btn" style="display:flex;width:32px;height:32px;border:none;background:transparent;color:var(--text-muted);border-radius:var(--radius-sm);cursor:pointer;align-items:center;justify-content:center;margin-right:8px;" onclick="closeModal('trashDetailModal')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <div class="modal-title" style="color:var(--warning);">已删除单据详情</div>
-      <button class="modal-close" data-close="trashDetailModal">
+      <button class="modal-close" onclick="closeModal('trashDetailModal');closeModal('trashModal');">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -4960,9 +4960,9 @@ function updateTrashCount() {
 
 // 打开回收站列表
 function openTrashModal() {
+  closeModal('settingsModal');  // 先关闭设置弹窗，避免遮挡
   renderTrashList();
-  navigateTo('trashModal');
-}
+  openModal('trashModal');  // 直接弹出，不使用导航栈
 
 // 渲染回收站列表
 function renderTrashList() {
@@ -5128,7 +5128,7 @@ function openTrashDetail(recordId) {
   `;
 
   document.getElementById('trashDetailBody').dataset.recordId = recordId;
-  navigateTo('trashDetailModal');
+  openModal('trashDetailModal');  // 直接弹出详情，不使用导航栈
 }
 
 // 复原记录（从回收站移回活跃列表）
