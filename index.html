@@ -4677,7 +4677,7 @@ function importFromExcel(file) {
           // 门牌号合并到客户名后面
           const finalCustomerName = (customerName || '未知客户') + (doorNo ? '（' + doorNo + '）' : '');
           importedRecords.push({
-            id: 'imp_' + Date.now().toString(36) + '_' + i,
+            id: 'imp_' + importBatchId + '_' + i,
             importBatchId: importBatchId,
             date: dateStr,
             customerName: finalCustomerName,
@@ -4747,7 +4747,7 @@ function importFromExcel(file) {
           const normalRemark = getField(row, ['备注', '说明', '摘要', 'note', 'remark']);
           
           return {
-            id: 'imp_' + Date.now().toString(36) + '_' + index,
+            id: 'imp_' + importBatchId + '_' + index,
             importBatchId: importBatchId,
             date: dateStr,
             customerName: finalCustomerName,
