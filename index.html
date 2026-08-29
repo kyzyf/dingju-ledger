@@ -4455,11 +4455,17 @@ function importFromExcel(file) {
 
       // 检测是否是对账单范本格式
       const isStatementFormat = aoaData.some(row => 
-        row.some(cell => 
-          String(cell).includes('温州鼎炬金属科技有限公司') || 
-          String(cell).includes('对账单')
-        )
+        row.some(cell => {
+          const cellStr = String(cell);
+          return cellStr.includes('温州鼎炬') || 
+                 cellStr.includes('对账单') ||
+                 cellStr.includes('对账单位') ||
+                 (cellStr.includes('单据日期') && aoaData.some(r => r.some(c => String(c).includes('商品全名'))));
+        })
       );
+      
+      console.log('导入格式检测:', isStatementFormat ? '对账单格式' : '普通格式');
+      console.log('Excel总行数:', aoaData.length);
 
       let importedRecords = [];
 
@@ -4566,8 +4572,14 @@ function importFromExcel(file) {
             }
           }
 
-          // 至少要有日期或商品全名才认为是有效数据
-          if (!dateStr && !style) continue;
+          // 放宽条件：只要有任意关键字段有值就认为是有效数据
+          const hasAnyData = dateStr || style || material || process || quantity > 0 || totalAmount > 0 || remark;
+          if (!hasAnyData) {
+            console.log('跳过空行:', i, row);
+            continue;
+          }
+
+          console.log('解析数据行:', i, {dateStr, style, material, process, quantity, totalAmount, remark});
 
           importedRecords.push({
             id: 'imp_' + Date.now().toString(36) + '_' + i,
@@ -4617,15 +4629,25 @@ function importFromExcel(file) {
           const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : quantity * weightPerPiece * unitPrice;
           const paidAmount = parseFloat(row['已收款']) || 0;
 
+          // 支持多种列名变体
+          const getField = (row, keys) => {
+            for (const key of keys) {
+              if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') {
+                return String(row[key]).trim();
+              }
+            }
+            return '';
+          };
+
           return {
             id: 'imp_' + Date.now().toString(36) + '_' + index,
             date: dateStr,
-            customerName: String(row['客户名称'] || '').trim(),
-            doorNo: String(row['门牌号'] || '').trim(),
-            invoiceNo: String(row['发票单号'] || '').trim(),
-            style: String(row['产品款式'] || '').trim(),
-            material: String(row['材质'] || '').trim(),
-            process: String(row['加工工艺'] || '').trim(),
+            customerName: getField(row, ['客户名称', '客户', '单位名称', '单位', '对账单位', '公司名称']),
+            doorNo: getField(row, ['门牌号', '门牌', '地址', '位置']),
+            invoiceNo: getField(row, ['发票单号', '发票号', '发票', '单号', '单据号']),
+            style: getField(row, ['产品款式', '款式', '商品全名', '商品名称', '产品名称', '品名', '规格']),
+            material: getField(row, ['材质', '材料', '材质规格']),
+            process: getField(row, ['加工工艺', '工艺', '处理方式', '表面处理']),
             quantity: quantity,
             weightPerPiece: weightPerPiece,
             unitPrice: unitPrice,
@@ -4633,13 +4655,21 @@ function importFromExcel(file) {
             paidAmount: paidAmount,
             createdAt: new Date().toISOString()
           };
-        }).filter(r => r.customerName);
+        }).filter(r => r.date || r.style || r.customerName);
       }
 
       if (importedRecords.length === 0) {
-        showToast('未找到有效的单据数据', 'warning');
+        if (isStatementFormat) {
+          console.error('对账单格式导入失败，aoaData:', aoaData);
+          showToast(`未找到有效数据：检测到对账单格式，共${aoaData.length}行，但未解析到有效单据。请打开浏览器控制台(F12)查看详细调试信息`, 'warning');
+        } else {
+          console.error('普通格式导入失败，jsonData:', jsonData);
+          showToast(`未找到有效数据：共${jsonData ? jsonData.length : 0}行，但未解析到有效单据。请确保表格包含日期/款式/客户名称等列`, 'warning');
+        }
         return;
       }
+
+      console.log(`导入成功：${importedRecords.length}条记录（${isStatementFormat ? '对账单格式' : '普通格式'}）`);
 
       // 询问是追加还是替换
       if (state.records.length > 0) {
