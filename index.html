@@ -2312,11 +2312,11 @@ body::before {
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">零散重量(斤) <span style="color:#999;font-size:12px;">可选，如3*130+125中的125</span></label>
+          <label class="form-label">额外斤数 <span style="color:#999;font-size:12px;">可选，如3*130+125中的125</span></label>
           <input type="number" class="form-input" id="extraWeight" placeholder="0" step="0.01" min="0">
         </div>
         <div class="calc-display">
-          <div class="calc-formula" id="calcFormula">件数 × 每件斤数 + 零散重量 = 总重量，总重量 × 单价 = 总金额</div>
+          <div class="calc-formula" id="calcFormula">件数 × 每件斤数 + 额外斤数 = 总重量，总重量 × 单价 = 总金额</div>
           <div class="calc-result tabular-nums"><span class="currency">¥</span><span id="calcResult">0.00</span></div>
         </div>
         <div class="form-row">
@@ -2328,6 +2328,10 @@ body::before {
             <label class="form-label">单据日期</label>
             <input type="date" class="form-input" id="recordDate">
           </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">备注</label>
+          <textarea class="form-input" id="remark" placeholder="客户特殊要求或其他备注信息" rows="2" style="resize:vertical;"></textarea>
         </div>
       </form>
     </div>
@@ -3561,6 +3565,7 @@ function openRecordModal(recordId = null) {
       document.getElementById('unitPrice').value = record.unitPrice || '';
       document.getElementById('paidAmount').value = record.paidAmount || '';
       document.getElementById('recordDate').value = record.date || formatDate(new Date());
+      document.getElementById('remark').value = record.remark || '';
     }
   } else {
     document.getElementById('recordModalTitle').textContent = '新增单据';
@@ -3622,7 +3627,8 @@ function saveRecord() {
     unitPrice,
     totalAmount,
     paidAmount,
-    date
+    date,
+    remark: document.getElementById('remark').value.trim()
   };
 
   if (state.editingRecordId) {
@@ -3709,7 +3715,7 @@ function openDetailModal(recordId) {
       </div>
       ${record.extraWeight ? `
       <div class="detail-row">
-        <span class="label">零散重量</span>
+        <span class="label">额外斤数</span>
         <span class="value">${record.extraWeight} 斤</span>
       </div>` : ''}
       <div class="detail-row">
@@ -5085,14 +5091,34 @@ function bindEvents() {
   }
 
   // 设置 - 清空数据
-  document.getElementById('clearDataBtn').addEventListener('click', () => {
+  document.getElementById('clearDataBtn').addEventListener('click', async () => {
     const count = state.records.length;
     const delCount = state.deletedRecords.length;
     addAuditLog('clear', `清空全部数据（活跃${count}条，已删除${delCount}条，含云端）`);
     state.records = [];
     state.deletedRecords = [];
     state.pendingPermanentDeletes = [];
-    saveData();  // 会自动同步到云端，云端也会被清空
+    // 先保存到本地
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        records: [],
+        deletedRecords: [],
+        pendingPermanentDeletes: []
+      }));
+    } catch(e) { console.error('清空本地失败', e); }
+    // 直接用空数据覆盖云端，不经过merge合并（否则会从云端拉回旧数据）
+    if (cloudSyncEnabled && supabaseClient) {
+      try {
+        const { error } = await supabaseClient.from('ledger_sync').upsert({
+          id: 'dingju_ledger_data',
+          records: [],
+          settings: state.settings,
+          updated_at: new Date().toISOString()
+        });
+        if (error) console.error('清空云端失败', error);
+        else console.log('云端数据已清空');
+      } catch(e) { console.error('清空云端异常', e); }
+    }
     renderAll();
     closeModal('settingsModal');
     showToast('全部数据已清空（含云端）', 'success');
@@ -5580,7 +5606,7 @@ function openTrashDetail(recordId) {
       </div>
       ${record.extraWeight ? `
       <div class="detail-row">
-        <span class="label">零散重量</span>
+        <span class="label">额外斤数</span>
         <span class="value">${record.extraWeight} 斤</span>
       </div>` : ''}
       <div class="detail-row">
