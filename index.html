@@ -2807,18 +2807,33 @@ async function syncToCloud() {
       if (error) throw error;
       
       // 步骤4：并发验证 - 立即拉取确认我们的写入生效
+      let verifyPassed = true;
       try {
         const { data: verify } = await supabaseClient
           .from('ledger_sync')
-          .select('updated_at')
+          .select('*')
           .eq('id', 'dingju_ledger_data')
           .maybeSingle();
         // 如果云端 updated_at 与我们写入的不一致，说明其他设备在期间也写入了，需要重试
         if (verify && verify.updated_at && verify.updated_at !== myUpdatedAt) {
           console.warn(`并发冲突检测（第${attempt}次），其他设备同时更新，重新合并...`);
+          verifyPassed = false;
           if (attempt < maxRetries) {
             await new Promise(r => setTimeout(r, 500 * attempt)); // 递增延迟
             continue;
+          }
+        }
+        
+        // 关键验证：确认待永久删除的记录确实不在云端数据中
+        if (verifyPassed && state.pendingPermanentDeletes.length > 0 && verify && verify.records) {
+          const cloudIds = verify.records.map(r => r.id);
+          const stillInCloud = state.pendingPermanentDeletes.filter(id => cloudIds.includes(id));
+          if (stillInCloud.length > 0) {
+            console.error(`永久删除验证失败：${stillInCloud.length}条记录仍在云端，将保留待删除列表下次重试`, stillInCloud);
+            verifyPassed = false;
+            // 不重试，保留pendingPermanentDeletes，下次同步时再删
+          } else {
+            console.log(`永久删除验证通过：${state.pendingPermanentDeletes.length}条记录已从云端彻底删除`);
           }
         }
       } catch(e) {
@@ -2829,9 +2844,10 @@ async function syncToCloud() {
       const separated = separateRecords(mergedAll);
       state.records = separated.active;
       state.deletedRecords = separated.deleted;
-      // 同步成功后清空待永久删除列表（云端已删除）
-      if (state.pendingPermanentDeletes.length > 0) {
+      // 同步成功后清空待永久删除列表（只有验证通过才清空）
+      if (state.pendingPermanentDeletes.length > 0 && verifyPassed) {
         state.pendingPermanentDeletes = [];
+        console.log('待永久删除列表已清空');
       }
       saveData();
       renderAll();
