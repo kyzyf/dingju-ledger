@@ -3651,6 +3651,11 @@ function openDetailModal(recordId) {
         <span class="label">发票单号</span>
         <span class="value">${escapeHtml(record.invoiceNo)}</span>
       </div>` : ''}
+      ${record.remark ? `
+      <div class="detail-row">
+        <span class="label">备注</span>
+        <span class="value">${escapeHtml(record.remark)}</span>
+      </div>` : ''}
       <div class="detail-row">
         <span class="label">单据日期</span>
         <span class="value">${record.date}</span>
@@ -4266,6 +4271,7 @@ function exportToExcel(records, filename) {
     aoa.push(row3);
     
     // 行4+：数据行
+    let calculatedTotalQty = 0;  // 重新计算总重量
     sortedRecords.forEach((r, index) => {
       const row = new Array(21).fill('');
       row[0] = index + 1;
@@ -4274,11 +4280,39 @@ function exportToExcel(records, filename) {
       row[5] = r.style || '';
       row[8] = r.material || '';  // 材质
       row[9] = r.process || '';   // 加工工艺
-      row[14] = parseFloat(r.quantity) || 0;
+      
+      // 从remark中解析额外重量（格式：额外125斤）
+      let extraWeight = 0;
+      let otherRemark = '';
+      if (r.remark) {
+        const extraMatch = r.remark.match(/额外(\d+(?:\.\d+)?)斤/);
+        if (extraMatch) {
+          extraWeight = parseFloat(extraMatch[1]);
+        }
+        otherRemark = r.remark.replace(/额外\d+(?:\.\d+)?斤[；;]?/, '').trim();
+      }
+      
+      // 计算总重量 = 件数 × 每件重量 + 额外重量
+      const qty = parseFloat(r.quantity) || 0;
+      const weightPerPiece = parseFloat(r.weightPerPiece) || 0;
+      const totalWeight = qty * weightPerPiece + extraWeight;
+      calculatedTotalQty += totalWeight;
+      
+      row[14] = totalWeight;  // 数量列是总重量
       row[16] = parseFloat(r.unitPrice) || 0;
       row[18] = parseFloat(r.totalAmount) || 0;
-      // 备注：只保留发票号（门牌号已合并到客户名）
-      row[20] = r.invoiceNo || '';
+      
+      // 备注：件数*每件重量[+额外重量] + 发票号 + 其他备注
+      const remarkParts = [];
+      if (qty > 0 && weightPerPiece > 0) {
+        let qtyStr = qty + '*' + weightPerPiece;
+        if (extraWeight > 0) qtyStr += '+' + extraWeight;
+        remarkParts.push(qtyStr);
+      }
+      if (r.invoiceNo) remarkParts.push(r.invoiceNo);
+      if (otherRemark) remarkParts.push(otherRemark);
+      row[20] = remarkParts.join('；');
+      
       aoa.push(row);
     });
     
@@ -4286,7 +4320,7 @@ function exportToExcel(records, filename) {
     const totalRowIdx = 4 + sortedRecords.length;
     const totalRow = new Array(21).fill('');
     totalRow[0] = '合计：';
-    totalRow[14] = totalQty;
+    totalRow[14] = calculatedTotalQty;  // 使用重新计算的总重量
     totalRow[18] = totalAmount;
     aoa.push(totalRow);
     
@@ -4572,6 +4606,8 @@ function importFromExcel(file) {
           let invoiceNo = '';
           let parsedQuantity = 0;  // 从备注解析的件数
           let parsedWeightPerPiece = 0;  // 从备注解析的每件重量
+          let parsedExtraWeight = 0;  // 从备注解析的额外重量
+          let otherRemarks = [];  // 其他备注信息
           
           if (remark) {
             // 门牌号格式：字母+连字符+数字，如 A-12、B-3、A12
@@ -4590,23 +4626,20 @@ function importFromExcel(file) {
               if (qtyMatch) {
                 parsedQuantity = parseInt(qtyMatch[1]);
                 parsedWeightPerPiece = parseFloat(qtyMatch[2]);
-                // qtyMatch[3] 是额外的斤数，现有字段无法表示，保留在备注中
+                parsedExtraWeight = qtyMatch[3] ? parseFloat(qtyMatch[3]) : 0;
                 break;
               }
             }
             
-            // 再解析门牌号和发票号
-            if (parts.length >= 2) {
-              // 第一部分是门牌号格式且第二部分是发票号格式时才拆分
-              if (doorNoPattern.test(parts[0]) && invoiceNoPattern.test(parts[1])) {
-                doorNo = parts[0];
-                invoiceNo = parts[1];
-              }
-            } else if (parts.length === 1) {
-              if (doorNoPattern.test(parts[0])) {
-                doorNo = parts[0];
-              } else if (invoiceNoPattern.test(parts[0])) {
-                invoiceNo = parts[0];
+            // 再解析门牌号和发票号，其他信息保留为备注
+            for (const part of parts) {
+              if (part.match(quantityPattern)) continue;  // 跳过数量格式
+              if (doorNoPattern.test(part)) {
+                doorNo = part;
+              } else if (invoiceNoPattern.test(part)) {
+                invoiceNo = part;
+              } else {
+                otherRemarks.push(part);  // 其他没有对应字段的信息保留在备注中
               }
             }
           }
@@ -4614,6 +4647,12 @@ function importFromExcel(file) {
           // 确定件数和每件重量：优先使用从备注解析的值
           const finalQuantity = parsedQuantity > 0 ? parsedQuantity : 0;  // 件数只从备注解析，数量列是总重量
           const finalWeightPerPiece = parsedWeightPerPiece > 0 ? parsedWeightPerPiece : 0;
+          
+          // 构建备注字段：额外重量 + 其他备注
+          const remarkParts = [];
+          if (parsedExtraWeight > 0) remarkParts.push('额外' + parsedExtraWeight + '斤');
+          remarkParts.push(...otherRemarks);
+          const finalRemark = remarkParts.join('；');
 
           // 放宽条件：只要有任意关键字段有值就认为是有效数据
           const hasAnyData = dateStr || style || material || process || quantity > 0 || totalAmount > 0 || remark;
@@ -4638,6 +4677,7 @@ function importFromExcel(file) {
             process: process,
             quantity: finalQuantity,
             weightPerPiece: finalWeightPerPiece,
+            remark: finalRemark,  // 备注：额外重量和其他信息
             unitPrice: unitPrice,
             totalAmount: totalAmount,
             paidAmount: 0,  // 对账单范本中没有已收款
@@ -4690,6 +4730,9 @@ function importFromExcel(file) {
           const rawDoorNo = getField(row, ['门牌号', '门牌', '地址', '位置']);
           const finalCustomerName = rawCustomerName + (rawDoorNo ? '（' + rawDoorNo + '）' : '');
 
+          // 备注：从备注列读取，没有对应字段的信息都记录在备注中
+          const normalRemark = getField(row, ['备注', '说明', '摘要', 'note', 'remark']);
+          
           return {
             id: 'imp_' + Date.now().toString(36) + '_' + index,
             importBatchId: importBatchId,
@@ -4702,6 +4745,7 @@ function importFromExcel(file) {
             process: getField(row, ['加工工艺', '工艺', '处理方式', '表面处理']),
             quantity: quantity,
             weightPerPiece: weightPerPiece,
+            remark: normalRemark,  // 备注信息
             unitPrice: unitPrice,
             totalAmount: totalAmount,
             paidAmount: paidAmount,
@@ -5482,6 +5526,11 @@ function openTrashDetail(recordId) {
       <div class="detail-row">
         <span class="label">发票单号</span>
         <span class="value">${escapeHtml(record.invoiceNo)}</span>
+      </div>` : ''}
+      ${record.remark ? `
+      <div class="detail-row">
+        <span class="label">备注</span>
+        <span class="value">${escapeHtml(record.remark)}</span>
       </div>` : ''}
       <div class="detail-row">
         <span class="label">单据日期</span>
