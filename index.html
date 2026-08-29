@@ -2115,6 +2115,515 @@ body::before {
   border-bottom: 10px solid rgba(30,30,30,0.92);
 }
 
+
+/* ===== 结账窗口样式 ===== */
+.settlement-modal {
+  max-width: 900px;
+  width: 95vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+}
+.settlement-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.settlement-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.settlement-header .form-group {
+  flex: 1;
+  min-width: 150px;
+  margin-bottom: 0;
+}
+.settlement-records-list {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.settlement-records-header {
+  display: grid;
+  grid-template-columns: 40px 1fr 100px 80px 100px 100px;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+}
+.settlement-record-item {
+  display: grid;
+  grid-template-columns: 40px 1fr 100px 80px 100px 100px;
+  gap: 8px;
+  padding: 10px 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  font-size: var(--font-size-sm);
+  transition: background 0.2s;
+}
+.settlement-record-item:hover {
+  background: var(--bg-card-hover);
+}
+.settlement-record-item.selected {
+  background: var(--accent-dim);
+}
+.settlement-record-item .record-info {
+  min-width: 0;
+}
+.settlement-record-item .record-customer {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.settlement-record-item .record-meta {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.settlement-record-item input[type="number"] {
+  width: 100%;
+  padding: 4px 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+.settlement-record-item .amount-col {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.settlement-records-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+.settlement-records-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+.settlement-summary {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.settlement-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: var(--font-size-sm);
+}
+.settlement-summary-row.label-row {
+  color: var(--text-secondary);
+}
+.settlement-summary-row .value {
+  font-variant-numeric: tabular-nums;
+}
+.settlement-summary-row.negative .value {
+  color: var(--danger);
+}
+.settlement-summary-row.total {
+  border-top: 1px solid var(--border-color);
+  margin-top: 8px;
+  padding-top: 12px;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+.settlement-summary-row.receivable {
+  font-size: var(--font-size-xl);
+  font-weight: 900;
+  color: var(--accent);
+}
+.settlement-discount-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.settlement-discount-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+.discount-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.discount-input-row select,
+.discount-input-row input {
+  padding: 6px 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+.discount-input-row input[type="number"] {
+  width: 100px;
+}
+.settlement-footer {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+.settlement-footer .btn {
+  flex: 1;
+}
+
+/* 结账凭证详情 */
+.settlement-detail-modal {
+  max-width: 700px;
+  width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.settlement-detail-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.settlement-detail-header {
+  text-align: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+.settlement-detail-id {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--accent);
+}
+.settlement-detail-meta {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.settlement-detail-section {
+  margin-bottom: 16px;
+}
+.settlement-detail-section-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.settlement-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+.settlement-detail-table th {
+  text-align: left;
+  padding: 8px;
+  background: var(--bg-secondary);
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+.settlement-detail-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+.settlement-detail-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.payment-record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  font-size: var(--font-size-sm);
+}
+.payment-record-item .payment-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.payment-record-item .payment-amount {
+  font-weight: 600;
+  color: var(--success);
+}
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+.status-badge.paid { background: var(--success-dim); color: var(--success); }
+.status-badge.partial { background: var(--warning-dim); color: var(--warning); }
+.status-badge.unpaid { background: var(--danger-dim); color: var(--danger); }
+
+/* 打印样式 */
+.print-area {
+  display: none;
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    background: white;
+    color: black;
+    font-size: 12px;
+  }
+  .print-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .print-company-logo {
+    max-width: 120px;
+    max-height: 60px;
+    margin-bottom: 8px;
+  }
+  .print-company-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  .print-company-info {
+    font-size: 11px;
+    color: #666;
+  }
+  .print-title {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin: 16px 0;
+    letter-spacing: 4px;
+  }
+  .print-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+  .print-table th, .print-table td {
+    border: 1px solid #333;
+    padding: 6px 8px;
+    text-align: left;
+    font-size: 11px;
+  }
+  .print-table th {
+    background: #f0f0f0;
+    font-weight: bold;
+  }
+  .print-table .num {
+    text-align: right;
+  }
+  .print-summary {
+    margin-left: auto;
+    width: 300px;
+    margin-bottom: 20px;
+  }
+  .print-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-size: 12px;
+  }
+  .print-summary-row.total {
+    border-top: 1px solid #333;
+    margin-top: 4px;
+    padding-top: 6px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  .print-signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+  }
+  .print-signature-block {
+    width: 45%;
+  }
+  .print-signature-line {
+    border-bottom: 1px solid #333;
+    height: 40px;
+    margin-bottom: 4px;
+  }
+  .print-signature-label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .print-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 10px;
+    color: #666;
+  }
+  .print-remark {
+    margin: 12px 0;
+    font-size: 12px;
+  }
+  .print-remark-label {
+    font-weight: bold;
+  }
+}
+
+/* 结账FAB按钮组 */
+.fab-group {
+  position: fixed;
+  right: 20px;
+  bottom: calc(var(--bottom-nav-height) + 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 100;
+}
+.fab-secondary {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--accent);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s;
+}
+.fab-secondary:hover {
+  background: var(--accent-dim);
+  transform: scale(1.05);
+}
+.fab-secondary svg {
+  width: 22px;
+  height: 22px;
+}
+.fab-secondary .fab-tooltip {
+  position: absolute;
+  right: 60px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  border: 1px solid var(--border-color);
+}
+.fab-secondary:hover .fab-tooltip {
+  opacity: 1;
+}
+
+/* 对账单样式 */
+.statement-modal {
+  max-width: 800px;
+  width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.statement-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* 已结账标记 */
+.record-settled-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  background: var(--info-dim);
+  color: var(--info);
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+/* 其他费用项 */
+.other-fee-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.other-fee-item input {
+  padding: 6px 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+.other-fee-item input[name="feeName"] {
+  flex: 1;
+}
+.other-fee-item input[name="feeAmount"] {
+  width: 100px;
+}
+.other-fee-item .remove-fee-btn {
+  background: var(--danger-dim);
+  color: var(--danger);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-fee-btn {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  width: 100%;
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2249,10 +2758,16 @@ body::before {
       <!-- 动态渲染 -->
     </div>
 
-    <!-- 浮动添加按钮 -->
-    <button class="fab" id="addBtn" title="新增单据">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    </button>
+    <!-- 浮动按钮组 -->
+    <div class="fab-group">
+      <button class="fab" id="addBtn" title="新增单据">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="fab-secondary" id="settlementBtn" title="客户结账">
+        <span class="fab-tooltip">客户结账</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
+      </button>
+    </div>
 
     <!-- 底部导航（手机） -->
     <nav class="bottom-nav">
@@ -2788,6 +3303,7 @@ async function syncToCloud() {
       // 步骤1：从云端拉取当前最新数据
       let cloudRecords = [];
       let cloudSettings = {};
+      let cloudSettlements = [];
       let cloudUpdatedAt = null;
       try {
         const { data: existing } = await supabaseClient
@@ -2798,6 +3314,7 @@ async function syncToCloud() {
         if (existing && existing.records) {
           cloudRecords = existing.records;
           cloudSettings = existing.settings || {};
+          cloudSettlements = existing.settlements || [];
           cloudUpdatedAt = existing.updated_at;
         }
       } catch(e) {
@@ -2810,6 +3327,8 @@ async function syncToCloud() {
       let mergedAll = mergeResult.records;
       lastConflictCount = mergeResult.conflicts.length;
       const mergedSettings = {...cloudSettings, ...state.settings};
+      // 合并结账凭证（按ID去重，保留最新版本）
+      const mergedSettlements = mergeSettlements(state.settlements, cloudSettlements);
       
       // 关键：从合并结果中移除待永久删除的记录（确保云端也删除）
       if (state.pendingPermanentDeletes.length > 0) {
@@ -2826,6 +3345,7 @@ async function syncToCloud() {
       const payload = {
         id: 'dingju_ledger_data',
         records: mergedAll,
+        settlements: mergedSettlements,
         settings: mergedSettings,
         updated_at: myUpdatedAt
       };
@@ -2923,6 +3443,7 @@ async function pullFromCloud() {
       // 这样新增数据会合并增加，删除操作（deleted=true）也会同步
       const beforeActive = state.records.length;
       const beforeDeleted = state.deletedRecords.length;
+      const beforeSettlements = state.settlements.length;
       const localAll = [...state.records, ...state.deletedRecords];
       const mergeResult = mergeRecords(localAll, data.records);
       const mergedAll = mergeResult.records;
@@ -2930,6 +3451,10 @@ async function pullFromCloud() {
       const separated = separateRecords(mergedAll);
       state.records = separated.active;
       state.deletedRecords = separated.deleted;
+      // 合并结账凭证
+      if (data.settlements && data.settlements.length > 0) {
+        state.settlements = mergeSettlements(state.settlements, data.settlements);
+      }
       if (data.settings) state.settings = {...state.settings, ...data.settings};
       const addedActive = state.records.length - beforeActive;
       addAuditLog('cloud_pull', `从云端拉取合并数据（云端${data.records.length}条，合并后活跃${state.records.length}条，已删除${state.deletedRecords.length}条${conflictCount > 0 ? '，冲突' + conflictCount + '条' : ''}）`);
@@ -2938,7 +3463,8 @@ async function pullFromCloud() {
       saveData();
       renderAll();
       updateSyncStatus('拉取成功 ' + new Date().toLocaleTimeString());
-      let msg = `云端数据已合并到本地\n\n云端：${data.records.length}条\n本地原有：活跃${beforeActive}条 / 已删除${beforeDeleted}条\n合并后：活跃${state.records.length}条 / 已删除${state.deletedRecords.length}条\n新增活跃：${addedActive}条\n\n✓ 新增数据已合并增加\n✓ 删除/修改已同步`;
+      const addedSettlements = state.settlements.length - beforeSettlements;
+      let msg = `云端数据已合并到本地\n\n云端：单据${data.records.length}条 / 结账凭证${(data.settlements || []).length}份\n本地原有：活跃${beforeActive}条 / 已删除${beforeDeleted}条 / 凭证${beforeSettlements}份\n合并后：活跃${state.records.length}条 / 已删除${state.deletedRecords.length}条 / 凭证${state.settlements.length}份\n新增活跃：${addedActive}条 / 新增凭证：${addedSettlements}份\n\n✓ 新增数据已合并增加\n✓ 删除/修改已同步\n✓ 结账凭证已同步`;
       if (conflictCount > 0) {
         msg += `\n\n⚠️ 检测到${conflictCount}条记录多设备修改，已自动保留最新版本`;
       }
@@ -2957,6 +3483,26 @@ async function pullFromCloud() {
       updateSyncStatus('拉取失败');
     }
   }
+}
+
+// 合并结账凭证（按ID去重，保留最新版本，已撤销的保留）
+function mergeSettlements(local, cloud) {
+  const map = new Map();
+  [...local, ...cloud].forEach(s => {
+    if (!s || !s.id) return;
+    const existing = map.get(s.id);
+    if (!existing) {
+      map.set(s.id, s);
+    } else {
+      // 保留更新时间较新的版本
+      const localTime = new Date(s.updatedAt || s.createdAt || 0).getTime();
+      const existingTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
+      if (localTime > existingTime) {
+        map.set(s.id, s);
+      }
+    }
+  });
+  return Array.from(map.values()).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 }
 
 // 按客户名彻底删除云端数据（包括活跃和已删除单据）
@@ -3221,13 +3767,18 @@ let state = {
   records: [],
   deletedRecords: [],  // 软删除：已删除但未永久清除的记录（带 deleted: true 标记）
   pendingPermanentDeletes: [],  // 待永久删除的记录ID列表，同步时从云端数据中移除
+  settlements: [],  // 结账凭证数组
   currentDate: new Date(),
   currentView: 'records',
   searchQuery: '',
   amountHidden: false,
   settings: {
     theme: 'dark',
-    fontSize: 'medium'
+    fontSize: 'medium',
+    companyName: '温州鼎炬金属科技有限公司',
+    companyLogo: '',
+    companyAddress: '',
+    companyPhone: ''
   },
   editingRecordId: null,
   selectedCustomer: null,
@@ -3235,7 +3786,22 @@ let state = {
   calendarViewDate: new Date(),
   pendingDeleteId: null,
   pendingDeleteTimer: null,
-  modalStack: []  // 逐级导航栈：记录弹窗打开顺序，支持逐级返回
+  modalStack: [],  // 逐级导航栈：记录弹窗打开顺序，支持逐级返回
+  // 结账窗口临时状态
+  settlement: {
+    customerName: '',
+    date: '',
+    selectedRecordIds: [],
+    itemAdjustments: {},  // {recordId: {actualWeight, itemDiscountType, itemDiscountValue, itemDiscountReason}}
+    wholeDiscountType: 'none',  // none/percentage/amount
+    wholeDiscountValue: 0,
+    wholeDiscountReason: '',
+    roundingAmount: 0,
+    paidAmount: 0,
+    remark: '',
+    otherFees: []  // [{name, amount}]
+  },
+  viewingSettlementId: null
 };
 
 // 加载数据
@@ -3252,6 +3818,10 @@ function loadData() {
         state.records = parsed.records || [];
         state.deletedRecords = parsed.deletedRecords || [];
         state.pendingPermanentDeletes = parsed.pendingPermanentDeletes || [];
+        state.settlements = parsed.settlements || [];
+        if (parsed.settings) {
+          state.settings = { ...state.settings, ...parsed.settings };
+        }
       }
     } else {
       // 首次使用，加载初始数据
@@ -3283,7 +3853,8 @@ function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       records: state.records,
       deletedRecords: state.deletedRecords,
-      pendingPermanentDeletes: state.pendingPermanentDeletes
+      pendingPermanentDeletes: state.pendingPermanentDeletes,
+      settlements: state.settlements
     }));
   } catch (e) {
     console.error('保存数据失败', e);
@@ -3469,6 +4040,7 @@ function renderRecordList() {
         <div class="record-card-header">
           <div class="record-customer">
             ${escapeHtml(r.customerName || '未命名客户')}${r.doorNo ? '（' + escapeHtml(r.doorNo) + '）' : ''}
+            ${r.settled ? '<span class="record-settled-badge">已结账</span>' : ''}
             ${state.searchQuery ? `<span class="door-tag" style="background:var(--bg-secondary);color:var(--text-muted);">${r.date}</span>` : ''}
           </div>
           <span class="record-status ${status}">${getStatusText(status)}</span>
@@ -3926,7 +4498,11 @@ function deleteRecord(recordId) {
 function openCustomerModal(customerName) {
   state.selectedCustomer = customerName;
   const customerRecords = state.records
-    .filter(r => r.customerName === customerName)
+    .filter(r => r.customerName === customerName && !r.deleted)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const customerSettlements = state.settlements
+    .filter(s => !s.voided && s.customerName === customerName)
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   let totalAmount = 0;
@@ -3941,7 +4517,24 @@ function openCustomerModal(customerName) {
     totalQuantity += qty;
     totalWeight += qty * weight + (parseFloat(r.extraWeight) || 0);
   });
-  const totalUnpaid = totalAmount - totalPaid;
+
+  // 未结账单据欠款
+  const unsettledRecords = customerRecords.filter(r => !r.settled);
+  let unsettledUnpaid = 0;
+  unsettledRecords.forEach(r => {
+    unsettledUnpaid += Math.max(0, (r.totalAmount || 0) - (r.paidAmount || 0));
+  });
+
+  // 结账凭证未收款
+  let settlementUnpaid = 0;
+  let settlementPaid = 0;
+  customerSettlements.forEach(s => {
+    settlementUnpaid += s.unpaidAmount || 0;
+    settlementPaid += s.totalPaid || 0;
+  });
+
+  const totalUnpaid = unsettledUnpaid + settlementUnpaid;
+  const isHidden = state.amountHidden;
 
   // 获取门牌号（取最近的）
   const doorNo = customerRecords.find(r => r.doorNo)?.doorNo || '';
@@ -3951,8 +4544,12 @@ function openCustomerModal(customerName) {
       <div class="customer-avatar">${escapeHtml(customerName.charAt(0))}</div>
       <div class="customer-info">
         <h3>${escapeHtml(customerName)}</h3>
-        <p>${doorNo ? '门牌：' + escapeHtml(doorNo) + ' · ' : ''}共 ${customerRecords.length} 笔交易</p>
+        <p>${doorNo ? '门牌：' + escapeHtml(doorNo) + ' · ' : ''}共 ${customerRecords.length} 笔交易 · ${customerSettlements.length} 次结账</p>
       </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn btn-primary" style="flex:1;padding:8px;font-size:var(--font-size-sm);" onclick="closeModal('customerModal');openSettlementModal('${escapeHtml(customerName)}')">去结账</button>
+      <button class="btn btn-secondary" style="flex:1;padding:8px;font-size:var(--font-size-sm);" onclick="generateStatement('${escapeHtml(customerName)}')">对账单</button>
     </div>
     <div class="customer-stats">
       <div class="customer-stat">
@@ -3964,27 +4561,40 @@ function openCustomerModal(customerName) {
         <div class="lbl">总重量(斤)</div>
       </div>
       <div class="customer-stat">
-        <div class="num total">¥${formatMoneyWithComma(totalAmount)}</div>
+        <div class="num total">${isHidden ? '****' : '¥' + formatMoneyWithComma(totalAmount)}</div>
         <div class="lbl">累计供货</div>
       </div>
       <div class="customer-stat">
-        <div class="num paid">¥${formatMoneyWithComma(totalPaid)}</div>
+        <div class="num paid">${isHidden ? '****' : '¥' + formatMoneyWithComma(totalPaid + settlementPaid)}</div>
         <div class="lbl">已收款</div>
       </div>
       <div class="customer-stat">
-        <div class="num unpaid">¥${formatMoneyWithComma(Math.max(0, totalUnpaid))}</div>
-        <div class="lbl">未收款</div>
+        <div class="num unpaid">${isHidden ? '****' : '¥' + formatMoneyWithComma(Math.max(0, totalUnpaid))}</div>
+        <div class="lbl">总欠款</div>
       </div>
     </div>
+    ${customerSettlements.length > 0 ? `
+    <div class="detail-section">
+      <div class="detail-section-title">结账记录 (${customerSettlements.length})</div>
+      ${customerSettlements.map(s => `
+        <div class="customer-history-item" onclick="openSettlementDetail('${s.id}')" style="cursor:pointer;">
+          <div class="customer-history-date">${s.date} · <span class="status-badge ${s.status}">${{paid:'已结清',partial:'部分收款',unpaid:'未收款'}[s.status]}</span>${s.invoiceNo ? ' · 发票:' + escapeHtml(s.invoiceNo) : ''}</div>
+          <div class="customer-history-row">
+            <span class="customer-history-style">${escapeHtml(s.id)} · ${s.records.length}张单据</span>
+            <span class="customer-history-amount">${isHidden ? '****' : '¥' + formatMoneyWithComma(s.receivableAmount)}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>` : ''}
     <div class="detail-section">
       <div class="detail-section-title">历史交易 (${customerRecords.length})</div>
       ${customerRecords.length === 0 ? '<p style="color:var(--text-muted);text-align:center;padding:20px;">暂无交易记录</p>' :
         customerRecords.map(r => `
           <div class="customer-history-item" data-id="${r.id}">
-            <div class="customer-history-date">${r.date} · ${getStatusText(getPaymentStatus(r))}</div>
+            <div class="customer-history-date">${r.date} · ${getStatusText(getPaymentStatus(r))}${r.settled ? ' · <span style="color:var(--info);">已结账</span>' : ''}</div>
             <div class="customer-history-row">
               <span class="customer-history-style">${escapeHtml(r.style || '未填写款式')}</span>
-              <span class="customer-history-amount">¥${formatMoneyWithComma(r.totalAmount)}</span>
+              <span class="customer-history-amount">${isHidden ? '****' : '¥' + formatMoneyWithComma(r.totalAmount)}</span>
             </div>
           </div>
         `).join('')
@@ -5552,6 +6162,22 @@ function init() {
     bindCloudSyncEvents();
   applySettings();
   bindEvents();
+  bindSettlementEvents();
+  // 绑定结账FAB按钮
+  const settlementBtn = document.getElementById('settlementBtn');
+  if (settlementBtn) {
+    settlementBtn.addEventListener('click', () => openSettlementModal());
+  }
+  // 绑定凭证详情按钮
+  const printSettlementBtn = document.getElementById('printSettlementBtn');
+  if (printSettlementBtn) printSettlementBtn.addEventListener('click', printSettlement);
+  const addPaymentBtn = document.getElementById('addPaymentBtn');
+  if (addPaymentBtn) addPaymentBtn.addEventListener('click', addSettlementPayment);
+  const editInvoiceBtn = document.getElementById('editInvoiceBtn');
+  if (editInvoiceBtn) editInvoiceBtn.addEventListener('click', editSettlementInvoice);
+  // 绑定对账单打印
+  const printStatementBtn = document.getElementById('printStatementBtn');
+  if (printStatementBtn) printStatementBtn.addEventListener('click', printStatement);
   renderAll();
   if (!checkLogin()) {
     showLogin();
@@ -5940,8 +6566,1055 @@ window.addEventListener('resize', () => {
 });
 
 
+
+// ============================================================
+// ===== 客户结账功能 =====
+// ============================================================
+
+// 计算单据总重量
+function getRecordWeight(record) {
+  const qty = parseFloat(record.quantity) || 0;
+  const wpp = parseFloat(record.weightPerPiece) || 0;
+  const extra = parseFloat(record.extraWeight) || 0;
+  return qty * wpp + extra;
+}
+
+// 获取未结账的活跃单据
+function getUnsettledRecords(customerName) {
+  return state.records.filter(r =>
+    !r.deleted &&
+    !r.settled &&
+    r.customerName &&
+    r.customerName.trim() === customerName.trim()
+  ).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+}
+
+// 重置结账临时状态
+function resetSettlementState() {
+  state.settlement = {
+    customerName: '',
+    date: formatDate(new Date()),
+    selectedRecordIds: [],
+    itemAdjustments: {},
+    wholeDiscountType: 'none',
+    wholeDiscountValue: 0,
+    wholeDiscountReason: '',
+    roundingAmount: 0,
+    paidAmount: 0,
+    remark: '',
+    otherFees: []
+  };
+}
+
+// 打开结账窗口
+function openSettlementModal(customerName) {
+  resetSettlementState();
+  if (customerName) {
+    state.settlement.customerName = customerName;
+    document.getElementById('settlementCustomer').value = customerName;
+    loadSettlementRecords();
+  } else {
+    document.getElementById('settlementCustomer').value = '';
+    document.getElementById('settlementRecordsBody').innerHTML =
+      '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);">请先选择客户</div>';
+  }
+  document.getElementById('settlementDate').value = formatDate(new Date());
+  document.getElementById('wholeDiscountType').value = 'none';
+  document.getElementById('wholeDiscountValueWrap').style.display = 'none';
+  document.getElementById('wholeDiscountValue').value = '';
+  document.getElementById('wholeDiscountReason').value = '';
+  document.getElementById('roundingAmount').value = '';
+  document.getElementById('settlementPaidAmount').value = '';
+  document.getElementById('settlementRemark').value = '';
+  document.getElementById('otherFeesList').innerHTML = '';
+  updateSettlementSummary();
+  openModal('settlementModal');
+  // 绑定客户自动完成
+  bindSettlementCustomerAutocomplete();
+}
+
+// 绑定结账客户自动完成
+function bindSettlementCustomerAutocomplete() {
+  const input = document.getElementById('settlementCustomer');
+  const dropdown = document.getElementById('settlementCustomerAutocomplete');
+  if (!input || !dropdown) return;
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    const customers = [...new Set(state.records
+      .filter(r => !r.deleted && r.customerName)
+      .map(r => r.customerName)
+    )].filter(c => c.toLowerCase().includes(q)).slice(0, 8);
+
+    if (customers.length > 0 && q) {
+      dropdown.innerHTML = customers.map(c =>
+        `<div class="autocomplete-item" data-customer="${escapeHtml(c)}">${escapeHtml(c)}</div>`
+      ).join('');
+      dropdown.style.display = 'block';
+      dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+        item.addEventListener('click', () => {
+          input.value = item.dataset.customer;
+          dropdown.style.display = 'none';
+          state.settlement.customerName = item.dataset.customer;
+          loadSettlementRecords();
+        });
+      });
+    } else {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  input.addEventListener('blur', () => {
+    setTimeout(() => {
+      dropdown.style.display = 'none';
+      if (input.value.trim()) {
+        state.settlement.customerName = input.value.trim();
+        loadSettlementRecords();
+      }
+    }, 200);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      dropdown.style.display = 'none';
+      if (input.value.trim()) {
+        state.settlement.customerName = input.value.trim();
+        loadSettlementRecords();
+      }
+    }
+  });
+}
+
+// 加载结账单据列表
+function loadSettlementRecords() {
+  const customerName = state.settlement.customerName;
+  if (!customerName) return;
+
+  const records = getUnsettledRecords(customerName);
+  const body = document.getElementById('settlementRecordsBody');
+
+  if (records.length === 0) {
+    body.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);">客户"${escapeHtml(customerName)}"暂无未结账单据</div>`;
+    state.settlement.selectedRecordIds = [];
+    state.settlement.itemAdjustments = {};
+    updateSettlementSummary();
+    return;
+  }
+
+  body.innerHTML = records.map(r => {
+    const weight = getRecordWeight(r);
+    const adj = state.settlement.itemAdjustments[r.id] || {};
+    const actualWeight = adj.actualWeight !== undefined ? adj.actualWeight : weight;
+    const isSelected = state.settlement.selectedRecordIds.includes(r.id);
+    const productInfo = [r.style, r.material, r.process].filter(Boolean).join(' / ') || '标准件';
+    return `
+      <div class="settlement-record-item ${isSelected ? 'selected' : ''}" data-record-id="${r.id}">
+        <div style="text-align:center;"><input type="checkbox" class="settlement-record-checkbox" data-record-id="${r.id}" ${isSelected ? 'checked' : ''}></div>
+        <div class="record-info">
+          <div class="record-customer">${escapeHtml(productInfo)}</div>
+          <div class="record-meta">${r.date || ''} ${r.invoiceNo ? '· ' + escapeHtml(r.invoiceNo) : ''}</div>
+        </div>
+        <div style="text-align:center;font-variant-numeric:tabular-nums;">${weight.toFixed(2)}</div>
+        <div><input type="number" class="actual-weight-input" data-record-id="${r.id}" value="${actualWeight}" step="0.01" min="0" ${!isSelected ? 'disabled' : ''}></div>
+        <div style="text-align:right;font-variant-numeric:tabular-nums;">¥${(r.unitPrice || 0).toFixed(2)}</div>
+        <div class="amount-col" style="font-weight:600;">¥${(actualWeight * (r.unitPrice || 0)).toFixed(2)}</div>
+      </div>
+    `;
+  }).join('');
+
+  // 绑定勾选事件
+  body.querySelectorAll('.settlement-record-checkbox').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      const recordId = e.target.dataset.recordId;
+      const item = e.target.closest('.settlement-record-item');
+      const weightInput = item.querySelector('.actual-weight-input');
+      if (e.target.checked) {
+        if (!state.settlement.selectedRecordIds.includes(recordId)) {
+          state.settlement.selectedRecordIds.push(recordId);
+        }
+        item.classList.add('selected');
+        weightInput.disabled = false;
+      } else {
+        state.settlement.selectedRecordIds = state.settlement.selectedRecordIds.filter(id => id !== recordId);
+        item.classList.remove('selected');
+        weightInput.disabled = true;
+      }
+      updateSettlementSelectedCount();
+      updateSettlementSummary();
+    });
+  });
+
+  // 绑定实际重量输入
+  body.querySelectorAll('.actual-weight-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const recordId = e.target.dataset.recordId;
+      const val = parseFloat(e.target.value) || 0;
+      if (!state.settlement.itemAdjustments[recordId]) {
+        state.settlement.itemAdjustments[recordId] = {};
+      }
+      state.settlement.itemAdjustments[recordId].actualWeight = val;
+      // 更新该行金额显示
+      const item = e.target.closest('.settlement-record-item');
+      const record = records.find(r => r.id === recordId);
+      const amountCol = item.querySelector('.amount-col');
+      if (record && amountCol) {
+        amountCol.textContent = '¥' + (val * (record.unitPrice || 0)).toFixed(2);
+      }
+      updateSettlementSummary();
+    });
+  });
+
+  updateSettlementSelectedCount();
+  updateSettlementSummary();
+}
+
+// 更新已选数量
+function updateSettlementSelectedCount() {
+  const count = state.settlement.selectedRecordIds.length;
+  document.getElementById('settlementSelectedCount').textContent = `已选 ${count} 张`;
+  const selectAll = document.getElementById('settlementSelectAll');
+  const customerName = state.settlement.customerName;
+  if (customerName) {
+    const total = getUnsettledRecords(customerName).length;
+    selectAll.checked = count > 0 && count === total;
+  }
+}
+
+
+
+// 计算结账汇总
+function calculateSettlementSummary() {
+  const selectedIds = state.settlement.selectedRecordIds;
+  const customerName = state.settlement.customerName;
+  const records = getUnsettledRecords(customerName).filter(r => selectedIds.includes(r.id));
+
+  let totalOriginalAmount = 0;
+  let totalActualAmount = 0;
+  let totalItemDiscount = 0;
+
+  records.forEach(r => {
+    const originalWeight = getRecordWeight(r);
+    const adj = state.settlement.itemAdjustments[r.id] || {};
+    const actualWeight = adj.actualWeight !== undefined ? adj.actualWeight : originalWeight;
+    const unitPrice = parseFloat(r.unitPrice) || 0;
+    const originalAmount = originalWeight * unitPrice;
+    const itemDiscount = parseFloat(adj.itemDiscountAmount) || 0;
+    const actualAmount = actualWeight * unitPrice - itemDiscount;
+
+    totalOriginalAmount += originalAmount;
+    totalActualAmount += actualAmount;
+    totalItemDiscount += itemDiscount;
+  });
+
+  const weightAdjustment = totalActualAmount + totalItemDiscount - totalOriginalAmount;
+
+  // 整单折扣
+  let wholeDiscountAmount = 0;
+  const discountType = state.settlement.wholeDiscountType;
+  const discountValue = parseFloat(state.settlement.wholeDiscountValue) || 0;
+  if (discountType === 'percentage' && discountValue > 0) {
+    wholeDiscountAmount = totalActualAmount * (1 - discountValue / 100);
+  } else if (discountType === 'amount' && discountValue > 0) {
+    wholeDiscountAmount = discountValue;
+  }
+
+  // 其他费用
+  let totalOtherFees = 0;
+  state.settlement.otherFees.forEach(fee => {
+    totalOtherFees += parseFloat(fee.amount) || 0;
+  });
+
+  const subtotal = totalActualAmount - wholeDiscountAmount + totalOtherFees;
+  const rounding = parseFloat(state.settlement.roundingAmount) || 0;
+  const receivable = Math.max(0, subtotal - rounding);
+  const paid = parseFloat(state.settlement.paidAmount) || 0;
+  const unpaid = Math.max(0, receivable - paid);
+
+  return {
+    totalOriginalAmount,
+    weightAdjustment,
+    totalItemDiscount,
+    wholeDiscountAmount,
+    totalOtherFees,
+    subtotal,
+    rounding,
+    receivable,
+    paid,
+    unpaid,
+    records
+  };
+}
+
+// 更新结账汇总显示
+function updateSettlementSummary() {
+  const s = calculateSettlementSummary();
+  const isHidden = state.amountHidden;
+
+  document.getElementById('sumOriginalAmount').textContent = isHidden ? '****' : '¥' + s.totalOriginalAmount.toFixed(2);
+  document.getElementById('sumWeightAdjustment').textContent = isHidden ? '****' : (s.weightAdjustment >= 0 ? '+' : '') + '¥' + s.weightAdjustment.toFixed(2);
+  document.getElementById('sumItemDiscount').textContent = isHidden ? '****' : '-¥' + s.totalItemDiscount.toFixed(2);
+  document.getElementById('sumWholeDiscount').textContent = isHidden ? '****' : '-¥' + s.wholeDiscountAmount.toFixed(2);
+  document.getElementById('sumOtherFees').textContent = isHidden ? '****' : '+¥' + s.totalOtherFees.toFixed(2);
+  document.getElementById('sumSubtotal').textContent = isHidden ? '****' : '¥' + s.subtotal.toFixed(2);
+  document.getElementById('sumRounding').textContent = isHidden ? '****' : '-¥' + s.rounding.toFixed(2);
+  document.getElementById('sumReceivable').textContent = isHidden ? '****' : '¥' + s.receivable.toFixed(2);
+  document.getElementById('sumUnpaid').textContent = isHidden ? '未收 ****' : '未收 ¥' + s.unpaid.toFixed(2);
+
+  // 整单折扣金额显示
+  const discountDisplay = document.getElementById('wholeDiscountAmountDisplay');
+  if (state.settlement.wholeDiscountType !== 'none' && s.wholeDiscountAmount > 0) {
+    discountDisplay.textContent = isHidden ? '减免 ****' : '减免 ¥' + s.wholeDiscountAmount.toFixed(2);
+  } else {
+    discountDisplay.textContent = '';
+  }
+}
+
+// 绑定结账窗口事件
+function bindSettlementEvents() {
+  // 全选
+  document.getElementById('settlementSelectAll').addEventListener('change', (e) => {
+    const customerName = state.settlement.customerName;
+    if (!customerName) return;
+    const records = getUnsettledRecords(customerName);
+    if (e.target.checked) {
+      state.settlement.selectedRecordIds = records.map(r => r.id);
+    } else {
+      state.settlement.selectedRecordIds = [];
+    }
+    loadSettlementRecords();
+  });
+
+  // 整单折扣类型
+  document.getElementById('wholeDiscountType').addEventListener('change', (e) => {
+    state.settlement.wholeDiscountType = e.target.value;
+    const wrap = document.getElementById('wholeDiscountValueWrap');
+    const unit = document.getElementById('wholeDiscountUnit');
+    if (e.target.value === 'none') {
+      wrap.style.display = 'none';
+      state.settlement.wholeDiscountValue = 0;
+    } else if (e.target.value === 'percentage') {
+      wrap.style.display = 'inline-block';
+      unit.textContent = '%（如98表示九八折）';
+    } else if (e.target.value === 'amount') {
+      wrap.style.display = 'inline-block';
+      unit.textContent = '元';
+    }
+    updateSettlementSummary();
+  });
+
+  // 整单折扣值
+  document.getElementById('wholeDiscountValue').addEventListener('input', (e) => {
+    state.settlement.wholeDiscountValue = parseFloat(e.target.value) || 0;
+    updateSettlementSummary();
+  });
+
+  // 整单折扣原因
+  document.getElementById('wholeDiscountReason').addEventListener('change', (e) => {
+    state.settlement.wholeDiscountReason = e.target.value;
+  });
+
+  // 抹零
+  document.getElementById('roundingAmount').addEventListener('input', (e) => {
+    state.settlement.roundingAmount = parseFloat(e.target.value) || 0;
+    updateSettlementSummary();
+  });
+
+  // 实收
+  document.getElementById('settlementPaidAmount').addEventListener('input', (e) => {
+    state.settlement.paidAmount = parseFloat(e.target.value) || 0;
+    updateSettlementSummary();
+  });
+
+  // 备注
+  document.getElementById('settlementRemark').addEventListener('input', (e) => {
+    state.settlement.remark = e.target.value;
+  });
+
+  // 结账日期
+  document.getElementById('settlementDate').addEventListener('change', (e) => {
+    state.settlement.date = e.target.value;
+  });
+
+  // 添加其他费用
+  document.getElementById('addOtherFeeBtn').addEventListener('click', () => {
+    state.settlement.otherFees.push({ name: '', amount: 0 });
+    renderOtherFees();
+  });
+
+  // 确认结账
+  document.getElementById('confirmSettlementBtn').addEventListener('click', confirmSettlement);
+}
+
+// 渲染其他费用列表
+function renderOtherFees() {
+  const list = document.getElementById('otherFeesList');
+  list.innerHTML = state.settlement.otherFees.map((fee, idx) => `
+    <div class="other-fee-item">
+      <input type="text" name="feeName" placeholder="费用名称（如：运费）" value="${escapeHtml(fee.name)}" data-idx="${idx}">
+      <input type="number" name="feeAmount" placeholder="金额" value="${fee.amount || ''}" step="0.01" min="0" data-idx="${idx}">
+      <button class="remove-fee-btn" data-idx="${idx}">×</button>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('input[name="feeName"]').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      state.settlement.otherFees[idx].name = e.target.value;
+    });
+  });
+
+  list.querySelectorAll('input[name="feeAmount"]').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      state.settlement.otherFees[idx].amount = parseFloat(e.target.value) || 0;
+      updateSettlementSummary();
+    });
+  });
+
+  list.querySelectorAll('.remove-fee-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      state.settlement.otherFees.splice(idx, 1);
+      renderOtherFees();
+      updateSettlementSummary();
+    });
+  });
+}
+
+// 确认结账
+function confirmSettlement() {
+  const customerName = state.settlement.customerName;
+  if (!customerName) {
+    showToast('请选择客户', 'warning');
+    return;
+  }
+  if (state.settlement.selectedRecordIds.length === 0) {
+    showToast('请至少选择一张单据', 'warning');
+    return;
+  }
+
+  const s = calculateSettlementSummary();
+
+  // 生成结账凭证
+  const settlementId = 'JS' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const settlementRecords = s.records.map(r => {
+    const originalWeight = getRecordWeight(r);
+    const adj = state.settlement.itemAdjustments[r.id] || {};
+    const actualWeight = adj.actualWeight !== undefined ? adj.actualWeight : originalWeight;
+    const itemDiscount = parseFloat(adj.itemDiscountAmount) || 0;
+    return {
+      recordId: r.id,
+      date: r.date,
+      style: r.style || '',
+      material: r.material || '',
+      process: r.process || '',
+      invoiceNo: r.invoiceNo || '',
+      originalWeight,
+      actualWeight,
+      unitPrice: parseFloat(r.unitPrice) || 0,
+      originalAmount: originalWeight * (parseFloat(r.unitPrice) || 0),
+      itemDiscount,
+      actualAmount: actualWeight * (parseFloat(r.unitPrice) || 0) - itemDiscount
+    };
+  });
+
+  const payments = [];
+  if (s.paid > 0) {
+    payments.push({
+      amount: s.paid,
+      date: state.settlement.date || formatDate(new Date()),
+      operator: state.currentUser || '未知',
+      remark: '结账时收款'
+    });
+  }
+
+  const settlement = {
+    id: settlementId,
+    customerName,
+    date: state.settlement.date || formatDate(new Date()),
+    records: settlementRecords,
+    totalOriginalAmount: s.totalOriginalAmount,
+    weightAdjustment: s.weightAdjustment,
+    totalItemDiscount: s.totalItemDiscount,
+    wholeDiscountType: state.settlement.wholeDiscountType,
+    wholeDiscountValue: state.settlement.wholeDiscountValue,
+    wholeDiscountAmount: s.wholeDiscountAmount,
+    wholeDiscountReason: state.settlement.wholeDiscountReason,
+    otherFees: [...state.settlement.otherFees],
+    totalOtherFees: s.totalOtherFees,
+    subtotal: s.subtotal,
+    roundingAmount: s.rounding,
+    receivableAmount: s.receivable,
+    payments,
+    totalPaid: s.paid,
+    unpaidAmount: s.unpaid,
+    invoiceNo: '',
+    status: s.unpaid > 0 ? (s.paid > 0 ? 'partial' : 'unpaid') : 'paid',
+    remark: state.settlement.remark,
+    createdBy: state.currentUser || '未知',
+    createdAt: new Date().toISOString(),
+    voided: false
+  };
+
+  state.settlements.push(settlement);
+
+  // 标记关联单据为已结账
+  state.settlement.selectedRecordIds.forEach(recordId => {
+    const record = state.records.find(r => r.id === recordId);
+    if (record) {
+      record.settled = true;
+      record.settlementId = settlementId;
+    }
+  });
+
+  saveData();
+  closeModal('settlementModal');
+  renderAll();
+  showToast('结账成功，凭证号：' + settlementId, 'success');
+  addAuditLog('settlement', `客户结账：${customerName}，${state.settlement.selectedRecordIds.length}张单据，应收¥${s.receivable.toFixed(2)}，实收¥${s.paid.toFixed(2)}`);
+
+  // 自动打开凭证详情
+  setTimeout(() => openSettlementDetail(settlementId), 300);
+}
+
+
+
+// 打开结账凭证详情
+function openSettlementDetail(settlementId) {
+  const settlement = state.settlements.find(s => s.id === settlementId);
+  if (!settlement) return;
+
+  state.viewingSettlementId = settlementId;
+  const isHidden = state.amountHidden;
+  const statusText = { paid: '已结清', partial: '部分收款', unpaid: '未收款' }[settlement.status] || settlement.status;
+
+  const body = document.getElementById('settlementDetailBody');
+  body.innerHTML = `
+    <div class="settlement-detail-header">
+      <div class="settlement-detail-id">${escapeHtml(settlement.id)}</div>
+      <div class="settlement-detail-meta">
+        ${escapeHtml(settlement.customerName)} · ${settlement.date} ·
+        <span class="status-badge ${settlement.status}">${statusText}</span>
+        ${settlement.invoiceNo ? ' · 发票号：' + escapeHtml(settlement.invoiceNo) : ''}
+      </div>
+    </div>
+
+    <div class="settlement-detail-section">
+      <div class="settlement-detail-section-title">单据明细（共${settlement.records.length}张）</div>
+      <table class="settlement-detail-table">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>产品</th>
+            <th class="num">原重量</th>
+            <th class="num">实际重量</th>
+            <th class="num">单价</th>
+            <th class="num">原金额</th>
+            <th class="num">实金额</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${settlement.records.map(r => {
+            const product = [r.style, r.material, r.process].filter(Boolean).join('/') || '标准件';
+            return `<tr>
+              <td>${r.date || ''}</td>
+              <td>${escapeHtml(product)}${r.invoiceNo ? '<br><small>' + escapeHtml(r.invoiceNo) + '</small>' : ''}</td>
+              <td class="num">${r.originalWeight.toFixed(2)}</td>
+              <td class="num">${r.actualWeight.toFixed(2)}</td>
+              <td class="num">¥${r.unitPrice.toFixed(2)}</td>
+              <td class="num">${isHidden ? '****' : '¥' + r.originalAmount.toFixed(2)}</td>
+              <td class="num" style="font-weight:600;">${isHidden ? '****' : '¥' + r.actualAmount.toFixed(2)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="settlement-detail-section">
+      <div class="settlement-detail-section-title">金额汇总</div>
+      <div class="settlement-summary" style="margin-bottom:0;">
+        <div class="settlement-summary-row label-row"><span>原总金额</span><span class="value">${isHidden ? '****' : '¥' + settlement.totalOriginalAmount.toFixed(2)}</span></div>
+        <div class="settlement-summary-row label-row negative"><span>重量调整</span><span class="value">${isHidden ? '****' : (settlement.weightAdjustment >= 0 ? '+' : '') + '¥' + settlement.weightAdjustment.toFixed(2)}</span></div>
+        ${settlement.totalItemDiscount > 0 ? `<div class="settlement-summary-row label-row negative"><span>单单据折扣</span><span class="value">${isHidden ? '****' : '-¥' + settlement.totalItemDiscount.toFixed(2)}</span></div>` : ''}
+        ${settlement.wholeDiscountAmount > 0 ? `<div class="settlement-summary-row label-row negative"><span>整单折扣（${settlement.wholeDiscountType === 'percentage' ? settlement.wholeDiscountValue + '%' : '减钱'}${settlement.wholeDiscountReason ? '· ' + settlement.wholeDiscountReason : ''}）</span><span class="value">${isHidden ? '****' : '-¥' + settlement.wholeDiscountAmount.toFixed(2)}</span></div>` : ''}
+        ${settlement.totalOtherFees > 0 ? `<div class="settlement-summary-row label-row"><span>其他费用</span><span class="value">${isHidden ? '****' : '+¥' + settlement.totalOtherFees.toFixed(2)}</span></div>` : ''}
+        <div class="settlement-summary-row total"><span>小计</span><span class="value">${isHidden ? '****' : '¥' + settlement.subtotal.toFixed(2)}</span></div>
+        ${settlement.roundingAmount > 0 ? `<div class="settlement-summary-row label-row negative"><span>抹零</span><span class="value">${isHidden ? '****' : '-¥' + settlement.roundingAmount.toFixed(2)}</span></div>` : ''}
+        <div class="settlement-summary-row receivable"><span>应收金额</span><span class="value">${isHidden ? '****' : '¥' + settlement.receivableAmount.toFixed(2)}</span></div>
+        <div class="settlement-summary-row label-row"><span>已收金额</span><span class="value" style="color:var(--success);">${isHidden ? '****' : '¥' + settlement.totalPaid.toFixed(2)}</span></div>
+        <div class="settlement-summary-row label-row"><span>未收金额</span><span class="value" style="color:var(--warning);font-weight:600;">${isHidden ? '****' : '¥' + settlement.unpaidAmount.toFixed(2)}</span></div>
+      </div>
+    </div>
+
+    ${settlement.payments && settlement.payments.length > 0 ? `
+    <div class="settlement-detail-section">
+      <div class="settlement-detail-section-title">收款记录（共${settlement.payments.length}次）</div>
+      ${settlement.payments.map((p, i) => `
+        <div class="payment-record-item">
+          <div class="payment-info">
+            <span style="color:var(--text-secondary);">第${i + 1}次</span>
+            <span>${p.date}</span>
+            <span style="color:var(--text-secondary);">${escapeHtml(p.operator || '')}</span>
+            ${p.remark ? '<span style="color:var(--text-muted);font-size:var(--font-size-xs);">' + escapeHtml(p.remark) + '</span>' : ''}
+          </div>
+          <span class="payment-amount">${isHidden ? '****' : '+¥' + p.amount.toFixed(2)}</span>
+        </div>
+      `).join('')}
+    </div>` : ''}
+
+    ${settlement.remark ? `
+    <div class="settlement-detail-section">
+      <div class="settlement-detail-section-title">备注</div>
+      <div style="font-size:var(--font-size-sm);color:var(--text-secondary);">${escapeHtml(settlement.remark)}</div>
+    </div>` : ''}
+
+    <div class="settlement-detail-section" style="margin-top:16px;">
+      <button class="btn btn-secondary" style="width:100%;" onclick="voidSettlement('${settlement.id}')">撤销结账（恢复单据为未结账）</button>
+    </div>
+  `;
+
+  openModal('settlementDetailModal');
+}
+
+// 追加收款
+function addSettlementPayment() {
+  const settlementId = state.viewingSettlementId;
+  if (!settlementId) return;
+  const settlement = state.settlements.find(s => s.id === settlementId);
+  if (!settlement || settlement.status === 'paid') {
+    showToast('该凭证已结清', 'info');
+    return;
+  }
+
+  const amount = prompt(`请输入收款金额（未收：¥${settlement.unpaidAmount.toFixed(2)}）：`, settlement.unpaidAmount.toFixed(2));
+  if (amount === null) return;
+  const amt = parseFloat(amount);
+  if (isNaN(amt) || amt <= 0) {
+    showToast('请输入有效金额', 'warning');
+    return;
+  }
+  if (amt > settlement.unpaidAmount + 0.01) {
+    showToast('收款金额不能超过未收金额', 'warning');
+    return;
+  }
+
+  settlement.payments.push({
+    amount: amt,
+    date: formatDate(new Date()),
+    operator: state.currentUser || '未知',
+    remark: '追加收款'
+  });
+  settlement.totalPaid += amt;
+  settlement.unpaidAmount = Math.max(0, settlement.unpaidAmount - amt);
+  settlement.status = settlement.unpaidAmount < 0.01 ? 'paid' : 'partial';
+
+  saveData();
+  openSettlementDetail(settlementId);
+  renderAll();
+  showToast('收款成功', 'success');
+  addAuditLog('payment', `结账凭证${settlementId}追加收款¥${amt.toFixed(2)}`);
+}
+
+// 编辑发票号
+function editSettlementInvoice() {
+  const settlementId = state.viewingSettlementId;
+  if (!settlementId) return;
+  const settlement = state.settlements.find(s => s.id === settlementId);
+  if (!settlement) return;
+
+  const invoiceNo = prompt('请输入发票号（如 1234#）：', settlement.invoiceNo || '');
+  if (invoiceNo === null) return;
+  settlement.invoiceNo = invoiceNo.trim();
+  saveData();
+  openSettlementDetail(settlementId);
+  showToast('发票号已更新', 'success');
+}
+
+// 撤销结账
+function voidSettlement(settlementId) {
+  const settlement = state.settlements.find(s => s.id === settlementId);
+  if (!settlement) return;
+  if (!confirm(`确定要撤销结账凭证"${settlementId}"吗？
+关联的${settlement.records.length}张单据将恢复为未结账状态，收款记录将被清除。`)) return;
+
+  // 恢复关联单据
+  settlement.records.forEach(r => {
+    const record = state.records.find(rec => rec.id === r.recordId);
+    if (record) {
+      record.settled = false;
+      record.settlementId = null;
+    }
+  });
+
+  // 标记凭证为已撤销
+  settlement.voided = true;
+
+  saveData();
+  closeModal('settlementDetailModal');
+  renderAll();
+  showToast('结账已撤销', 'success');
+  addAuditLog('void_settlement', `撤销结账凭证：${settlementId}`);
+}
+
+// 打印结账单
+function printSettlement() {
+  const settlementId = state.viewingSettlementId;
+  if (!settlementId) return;
+  const settlement = state.settlements.find(s => s.id === settlementId);
+  if (!settlement) return;
+
+  const companyName = state.settings.companyName || '温州鼎炬金属科技有限公司';
+  const companyLogo = state.settings.companyLogo || '';
+  const companyAddress = state.settings.companyAddress || '';
+  const companyPhone = state.settings.companyPhone || '';
+
+  const printArea = document.getElementById('printArea');
+  printArea.innerHTML = `
+    <div class="print-header">
+      ${companyLogo ? `<img src="${companyLogo}" class="print-company-logo" alt="Logo">` : ''}
+      <div class="print-company-name">${escapeHtml(companyName)}</div>
+      ${companyAddress ? `<div class="print-company-info">地址：${escapeHtml(companyAddress)}</div>` : ''}
+      ${companyPhone ? `<div class="print-company-info">电话：${escapeHtml(companyPhone)}</div>` : ''}
+    </div>
+    <div class="print-title">结 账 凭 证 单</div>
+    <div class="print-meta">
+      <span>凭证编号：${escapeHtml(settlement.id)}</span>
+      <span>结账日期：${settlement.date}</span>
+    </div>
+    <div class="print-meta">
+      <span>甲方（客户）：${escapeHtml(settlement.customerName)}</span>
+      <span>乙方（供方）：${escapeHtml(companyName)}</span>
+    </div>
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th style="width:40px;">序号</th>
+          <th>日期</th>
+          <th>产品/材质/工艺</th>
+          <th class="num">原重量(斤)</th>
+          <th class="num">实际重量(斤)</th>
+          <th class="num">单价(元/斤)</th>
+          <th class="num">原金额(元)</th>
+          <th class="num">实金额(元)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${settlement.records.map((r, i) => {
+          const product = [r.style, r.material, r.process].filter(Boolean).join('/') || '标准件';
+          return `<tr>
+            <td>${i + 1}</td>
+            <td>${r.date || ''}</td>
+            <td>${escapeHtml(product)}${r.invoiceNo ? ' (' + escapeHtml(r.invoiceNo) + ')' : ''}</td>
+            <td class="num">${r.originalWeight.toFixed(2)}</td>
+            <td class="num">${r.actualWeight.toFixed(2)}</td>
+            <td class="num">${r.unitPrice.toFixed(2)}</td>
+            <td class="num">${r.originalAmount.toFixed(2)}</td>
+            <td class="num">${r.actualAmount.toFixed(2)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <div class="print-summary">
+      <div class="print-summary-row"><span>原总金额</span><span>¥${settlement.totalOriginalAmount.toFixed(2)}</span></div>
+      ${settlement.weightAdjustment !== 0 ? `<div class="print-summary-row"><span>重量调整</span><span>${settlement.weightAdjustment >= 0 ? '+' : ''}¥${settlement.weightAdjustment.toFixed(2)}</span></div>` : ''}
+      ${settlement.totalItemDiscount > 0 ? `<div class="print-summary-row"><span>单单据折扣</span><span>-¥${settlement.totalItemDiscount.toFixed(2)}</span></div>` : ''}
+      ${settlement.wholeDiscountAmount > 0 ? `<div class="print-summary-row"><span>整单折扣（${settlement.wholeDiscountType === 'percentage' ? settlement.wholeDiscountValue + '%' : '减钱'}${settlement.wholeDiscountReason ? '· ' + settlement.wholeDiscountReason : ''}）</span><span>-¥${settlement.wholeDiscountAmount.toFixed(2)}</span></div>` : ''}
+      ${settlement.totalOtherFees > 0 ? `<div class="print-summary-row"><span>其他费用</span><span>+¥${settlement.totalOtherFees.toFixed(2)}</span></div>` : ''}
+      <div class="print-summary-row"><span>小计</span><span>¥${settlement.subtotal.toFixed(2)}</span></div>
+      ${settlement.roundingAmount > 0 ? `<div class="print-summary-row"><span>抹零</span><span>-¥${settlement.roundingAmount.toFixed(2)}</span></div>` : ''}
+      <div class="print-summary-row total"><span>应收金额</span><span>¥${settlement.receivableAmount.toFixed(2)}</span></div>
+      <div class="print-summary-row"><span>已收金额</span><span>¥${settlement.totalPaid.toFixed(2)}</span></div>
+      <div class="print-summary-row"><span>未收金额</span><span>¥${settlement.unpaidAmount.toFixed(2)}</span></div>
+      ${settlement.invoiceNo ? `<div class="print-summary-row"><span>发票号</span><span>${escapeHtml(settlement.invoiceNo)}</span></div>` : ''}
+    </div>
+    ${settlement.remark ? `<div class="print-remark"><span class="print-remark-label">备注：</span>${escapeHtml(settlement.remark)}</div>` : ''}
+    <div class="print-signatures">
+      <div class="print-signature-block">
+        <div class="print-signature-label">甲方签字（盖章）：</div>
+        <div class="print-signature-line"></div>
+        <div style="font-size:11px;color:#666;">日期：___________</div>
+      </div>
+      <div class="print-signature-block">
+        <div class="print-signature-label">乙方签字（盖章）：</div>
+        <div class="print-signature-line"></div>
+        <div style="font-size:11px;color:#666;">日期：___________</div>
+      </div>
+    </div>
+    <div class="print-footer">本凭证一式两份，甲乙双方各执一份 · 制单人：${escapeHtml(settlement.createdBy || '')}</div>
+  `;
+
+  setTimeout(() => window.print(), 200);
+}
+
+// 生成对账单
+function generateStatement(customerName) {
+  const customerRecords = state.records.filter(r =>
+    !r.deleted && r.customerName && r.customerName.trim() === customerName.trim()
+  ).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+  const unsettled = customerRecords.filter(r => !r.settled);
+  const settlements = state.settlements.filter(s =>
+    !s.voided && s.customerName.trim() === customerName.trim()
+  ).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+  let totalUnsettled = 0;
+  unsettled.forEach(r => {
+    totalUnsettled += (r.totalAmount || 0) - (r.paidAmount || 0);
+  });
+
+  let totalSettlementUnpaid = 0;
+  settlements.forEach(s => {
+    totalSettlementUnpaid += s.unpaidAmount || 0;
+  });
+
+  const totalDue = totalUnsettled + totalSettlementUnpaid;
+
+  const body = document.getElementById('statementBody');
+  const isHidden = state.amountHidden;
+  const companyName = state.settings.companyName || '温州鼎炬金属科技有限公司';
+
+  body.innerHTML = `
+    <div class="settlement-detail-header">
+      <div class="settlement-detail-id" style="font-size:var(--font-size-xl);">客户对账单</div>
+      <div class="settlement-detail-meta">
+        ${escapeHtml(customerName)} · 截至 ${formatDate(new Date())} ·
+        总欠款 <span style="color:var(--warning);font-weight:700;">${isHidden ? '****' : '¥' + totalDue.toFixed(2)}</span>
+      </div>
+    </div>
+
+    <div class="settlement-detail-section">
+      <div class="settlement-detail-section-title">未结账单据（共${unsettled.length}张，欠款${isHidden ? '****' : '¥' + totalUnsettled.toFixed(2)}）</div>
+      ${unsettled.length > 0 ? `
+      <table class="settlement-detail-table">
+        <thead><tr><th>日期</th><th>产品</th><th class="num">重量</th><th class="num">金额</th><th class="num">已收</th><th class="num">未收</th></tr></thead>
+        <tbody>
+          ${unsettled.map(r => {
+            const weight = getRecordWeight(r);
+            const unpaid = Math.max(0, (r.totalAmount || 0) - (r.paidAmount || 0));
+            const product = [r.style, r.material, r.process].filter(Boolean).join('/') || '标准件';
+            return `<tr>
+              <td>${r.date || ''}</td>
+              <td>${escapeHtml(product)}</td>
+              <td class="num">${weight.toFixed(2)}</td>
+              <td class="num">${isHidden ? '****' : '¥' + (r.totalAmount || 0).toFixed(2)}</td>
+              <td class="num">${isHidden ? '****' : '¥' + (r.paidAmount || 0).toFixed(2)}</td>
+              <td class="num" style="color:var(--warning);">${isHidden ? '****' : '¥' + unpaid.toFixed(2)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>` : '<div style="padding:20px;text-align:center;color:var(--text-muted);">暂无未结账单据</div>'}
+    </div>
+
+    <div class="settlement-detail-section">
+      <div class="settlement-detail-section-title">结账凭证（共${settlements.length}份，未收${isHidden ? '****' : '¥' + totalSettlementUnpaid.toFixed(2)}）</div>
+      ${settlements.length > 0 ? `
+      <table class="settlement-detail-table">
+        <thead><tr><th>凭证号</th><th>日期</th><th class="num">单据数</th><th class="num">应收</th><th class="num">已收</th><th class="num">未收</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          ${settlements.map(s => `<tr>
+            <td>${escapeHtml(s.id)}</td>
+            <td>${s.date}</td>
+            <td class="num">${s.records.length}</td>
+            <td class="num">${isHidden ? '****' : '¥' + s.receivableAmount.toFixed(2)}</td>
+            <td class="num">${isHidden ? '****' : '¥' + s.totalPaid.toFixed(2)}</td>
+            <td class="num" style="color:var(--warning);">${isHidden ? '****' : '¥' + s.unpaidAmount.toFixed(2)}</td>
+            <td><span class="status-badge ${s.status}">${{paid:'已结清',partial:'部分收款',unpaid:'未收款'}[s.status]}</span></td>
+            <td><a href="javascript:void(0)" onclick="closeModal('statementModal');openSettlementDetail('${s.id}')" style="color:var(--accent);">查看</a></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '<div style="padding:20px;text-align:center;color:var(--text-muted);">暂无结账记录</div>'}
+    </div>
+
+    <div class="settlement-summary" style="margin-top:16px;">
+      <div class="settlement-summary-row total"><span>未结账单据欠款</span><span class="value">${isHidden ? '****' : '¥' + totalUnsettled.toFixed(2)}</span></div>
+      <div class="settlement-summary-row total"><span>结账凭证未收款</span><span class="value">${isHidden ? '****' : '¥' + totalSettlementUnpaid.toFixed(2)}</span></div>
+      <div class="settlement-summary-row receivable"><span>总欠款</span><span class="value">${isHidden ? '****' : '¥' + totalDue.toFixed(2)}</span></div>
+    </div>
+  `;
+
+  openModal('statementModal');
+}
+
+// 打印对账单
+function printStatement() {
+  // 简单实现：调用浏览器打印
+  window.print();
+}
+
+
 // 启动应用
 document.addEventListener('DOMContentLoaded', init);
 </script>
+
+<!-- ===== 结账窗口模态框 ===== -->
+<div class="modal-overlay" id="settlementModal">
+  <div class="modal settlement-modal">
+    <div class="modal-header">
+      <div class="modal-title">客户结账</div>
+      <button class="modal-close" data-close="settlementModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- 客户和日期选择 -->
+      <div class="settlement-header">
+        <div class="form-group">
+          <label class="form-label">客户名称<span class="required">*</span></label>
+          <div class="autocomplete-wrap">
+            <input type="text" class="form-input" id="settlementCustomer" placeholder="选择或输入客户名称" autocomplete="off">
+            <div class="autocomplete-dropdown" id="settlementCustomerAutocomplete"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">结账日期</label>
+          <input type="date" class="form-input" id="settlementDate">
+        </div>
+      </div>
+
+      <!-- 待结账单据列表 -->
+      <div class="settlement-records-list" id="settlementRecordsList">
+        <div class="settlement-records-toolbar">
+          <label><input type="checkbox" id="settlementSelectAll"> 全选</label>
+          <span id="settlementSelectedCount" style="font-size:var(--font-size-xs);color:var(--text-secondary);">已选 0 张</span>
+        </div>
+        <div class="settlement-records-header">
+          <div></div>
+          <div>单据信息</div>
+          <div style="text-align:center;">原重量</div>
+          <div style="text-align:center;">实际重量</div>
+          <div style="text-align:right;">单价</div>
+          <div style="text-align:right;">金额</div>
+        </div>
+        <div id="settlementRecordsBody">
+          <div style="padding:30px;text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);">请先选择客户</div>
+        </div>
+      </div>
+
+      <!-- 整单折扣 -->
+      <div class="settlement-discount-section">
+        <div class="settlement-discount-title">整单折扣</div>
+        <div class="discount-input-row">
+          <select id="wholeDiscountType">
+            <option value="none">不打折</option>
+            <option value="percentage">比例折扣（打折）</option>
+            <option value="amount">金额折扣（减钱）</option>
+          </select>
+          <div id="wholeDiscountValueWrap" style="display:none;">
+            <input type="number" id="wholeDiscountValue" placeholder="折扣值" step="0.01" min="0">
+            <span id="wholeDiscountUnit" style="font-size:var(--font-size-sm);color:var(--text-secondary);">%</span>
+          </div>
+          <select id="wholeDiscountReason">
+            <option value="">折扣原因</option>
+            <option value="订单超时补偿">订单超时补偿</option>
+            <option value="质量问题补偿">质量问题补偿</option>
+            <option value="长期客户优惠">长期客户优惠</option>
+            <option value="批量优惠">批量优惠</option>
+            <option value="其他">其他</option>
+          </select>
+          <span style="font-size:var(--font-size-sm);color:var(--danger);" id="wholeDiscountAmountDisplay"></span>
+        </div>
+      </div>
+
+      <!-- 其他费用 -->
+      <div class="settlement-discount-section">
+        <div class="settlement-discount-title">其他费用（运费/加急费等）</div>
+        <div id="otherFeesList"></div>
+        <button class="add-fee-btn" id="addOtherFeeBtn">+ 添加费用项</button>
+      </div>
+
+      <!-- 汇总 -->
+      <div class="settlement-summary">
+        <div class="settlement-summary-row label-row">
+          <span>原总金额</span>
+          <span class="value" id="sumOriginalAmount">¥0.00</span>
+        </div>
+        <div class="settlement-summary-row label-row negative">
+          <span>重量调整差额</span>
+          <span class="value" id="sumWeightAdjustment">¥0.00</span>
+        </div>
+        <div class="settlement-summary-row label-row negative">
+          <span>单单据折扣</span>
+          <span class="value" id="sumItemDiscount">¥0.00</span>
+        </div>
+        <div class="settlement-summary-row label-row negative">
+          <span>整单折扣</span>
+          <span class="value" id="sumWholeDiscount">¥0.00</span>
+        </div>
+        <div class="settlement-summary-row label-row">
+          <span>其他费用</span>
+          <span class="value" id="sumOtherFees">¥0.00</span>
+        </div>
+        <div class="settlement-summary-row total">
+          <span>小计（折扣后）</span>
+          <span class="value" id="sumSubtotal">¥0.00</span>
+        </div>
+        <div class="settlement-summary-row label-row negative">
+          <span>抹零 <input type="number" id="roundingAmount" placeholder="0" step="0.01" min="0" style="width:80px;padding:2px 6px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:4px;color:var(--text-primary);font-size:var(--font-size-sm);margin-left:8px;"></span>
+          <span class="value" id="sumRounding">¥0.00</span>
+        </div>
+        <div class="settlement-summary-row receivable">
+          <span>应收金额</span>
+          <span class="value" id="sumReceivable">¥0.00</span>
+        </div>
+        <div class="settlement-summary-row label-row" style="margin-top:8px;">
+          <span>本次实收 <input type="number" id="settlementPaidAmount" placeholder="0" step="0.01" min="0" style="width:100px;padding:4px 8px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:4px;color:var(--text-primary);font-size:var(--font-size-sm);margin-left:8px;"></span>
+          <span class="value" id="sumUnpaid" style="color:var(--warning);">未收 ¥0.00</span>
+        </div>
+      </div>
+
+      <!-- 备注 -->
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-input" id="settlementRemark" rows="2" placeholder="可选备注信息"></textarea>
+      </div>
+    </div>
+    <div class="settlement-footer">
+      <button class="btn btn-secondary" data-close="settlementModal">取消</button>
+      <button class="btn btn-primary" id="confirmSettlementBtn">确认结账</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 结账凭证详情模态框 ===== -->
+<div class="modal-overlay" id="settlementDetailModal">
+  <div class="modal settlement-detail-modal">
+    <div class="modal-header">
+      <div class="modal-title">结账凭证详情</div>
+      <button class="modal-close" data-close="settlementDetailModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="settlementDetailBody">
+    </div>
+    <div class="settlement-footer">
+      <button class="btn btn-secondary" id="printSettlementBtn">打印结账单</button>
+      <button class="btn btn-secondary" id="addPaymentBtn">追加收款</button>
+      <button class="btn btn-primary" id="editInvoiceBtn">编辑发票号</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 对账单模态框 ===== -->
+<div class="modal-overlay" id="statementModal">
+  <div class="modal statement-modal">
+    <div class="modal-header">
+      <div class="modal-title">客户对账单</div>
+      <button class="modal-close" data-close="statementModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="statementBody">
+    </div>
+    <div class="settlement-footer">
+      <button class="btn btn-secondary" data-close="statementModal">关闭</button>
+      <button class="btn btn-primary" id="printStatementBtn">打印对账单</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 打印区域 ===== -->
+<div class="print-area" id="printArea"></div>
+
 </body>
 </html>
