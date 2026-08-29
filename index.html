@@ -2286,7 +2286,7 @@ body::before {
           </div>
           <div class="form-group">
             <label class="form-label">发票单号</label>
-            <input type="text" class="form-input" id="invoiceNo" placeholder="如 1234#">
+            <input type="text" class="form-input" id="invoiceNo" placeholder="如 FP26082501">
           </div>
         </div>
         <div class="form-group">
@@ -4439,9 +4439,24 @@ function exportAllExcel() {
 
 function importFromExcel(file) {
   const reader = new FileReader();
+  
+  // 生成导入批次ID（基于文件名、大小、修改时间、内容前500字符）
+  // 重复导入同一文件会生成相同ID，用于覆盖处理
+  let importBatchId = '';
+  const fileInfo = file.name + '_' + file.size + '_' + file.lastModified;
+  
   reader.onload = function(e) {
     try {
       const data = new Uint8Array(e.target.result);
+      
+      // 用文件内容前500字符生成简单哈希
+      let contentHash = 0;
+      const sampleLen = Math.min(500, data.length);
+      for (let i = 0; i < sampleLen; i++) {
+        contentHash = ((contentHash << 5) - contentHash + data[i]) | 0;
+      }
+      importBatchId = 'imp_' + fileInfo + '_' + contentHash;
+      
       const workbook = XLSX.read(data, { type: 'array' });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
       
@@ -4550,35 +4565,54 @@ function importFromExcel(file) {
           const totalAmountRaw = parseFloat(row[18]);
           const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : quantity * unitPrice;
 
-          // 解析备注（列20），严格匹配门牌号和发票号格式才提取
+          // 解析备注（列20）
           const remark = String(row[20] || '').trim();
           let doorNo = '';
           let invoiceNo = '';
+          let parsedQuantity = 0;  // 从备注解析的件数
+          let parsedWeightPerPiece = 0;  // 从备注解析的每件重量
+          
           if (remark) {
             // 门牌号格式：字母+连字符+数字，如 A-12、B-3、A12
             const doorNoPattern = /^[A-Za-z]+[-]?\d+$/;
-            // 发票号格式：两个字母+数字，如 FP26082501、FP-26082501
+            // 发票号格式：数字+#，如 1234#
             const invoiceNoPattern = /^\d+#$/;
+            // 数量格式：N*M 或 N*M+K，如 3*130、3*130+125
+            const quantityPattern = /^(\d+)\*(\d+)(?:\+(\d+))?$/;
             
             // 尝试用分号、逗号分隔
             const parts = remark.split(/[；;，,]+/).map(p => p.trim()).filter(p => p);
+            
+            // 先解析数量（遍历所有部分找匹配的）
+            for (const part of parts) {
+              const qtyMatch = part.match(quantityPattern);
+              if (qtyMatch) {
+                parsedQuantity = parseInt(qtyMatch[1]);
+                parsedWeightPerPiece = parseFloat(qtyMatch[2]);
+                // qtyMatch[3] 是额外的斤数，现有字段无法表示，保留在备注中
+                break;
+              }
+            }
+            
+            // 再解析门牌号和发票号
             if (parts.length >= 2) {
-              // 只有第一部分是门牌号格式且第二部分是发票号格式时才拆分
+              // 第一部分是门牌号格式且第二部分是发票号格式时才拆分
               if (doorNoPattern.test(parts[0]) && invoiceNoPattern.test(parts[1])) {
                 doorNo = parts[0];
                 invoiceNo = parts[1];
               }
-              // 否则不拆分，备注内容保留为普通备注（不填入门牌号/发票号）
             } else if (parts.length === 1) {
-              // 只有一个部分时，严格判断格式
               if (doorNoPattern.test(parts[0])) {
                 doorNo = parts[0];
               } else if (invoiceNoPattern.test(parts[0])) {
                 invoiceNo = parts[0];
               }
-              // 否则不处理，避免错误填入
             }
           }
+          
+          // 确定件数和每件重量：优先使用从备注解析的值
+          const finalQuantity = parsedQuantity > 0 ? parsedQuantity : 0;  // 件数只从备注解析，数量列是总重量
+          const finalWeightPerPiece = parsedWeightPerPiece > 0 ? parsedWeightPerPiece : 0;
 
           // 放宽条件：只要有任意关键字段有值就认为是有效数据
           const hasAnyData = dateStr || style || material || process || quantity > 0 || totalAmount > 0 || remark;
@@ -4587,10 +4621,11 @@ function importFromExcel(file) {
             continue;
           }
 
-          console.log('解析数据行:', i, {dateStr, style, material, process, quantity, totalAmount, remark});
+          console.log('解析数据行:', i, {dateStr, style, material, process, quantity: finalQuantity, weightPerPiece: finalWeightPerPiece, totalAmount, remark});
 
           importedRecords.push({
             id: 'imp_' + Date.now().toString(36) + '_' + i,
+            importBatchId: importBatchId,
             date: dateStr,
             customerName: customerName || '未知客户',
             doorNo: doorNo,
@@ -4598,8 +4633,8 @@ function importFromExcel(file) {
             style: style,
             material: material,
             process: process,
-            quantity: quantity,
-            weightPerPiece: 0,  // 对账单范本中没有每件重量
+            quantity: finalQuantity,
+            weightPerPiece: finalWeightPerPiece,
             unitPrice: unitPrice,
             totalAmount: totalAmount,
             paidAmount: 0,  // 对账单范本中没有已收款
@@ -4649,6 +4684,7 @@ function importFromExcel(file) {
 
           return {
             id: 'imp_' + Date.now().toString(36) + '_' + index,
+            importBatchId: importBatchId,
             date: dateStr,
             customerName: getField(row, ['客户名称', '客户', '单位名称', '单位', '对账单位', '公司名称']),
             doorNo: getField(row, ['门牌号', '门牌', '地址', '位置']),
@@ -4679,8 +4715,18 @@ function importFromExcel(file) {
 
       console.log(`导入成功：${importedRecords.length}条记录（${isStatementFormat ? '对账单格式' : '普通格式'}）`);
 
-      // 询问是追加还是替换
-      if (state.records.length > 0) {
+      // 检查是否是重复导入（相同批次ID）
+      const existingBatchRecords = state.records.filter(r => r.importBatchId === importBatchId);
+      const isDuplicateImport = existingBatchRecords.length > 0;
+      
+      if (isDuplicateImport) {
+        // 重复导入：先删除旧记录，再添加新记录（覆盖）
+        state.records = state.records.filter(r => r.importBatchId !== importBatchId);
+        state.records = [...state.records, ...importedRecords];
+        addAuditLog('import', `重复导入覆盖（${existingBatchRecords.length}条旧记录→${importedRecords.length}条新记录）`);
+        showToast(`检测到重复导入，已覆盖 ${importedRecords.length} 条记录`, 'success');
+      } else if (state.records.length > 0) {
+        // 非重复导入且已有数据：询问追加还是替换
         if (!confirm(`将导入 ${importedRecords.length} 条记录。\n点击"确定"追加到现有数据，点击"取消"替换现有数据。`)) {
           // 替换
           state.records = importedRecords;
