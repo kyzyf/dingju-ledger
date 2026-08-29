@@ -721,6 +721,22 @@ body::before {
   filter: blur(6px);
   user-select: none;
 }
+.amount-hidden .record-unit-price,
+.amount-hidden .detail-unit-price {
+  filter: blur(6px);
+  user-select: none;
+}
+/* 编辑表单中的金额计算结果也模糊 */
+.amount-hidden #calcResult,
+.amount-hidden #calcFormula {
+  filter: blur(6px);
+  user-select: none;
+}
+/* 操作日志中的金额也模糊 */
+.amount-hidden .audit-log-detail {
+  filter: blur(6px);
+  user-select: none;
+}
 
 /* ===== 登录页 ===== */
 .login-overlay {
@@ -3120,7 +3136,7 @@ function renderAuditLog() {
       html += `<td style="padding:8px 6px;color:var(--text-secondary);white-space:nowrap;">${log.time}</td>`;
       html += `<td style="padding:8px 6px;color:var(--text-primary);">${log.operator}</td>`;
       html += `<td style="padding:8px 6px;"><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:var(--info-dim);color:var(--info);font-size:11px;">${actionLabels[log.action]||log.action}</span></td>`;
-      html += `<td style="padding:8px 6px;color:var(--text-secondary);">${log.detail}</td>`;
+      html += `<td class="audit-log-detail" style="padding:8px 6px;color:var(--text-secondary);">${log.detail}</td>`;
       html += '</tr>';
     }
     html += '</tbody></table>';
@@ -3491,7 +3507,7 @@ function renderRecordList() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
               ${r.weightPerPiece || 0}斤/件
             </span>
-            <span>
+            <span class="record-unit-price">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
               ¥${r.unitPrice || 0}/斤
             </span>
@@ -3841,7 +3857,7 @@ function openDetailModal(recordId) {
       </div>
       <div class="detail-row">
         <span class="label">单价</span>
-        <span class="value">¥${formatMoney(record.unitPrice)} /斤</span>
+        <span class="value detail-unit-price">¥${formatMoney(record.unitPrice)} /斤</span>
       </div>
     </div>
     <div class="detail-section">
@@ -4987,6 +5003,17 @@ function applySettings() {
   document.documentElement.setAttribute('data-theme', state.settings.theme);
   document.documentElement.setAttribute('data-font-size', state.settings.fontSize);
 
+  // 恢复隐藏金额状态
+  if (state.amountHidden) {
+    document.body.classList.add('amount-hidden');
+  } else {
+    document.body.classList.remove('amount-hidden');
+  }
+  const hideAmountBtn = document.getElementById('hideAmountBtn');
+  if (hideAmountBtn) {
+    hideAmountBtn.classList.toggle('active', state.amountHidden);
+  }
+
   // 更新开关状态
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
@@ -5725,7 +5752,7 @@ function openTrashDetail(recordId) {
       </div>
       <div class="detail-row">
         <span class="label">单价</span>
-        <span class="value">¥${formatMoney(record.unitPrice)} /斤</span>
+        <span class="value detail-unit-price">¥${formatMoney(record.unitPrice)} /斤</span>
       </div>
     </div>
     <div class="detail-section">
