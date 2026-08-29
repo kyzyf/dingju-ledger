@@ -2311,8 +2311,12 @@ body::before {
             <input type="number" class="form-input" id="unitPrice" placeholder="0" step="0.01" min="0">
           </div>
         </div>
+        <div class="form-group">
+          <label class="form-label">零散重量(斤) <span style="color:#999;font-size:12px;">可选，如3*130+125中的125</span></label>
+          <input type="number" class="form-input" id="extraWeight" placeholder="0" step="0.01" min="0">
+        </div>
         <div class="calc-display">
-          <div class="calc-formula" id="calcFormula">件数 × 每件斤数 × 单价 = 总金额</div>
+          <div class="calc-formula" id="calcFormula">件数 × 每件斤数 + 零散重量 = 总重量，总重量 × 单价 = 总金额</div>
           <div class="calc-result tabular-nums"><span class="currency">¥</span><span id="calcResult">0.00</span></div>
         </div>
         <div class="form-row">
@@ -3199,11 +3203,12 @@ function formatMoneyWithComma(num) {
   return Number(num).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function calculateTotal(quantity, weightPerPiece, unitPrice) {
+function calculateTotal(quantity, weightPerPiece, unitPrice, extraWeight) {
   const q = parseFloat(quantity) || 0;
   const w = parseFloat(weightPerPiece) || 0;
   const p = parseFloat(unitPrice) || 0;
-  return q * w * p;
+  const e = parseFloat(extraWeight) || 0;
+  return (q * w + e) * p;
 }
 
 function getPaymentStatus(record) {
@@ -3287,7 +3292,7 @@ function renderSummary() {
     const total = parseFloat(r.totalAmount) || 0;
     const paid = parseFloat(r.paidAmount) || 0;
     totalQuantity += qty;
-    totalWeight += qty * weight;
+    totalWeight += qty * weight + (parseFloat(r.extraWeight) || 0);
     totalReceived += paid;
     totalUnpaid += Math.max(0, total - paid);
   });
@@ -3350,7 +3355,7 @@ function renderRecordList() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 总重量
               </div>
-              <div class="key-stat-value tabular-nums">${formatMoney((r.quantity || 0) * (r.weightPerPiece || 0))}<span class="unit">斤</span></div>
+              <div class="key-stat-value tabular-nums">${formatMoney((r.quantity || 0) * (r.weightPerPiece || 0) + (r.extraWeight || 0))}<span class="unit">斤</span></div>
             </div>
             <div class="key-stat amount">
               <div class="key-stat-label">
@@ -3552,6 +3557,7 @@ function openRecordModal(recordId = null) {
       document.getElementById('process').value = record.process || '';
       document.getElementById('quantity').value = record.quantity || '';
       document.getElementById('weightPerPiece').value = record.weightPerPiece || '';
+      document.getElementById('extraWeight').value = record.extraWeight || '';
       document.getElementById('unitPrice').value = record.unitPrice || '';
       document.getElementById('paidAmount').value = record.paidAmount || '';
       document.getElementById('recordDate').value = record.date || formatDate(new Date());
@@ -3570,11 +3576,20 @@ function openRecordModal(recordId = null) {
 function updateCalcDisplay() {
   const q = document.getElementById('quantity').value;
   const w = document.getElementById('weightPerPiece').value;
+  const e = document.getElementById('extraWeight').value;
   const p = document.getElementById('unitPrice').value;
-  const total = calculateTotal(q, w, p);
+  const total = calculateTotal(q, w, p, e);
 
-  document.getElementById('calcFormula').textContent =
-    `${q || 0} × ${w || 0} × ${p || 0} = 总金额`;
+  const qty = parseFloat(q) || 0;
+  const weight = parseFloat(w) || 0;
+  const extra = parseFloat(e) || 0;
+  const totalWeight = qty * weight + extra;
+  
+  let formula = `${qty} × ${weight}斤`;
+  if (extra > 0) formula += ` + ${extra}斤`;
+  formula += ` = ${totalWeight}斤 × ${p || 0}元/斤`;
+  
+  document.getElementById('calcFormula').textContent = formula;
   document.getElementById('calcResult').textContent = formatMoney(total);
 }
 
@@ -3588,8 +3603,9 @@ function saveRecord() {
 
   const quantity = parseFloat(document.getElementById('quantity').value) || 0;
   const weightPerPiece = parseFloat(document.getElementById('weightPerPiece').value) || 0;
+  const extraWeight = parseFloat(document.getElementById('extraWeight').value) || 0;
   const unitPrice = parseFloat(document.getElementById('unitPrice').value) || 0;
-  const totalAmount = calculateTotal(quantity, weightPerPiece, unitPrice);
+  const totalAmount = calculateTotal(quantity, weightPerPiece, unitPrice, extraWeight);
   const paidAmount = parseFloat(document.getElementById('paidAmount').value) || 0;
   const date = document.getElementById('recordDate').value || formatDate(new Date());
 
@@ -3602,6 +3618,7 @@ function saveRecord() {
     process: document.getElementById('process').value.trim(),
     quantity,
     weightPerPiece,
+    extraWeight,
     unitPrice,
     totalAmount,
     paidAmount,
@@ -3690,9 +3707,14 @@ function openDetailModal(recordId) {
         <span class="label">每件重量</span>
         <span class="value">${record.weightPerPiece || 0} 斤</span>
       </div>
+      ${record.extraWeight ? `
+      <div class="detail-row">
+        <span class="label">零散重量</span>
+        <span class="value">${record.extraWeight} 斤</span>
+      </div>` : ''}
       <div class="detail-row">
         <span class="label" style="color:var(--accent);font-weight:600;">总重量</span>
-        <span class="value" style="color:var(--accent);font-weight:700;font-size:var(--font-size-lg);">${formatMoney((record.quantity || 0) * (record.weightPerPiece || 0))} 斤</span>
+        <span class="value" style="color:var(--accent);font-weight:700;font-size:var(--font-size-lg);">${formatMoney((record.quantity || 0) * (record.weightPerPiece || 0) + (record.extraWeight || 0))} 斤</span>
       </div>
       <div class="detail-row">
         <span class="label">单价</span>
@@ -3703,7 +3725,7 @@ function openDetailModal(recordId) {
       <div class="detail-section-title">金额信息</div>
       <div class="detail-row">
         <span class="label">计算公式</span>
-        <span class="value" style="font-size:var(--font-size-xs);color:var(--text-muted);font-family:monospace;">${record.quantity || 0} × ${record.weightPerPiece || 0} × ${record.unitPrice || 0}</span>
+        <span class="value" style="font-size:var(--font-size-xs);color:var(--text-muted);font-family:monospace;">${record.quantity || 0}×${record.weightPerPiece || 0}${record.extraWeight ? '+' + record.extraWeight : ''} × ${record.unitPrice || 0}</span>
       </div>
       <div class="detail-row">
         <span class="label">总金额</span>
@@ -3778,7 +3800,7 @@ function openCustomerModal(customerName) {
     totalAmount += parseFloat(r.totalAmount) || 0;
     totalPaid += parseFloat(r.paidAmount) || 0;
     totalQuantity += qty;
-    totalWeight += qty * weight;
+    totalWeight += qty * weight + (parseFloat(r.extraWeight) || 0);
   });
   const totalUnpaid = totalAmount - totalPaid;
 
@@ -3926,7 +3948,7 @@ function renderMonthlyView() {
     totalAmount += parseFloat(r.totalAmount) || 0;
     totalPaid += parseFloat(r.paidAmount) || 0;
     totalQuantity += qty;
-    totalWeight += qty * weight;
+    totalWeight += qty * weight + (parseFloat(r.extraWeight) || 0);
   });
   const totalUnpaid = totalAmount - totalPaid;
 
@@ -4281,18 +4303,10 @@ function exportToExcel(records, filename) {
       row[8] = r.material || '';  // 材质
       row[9] = r.process || '';   // 加工工艺
       
-      // 从remark中解析额外重量（格式：额外125斤）
-      let extraWeight = 0;
-      let otherRemark = '';
-      if (r.remark) {
-        const extraMatch = r.remark.match(/额外(\d+(?:\.\d+)?)斤/);
-        if (extraMatch) {
-          extraWeight = parseFloat(extraMatch[1]);
-        }
-        otherRemark = r.remark.replace(/额外\d+(?:\.\d+)?斤[；;]?/, '').trim();
-      }
+      // 直接使用 extraWeight 字段
+      const extraWeight = parseFloat(r.extraWeight) || 0;
       
-      // 计算总重量 = 件数 × 每件重量 + 额外重量
+      // 计算总重量 = 件数 × 每件重量 + 零散重量
       const qty = parseFloat(r.quantity) || 0;
       const weightPerPiece = parseFloat(r.weightPerPiece) || 0;
       const totalWeight = qty * weightPerPiece + extraWeight;
@@ -4302,7 +4316,7 @@ function exportToExcel(records, filename) {
       row[16] = parseFloat(r.unitPrice) || 0;
       row[18] = parseFloat(r.totalAmount) || 0;
       
-      // 备注：件数*每件重量[+额外重量] + 发票号 + 其他备注
+      // 备注：件数*每件重量[+零散重量] + 发票号 + 其他备注
       const remarkParts = [];
       if (qty > 0 && weightPerPiece > 0) {
         let qtyStr = qty + '*' + weightPerPiece;
@@ -4310,7 +4324,7 @@ function exportToExcel(records, filename) {
         remarkParts.push(qtyStr);
       }
       if (r.invoiceNo) remarkParts.push(r.invoiceNo);
-      if (otherRemark) remarkParts.push(otherRemark);
+      if (r.remark) remarkParts.push(r.remark);
       row[20] = remarkParts.join('；');
       
       aoa.push(row);
@@ -4648,11 +4662,8 @@ function importFromExcel(file) {
           const finalQuantity = parsedQuantity > 0 ? parsedQuantity : 0;  // 件数只从备注解析，数量列是总重量
           const finalWeightPerPiece = parsedWeightPerPiece > 0 ? parsedWeightPerPiece : 0;
           
-          // 构建备注字段：额外重量 + 其他备注
-          const remarkParts = [];
-          if (parsedExtraWeight > 0) remarkParts.push('额外' + parsedExtraWeight + '斤');
-          remarkParts.push(...otherRemarks);
-          const finalRemark = remarkParts.join('；');
+          // 构建备注字段：只保留其他备注（额外重量放到 extraWeight 字段）
+          const finalRemark = otherRemarks.join('；');
 
           // 放宽条件：只要有任意关键字段有值就认为是有效数据
           const hasAnyData = dateStr || style || material || process || quantity > 0 || totalAmount > 0 || remark;
@@ -4677,7 +4688,8 @@ function importFromExcel(file) {
             process: process,
             quantity: finalQuantity,
             weightPerPiece: finalWeightPerPiece,
-            remark: finalRemark,  // 备注：额外重量和其他信息
+            extraWeight: parsedExtraWeight,  // 零散重量（如3*130+125中的125）
+            remark: finalRemark,  // 备注：其他信息
             unitPrice: unitPrice,
             totalAmount: totalAmount,
             paidAmount: 0,  // 对账单范本中没有已收款
@@ -4710,9 +4722,10 @@ function importFromExcel(file) {
 
           const quantity = parseFloat(row['件数']) || 0;
           const weightPerPiece = parseFloat(row['每件重量(斤)']) || parseFloat(row['每件重量']) || 0;
+          const extraWeight = parseFloat(row['零散重量(斤)']) || parseFloat(row['零散重量']) || parseFloat(row['额外重量']) || 0;
           const unitPrice = parseFloat(row['单价(元/斤)']) || parseFloat(row['单价']) || 0;
           const totalAmountRaw = parseFloat(row['总价']);
-          const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : quantity * weightPerPiece * unitPrice;
+          const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : (quantity * weightPerPiece + extraWeight) * unitPrice;
           const paidAmount = parseFloat(row['已收款']) || 0;
 
           // 支持多种列名变体
@@ -4745,6 +4758,7 @@ function importFromExcel(file) {
             process: getField(row, ['加工工艺', '工艺', '处理方式', '表面处理']),
             quantity: quantity,
             weightPerPiece: weightPerPiece,
+            extraWeight: extraWeight,  // 零散重量
             remark: normalRemark,  // 备注信息
             unitPrice: unitPrice,
             totalAmount: totalAmount,
@@ -4932,7 +4946,7 @@ function bindEvents() {
   document.getElementById('addBtn').addEventListener('click', () => openRecordModal());
 
   // 表单计算
-  ['quantity', 'weightPerPiece', 'unitPrice'].forEach(id => {
+  ['quantity', 'weightPerPiece', 'extraWeight', 'unitPrice'].forEach(id => {
     document.getElementById(id).addEventListener('input', updateCalcDisplay);
   });
 
@@ -5470,7 +5484,7 @@ function renderTrashList() {
             </div>
             <div class="key-stat weight">
               <div class="key-stat-label">总重量</div>
-              <div class="key-stat-value tabular-nums">${formatMoney((r.quantity || 0) * (r.weightPerPiece || 0))}<span class="unit">斤</span></div>
+              <div class="key-stat-value tabular-nums">${formatMoney((r.quantity || 0) * (r.weightPerPiece || 0) + (r.extraWeight || 0))}<span class="unit">斤</span></div>
             </div>
             <div class="key-stat amount">
               <div class="key-stat-label">总金额</div>
@@ -5566,9 +5580,14 @@ function openTrashDetail(recordId) {
         <span class="label">每件重量</span>
         <span class="value">${record.weightPerPiece || 0} 斤</span>
       </div>
+      ${record.extraWeight ? `
+      <div class="detail-row">
+        <span class="label">零散重量</span>
+        <span class="value">${record.extraWeight} 斤</span>
+      </div>` : ''}
       <div class="detail-row">
         <span class="label" style="color:var(--accent);font-weight:600;">总重量</span>
-        <span class="value" style="color:var(--accent);font-weight:700;font-size:var(--font-size-lg);">${formatMoney((record.quantity || 0) * (record.weightPerPiece || 0))} 斤</span>
+        <span class="value" style="color:var(--accent);font-weight:700;font-size:var(--font-size-lg);">${formatMoney((record.quantity || 0) * (record.weightPerPiece || 0) + (record.extraWeight || 0))} 斤</span>
       </div>
       <div class="detail-row">
         <span class="label">单价</span>
