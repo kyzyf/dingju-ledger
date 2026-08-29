@@ -2579,11 +2579,11 @@ body::before {
         </div>
         <div class="settings-item" id="pullCloudBtn" style="cursor:pointer;">
           <div class="settings-item-label">从云端拉取</div>
-          <div class="settings-item-desc">用云端数据覆盖本地</div>
+          <div class="settings-item-desc">合并云端数据：新增合并增加，删除/修改同步</div>
         </div>
         <div class="settings-item" style="flex-direction:column;align-items:stretch;gap:8px;border-top:1px solid var(--border-color);padding-top:12px;">
           <div class="settings-item-label" style="color:var(--danger);">按客户名删除云端数据</div>
-          <div class="settings-item-desc">输入客户名，彻底删除云端该客户的所有单据（不可恢复）</div>
+          <div class="settings-item-desc">输入客户名，标记删除并同步到所有账号（可在回收站恢复）</div>
           <div style="display:flex;gap:8px;">
             <input type="text" id="deleteCustomerInput" placeholder="输入客户名，如：洪友" style="flex:1;padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text-primary);font-size:13px;">
             <button id="deleteCustomerCloudBtn" style="padding:8px 16px;background:var(--danger);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;">删除</button>
@@ -2892,7 +2892,7 @@ async function pullFromCloud() {
     alert('请先配置云端同步');
     return;
   }
-  if (!confirm('确定要从云端拉取数据吗？\n\n云端数据将与本地数据合并（按单据ID去重），本地独有数据不会丢失。')) return;
+  if (!confirm('确定要从云端拉取数据吗？\n\n云端数据将与本地数据合并：\n• 新增数据会合并增加（如李四录7月、张三录5月，两边都有）\n• 删除/修改会同步（任一方删除，另一方拉取后也消失）\n• 相同单据按最新版本保留\n\n三个账号共享同一云端数据。')) return;
   updateSyncStatus('拉取中...');
   try {
     const { data, error } = await supabaseClient.from('ledger_sync').select('*').eq('id', 'dingju_ledger_data').maybeSingle();
@@ -2903,7 +2903,8 @@ async function pullFromCloud() {
       return;
     }
     if (data.records) {
-      // 合并云端数据到本地（包含活跃和已删除）
+      // 合并云端数据到本地（包含活跃和已删除），按ID去重，相同ID保留最新版本
+      // 这样新增数据会合并增加，删除操作（deleted=true）也会同步
       const beforeActive = state.records.length;
       const beforeDeleted = state.deletedRecords.length;
       const localAll = [...state.records, ...state.deletedRecords];
@@ -2916,10 +2917,12 @@ async function pullFromCloud() {
       if (data.settings) state.settings = {...state.settings, ...data.settings};
       const addedActive = state.records.length - beforeActive;
       addAuditLog('cloud_pull', `从云端拉取合并数据（云端${data.records.length}条，合并后活跃${state.records.length}条，已删除${state.deletedRecords.length}条${conflictCount > 0 ? '，冲突' + conflictCount + '条' : ''}）`);
+      // 合并后跳过自动同步，避免把刚拉取合并的数据又上传回去
+      skipCloudSync = true;
       saveData();
       renderAll();
       updateSyncStatus('拉取成功 ' + new Date().toLocaleTimeString());
-      let msg = `云端数据已合并到本地\n\n云端：${data.records.length}条\n本地原有：活跃${beforeActive}条 / 已删除${beforeDeleted}条\n合并后：活跃${state.records.length}条 / 已删除${state.deletedRecords.length}条\n新增活跃：${addedActive}条`;
+      let msg = `云端数据已合并到本地\n\n云端：${data.records.length}条\n本地原有：活跃${beforeActive}条 / 已删除${beforeDeleted}条\n合并后：活跃${state.records.length}条 / 已删除${state.deletedRecords.length}条\n新增活跃：${addedActive}条\n\n✓ 新增数据已合并增加\n✓ 删除/修改已同步`;
       if (conflictCount > 0) {
         msg += `\n\n⚠️ 检测到${conflictCount}条记录多设备修改，已自动保留最新版本`;
       }
@@ -2951,9 +2954,12 @@ async function deleteCustomerFromCloud() {
     alert('云端同步未配置或未启用');
     return;
   }
-  if (!confirm(`确定要彻底删除云端所有客户名为"${customerName}"的单据吗？
+  if (!confirm(`确定要删除云端所有客户名为"${customerName}"的单据吗？
 
-此操作不可恢复，将同时删除活跃单据和回收站中的已删除单据！`)) return;
+删除后会同步到所有账号：
+• 其他账号从云端拉取后，这些单据会进入回收站
+• 可在回收站中恢复或彻底删除
+• 三个账号数据保持统一`)) return;
   
   try {
     updateSyncStatus('正在删除云端数据...');
@@ -2973,29 +2979,35 @@ async function deleteCustomerFromCloud() {
     }
     
     const allRecords = data.records || [];
-    // 统计要删除的数量
+    // 统计要删除的数量（只统计未删除的）
     const toDelete = allRecords.filter(r => 
-      r.customerName && r.customerName.includes(customerName)
+      r.customerName && r.customerName.includes(customerName) && !r.deleted
     );
     const deletedCount = toDelete.length;
     
     if (deletedCount === 0) {
-      alert(`云端未找到客户名为"${customerName}"的单据`);
+      alert(`云端未找到客户名为"${customerName}"的活跃单据`);
       updateSyncStatus('未找到匹配数据');
       return;
     }
     
-    // 过滤掉要删除的单据
-    const remainingRecords = allRecords.filter(r => 
-      !(r.customerName && r.customerName.includes(customerName))
-    );
+    // 关键：不彻底删除，而是标记为deleted=true并更新时间戳
+    // 这样合并时，deleted=true的版本会覆盖其他账号本地的deleted=false版本
+    // 确保删除操作能同步到所有账号
+    const now = new Date().toISOString();
+    const updatedRecords = allRecords.map(r => {
+      if (r.customerName && r.customerName.includes(customerName) && !r.deleted) {
+        return {...r, deleted: true, deletedAt: now, updated_at: now};
+      }
+      return r;
+    });
     
-    // 步骤2：把过滤后的数据写回云端
+    // 步骤2：把标记删除后的数据写回云端
     const payload = {
       id: 'dingju_ledger_data',
-      records: remainingRecords,
+      records: updatedRecords,
       settings: data.settings || state.settings,
-      updated_at: new Date().toISOString()
+      updated_at: now
     };
     
     const { error: upsertError } = await supabaseClient
@@ -3005,20 +3017,25 @@ async function deleteCustomerFromCloud() {
     if (upsertError) throw upsertError;
     
     // 步骤3：同时更新本地数据
-    state.records = remainingRecords.filter(r => !r.deleted);
-    state.deletedRecords = remainingRecords.filter(r => r.deleted);
+    const separated = separateRecords(updatedRecords);
+    state.records = separated.active;
+    state.deletedRecords = separated.deleted;
+    skipCloudSync = true; // 避免把刚同步的数据又上传回去
     saveData();
     renderAll();
     
-    addAuditLog('cloud_delete_customer', `按客户名删除云端数据：${customerName}，共删除${deletedCount}条，剩余${remainingRecords.length}条`);
+    addAuditLog('cloud_delete_customer', `按客户名删除云端数据（标记删除，同步所有账号）：${customerName}，共删除${deletedCount}条`);
     
     updateSyncStatus('删除成功 ' + new Date().toLocaleTimeString());
     alert(`删除成功！
 
-已彻底删除云端客户"${customerName}"的 ${deletedCount} 条单据
-云端剩余 ${remainingRecords.length} 条单据
+已将云端客户"${customerName}"的 ${deletedCount} 条单据标记为已删除
 
-本地数据已同步更新。`);
+✓ 删除操作会同步到所有账号
+✓ 其他账号从云端拉取后，这些单据会进入回收站
+✓ 可在回收站中恢复或彻底删除
+
+三个账号数据已统一。`);
     
     // 清空输入框
     document.getElementById('deleteCustomerInput').value = '';
@@ -5190,38 +5207,31 @@ function bindEvents() {
     });
   }
 
-  // 设置 - 清空数据
-  document.getElementById('clearDataBtn').addEventListener('click', async () => {
+  // 设置 - 清空数据（软删除：所有活跃单据进入回收站，可恢复或彻底删除）
+  document.getElementById('clearDataBtn').addEventListener('click', () => {
     const count = state.records.length;
-    const delCount = state.deletedRecords.length;
-    addAuditLog('clear', `清空全部数据（活跃${count}条，已删除${delCount}条，含云端）`);
-    state.records = [];
-    state.deletedRecords = [];
-    state.pendingPermanentDeletes = [];
-    // 先保存到本地
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        records: [],
-        deletedRecords: [],
-        pendingPermanentDeletes: []
-      }));
-    } catch(e) { console.error('清空本地失败', e); }
-    // 直接用空数据覆盖云端，不经过merge合并（否则会从云端拉回旧数据）
-    if (cloudSyncEnabled && supabaseClient) {
-      try {
-        const { error } = await supabaseClient.from('ledger_sync').upsert({
-          id: 'dingju_ledger_data',
-          records: [],
-          settings: state.settings,
-          updated_at: new Date().toISOString()
-        });
-        if (error) console.error('清空云端失败', error);
-        else console.log('云端数据已清空');
-      } catch(e) { console.error('清空云端异常', e); }
+    if (count === 0) {
+      showToast('当前没有活跃数据', 'info');
+      return;
     }
+    if (!confirm(`确定要清空所有活跃数据吗？\n\n共 ${count} 条活跃单据将移入回收站。\n\n注意：\n• 这是软删除，数据会进入回收站\n• 可在回收站中恢复或彻底删除\n• 删除操作会同步到所有账号\n• 只有回收站中的"彻底删除"才会真正删除云端数据`)) return;
+    
+    const now = new Date().toISOString();
+    // 把所有活跃单据标记为已删除，进入回收站
+    const toTrash = state.records.map(r => ({
+      ...r,
+      deleted: true,
+      deletedAt: now,
+      updated_at: now
+    }));
+    state.deletedRecords = [...state.deletedRecords, ...toTrash];
+    state.records = [];
+    
+    addAuditLog('clear', `清空活跃数据（软删除，${count}条移入回收站）`);
+    saveData();  // 会自动同步到云端，标记删除会同步到所有账号
     renderAll();
     closeModal('settingsModal');
-    showToast('全部数据已清空（含云端）', 'success');
+    showToast(`${count}条数据已移入回收站`, 'success');
   });
 
   // 设置 - 修改密码
