@@ -2279,15 +2279,9 @@ body::before {
             <div class="autocomplete-dropdown" id="customerAutocomplete"></div>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">门牌号</label>
-            <input type="text" class="form-input" id="doorNo" placeholder="如 A-12">
-          </div>
-          <div class="form-group">
-            <label class="form-label">发票单号</label>
-            <input type="text" class="form-input" id="invoiceNo" placeholder="如 FP26082501">
-          </div>
+        <div class="form-group">
+          <label class="form-label">发票单号</label>
+          <input type="text" class="form-input" id="invoiceNo" placeholder="如 1234#">
         </div>
         <div class="form-group">
           <label class="form-label">产品款式</label>
@@ -3332,8 +3326,7 @@ function renderRecordList() {
       <div class="record-card" data-id="${r.id}">
         <div class="record-card-header">
           <div class="record-customer">
-            ${escapeHtml(r.customerName || '未命名客户')}
-            ${r.doorNo ? `<span class="door-tag">${escapeHtml(r.doorNo)}</span>` : ''}
+            ${escapeHtml(r.customerName || '未命名客户')}${r.doorNo ? '（' + escapeHtml(r.doorNo) + '）' : ''}
             ${state.searchQuery ? `<span class="door-tag" style="background:var(--bg-secondary);color:var(--text-muted);">${r.date}</span>` : ''}
           </div>
           <span class="record-status ${status}">${getStatusText(status)}</span>
@@ -3553,7 +3546,6 @@ function openRecordModal(recordId = null) {
       document.getElementById('recordModalTitle').textContent = '编辑单据';
       document.getElementById('recordId').value = record.id;
       document.getElementById('customerName').value = record.customerName || '';
-      document.getElementById('doorNo').value = record.doorNo || '';
       document.getElementById('invoiceNo').value = record.invoiceNo || '';
       document.getElementById('style').value = record.style || '';
       document.getElementById('material').value = record.material || '';
@@ -3603,7 +3595,7 @@ function saveRecord() {
 
   const recordData = {
     customerName,
-    doorNo: document.getElementById('doorNo').value.trim(),
+    doorNo: '',  // 门牌号不再单独录入，导入时合并到客户名
     invoiceNo: document.getElementById('invoiceNo').value.trim(),
     style: document.getElementById('style').value.trim(),
     material: document.getElementById('material').value.trim(),
@@ -3652,13 +3644,8 @@ function openDetailModal(recordId) {
       <div class="detail-section-title">基本信息</div>
       <div class="detail-row">
         <span class="label">客户名称</span>
-        <span class="value">${escapeHtml(record.customerName)}</span>
+        <span class="value">${escapeHtml(record.customerName)}${record.doorNo ? '（' + escapeHtml(record.doorNo) + '）' : ''}</span>
       </div>
-      ${record.doorNo ? `
-      <div class="detail-row">
-        <span class="label">门牌号</span>
-        <span class="value">${escapeHtml(record.doorNo)}</span>
-      </div>` : ''}
       ${record.invoiceNo ? `
       <div class="detail-row">
         <span class="label">发票单号</span>
@@ -4165,14 +4152,15 @@ function exportToCSV(records, filename) {
     return;
   }
 
-  const headers = ['日期', '客户名称', '门牌号', '发票单号', '产品款式', '件数', '每件斤数', '单价(元/斤)', '总金额', '已收款', '未收款', '收款状态'];
+  const headers = ['日期', '客户名称', '发票单号', '产品款式', '件数', '每件斤数', '单价(元/斤)', '总金额', '已收款', '未收款', '收款状态'];
   const rows = records.map(r => {
     const total = parseFloat(r.totalAmount) || 0;
     const paid = parseFloat(r.paidAmount) || 0;
+    // 门牌号合并到客户名后面
+    const exportCustomerName = r.customerName + (r.doorNo ? '（' + r.doorNo + '）' : '');
     return [
       r.date,
-      r.customerName,
-      r.doorNo || '',
+      exportCustomerName,
       r.invoiceNo || '',
       r.style || '',
       r.quantity || 0,
@@ -4234,8 +4222,8 @@ function exportToExcel(records, filename) {
     const totalAmount = sortedRecords.reduce((sum, r) => sum + (parseFloat(r.totalAmount) || 0), 0);
     const totalPaid = sortedRecords.reduce((sum, r) => sum + (parseFloat(r.paidAmount) || 0), 0);
     
-    // 确定对账单位（如果只有一个客户则显示客户名，否则显示全部客户）
-    const uniqueCustomers = [...new Set(sortedRecords.map(r => r.customerName).filter(n => n))];
+    // 确定对账单位（如果只有一个客户则显示客户名+门牌号，否则显示全部客户）
+    const uniqueCustomers = [...new Set(sortedRecords.map(r => r.customerName + (r.doorNo ? '（' + r.doorNo + '）' : '')).filter(n => n))];
     const customerName = uniqueCustomers.length === 1 ? uniqueCustomers[0] : '全部客户';
     
     // 确定对账期间
@@ -4289,11 +4277,8 @@ function exportToExcel(records, filename) {
       row[14] = parseFloat(r.quantity) || 0;
       row[16] = parseFloat(r.unitPrice) || 0;
       row[18] = parseFloat(r.totalAmount) || 0;
-      // 备注：门牌号 + 发票号
-      const remarkParts = [];
-      if (r.doorNo) remarkParts.push(r.doorNo);
-      if (r.invoiceNo) remarkParts.push(r.invoiceNo);
-      row[20] = remarkParts.join('；');
+      // 备注：只保留发票号（门牌号已合并到客户名）
+      row[20] = r.invoiceNo || '';
       aoa.push(row);
     });
     
@@ -4639,12 +4624,14 @@ function importFromExcel(file) {
 
           console.log('解析数据行:', i, {dateStr, style, material, process, quantity: finalQuantity, weightPerPiece: finalWeightPerPiece, totalAmount, remark});
 
+          // 门牌号合并到客户名后面
+          const finalCustomerName = (customerName || '未知客户') + (doorNo ? '（' + doorNo + '）' : '');
           importedRecords.push({
             id: 'imp_' + Date.now().toString(36) + '_' + i,
             importBatchId: importBatchId,
             date: dateStr,
-            customerName: customerName || '未知客户',
-            doorNo: doorNo,
+            customerName: finalCustomerName,
+            doorNo: '',  // 门牌号已合并到客户名，不再单独存储
             invoiceNo: invoiceNo,
             style: style,
             material: material,
@@ -4698,12 +4685,17 @@ function importFromExcel(file) {
             return '';
           };
 
+          // 门牌号合并到客户名后面
+          const rawCustomerName = getField(row, ['客户名称', '客户', '单位名称', '单位', '对账单位', '公司名称']);
+          const rawDoorNo = getField(row, ['门牌号', '门牌', '地址', '位置']);
+          const finalCustomerName = rawCustomerName + (rawDoorNo ? '（' + rawDoorNo + '）' : '');
+
           return {
             id: 'imp_' + Date.now().toString(36) + '_' + index,
             importBatchId: importBatchId,
             date: dateStr,
-            customerName: getField(row, ['客户名称', '客户', '单位名称', '单位', '对账单位', '公司名称']),
-            doorNo: getField(row, ['门牌号', '门牌', '地址', '位置']),
+            customerName: finalCustomerName,
+            doorNo: '',  // 门牌号已合并到客户名，不再单独存储
             invoiceNo: getField(row, ['发票单号', '发票号', '发票', '单号', '单据号']),
             style: getField(row, ['产品款式', '款式', '商品全名', '商品名称', '产品名称', '品名', '规格']),
             material: getField(row, ['材质', '材料', '材质规格']),
@@ -5417,8 +5409,7 @@ function renderTrashList() {
       <div class="record-card" data-id="${r.id}" style="opacity:0.7;border-left:3px solid var(--warning);">
         <div class="record-card-header">
           <div class="record-customer">
-            ${escapeHtml(r.customerName || '未命名客户')}
-            ${r.doorNo ? `<span class="door-tag">${escapeHtml(r.doorNo)}</span>` : ''}
+            ${escapeHtml(r.customerName || '未命名客户')}${r.doorNo ? '（' + escapeHtml(r.doorNo) + '）' : ''}
           </div>
           <span class="record-status" style="background:var(--bg-secondary);color:var(--warning);">已删除</span>
         </div>
@@ -5487,11 +5478,6 @@ function openTrashDetail(recordId) {
         <span class="label">客户名称</span>
         <span class="value">${escapeHtml(record.customerName)}</span>
       </div>
-      ${record.doorNo ? `
-      <div class="detail-row">
-        <span class="label">门牌号</span>
-        <span class="value">${escapeHtml(record.doorNo)}</span>
-      </div>` : ''}
       ${record.invoiceNo ? `
       <div class="detail-row">
         <span class="label">发票单号</span>
