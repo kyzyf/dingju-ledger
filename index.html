@@ -5086,18 +5086,16 @@ function bindEvents() {
 
   // 设置 - 清空数据
   document.getElementById('clearDataBtn').addEventListener('click', () => {
-    if (confirm('确定要清空本地所有数据吗？\n\n注意：仅清空本地浏览器数据，云端数据不受影响。\n此操作不可恢复！')) {
-      const count = state.records.length;
-      const delCount = state.deletedRecords.length;
-      addAuditLog('clear', `清空本地全部数据（活跃${count}条，已删除${delCount}条，云端保留）`);
-      state.records = [];
-      state.deletedRecords = [];
-      skipCloudSync = true;  // 关键：清空本地时跳过自动云端同步，避免覆盖云端数据
-      saveData();
-      renderAll();
-      closeModal('settingsModal');
-      showToast('本地数据已清空（云端数据保留）', 'success');
-    }
+    const count = state.records.length;
+    const delCount = state.deletedRecords.length;
+    addAuditLog('clear', `清空全部数据（活跃${count}条，已删除${delCount}条，含云端）`);
+    state.records = [];
+    state.deletedRecords = [];
+    state.pendingPermanentDeletes = [];
+    saveData();  // 会自动同步到云端，云端也会被清空
+    renderAll();
+    closeModal('settingsModal');
+    showToast('全部数据已清空（含云端）', 'success');
   });
 
   // 设置 - 修改密码
