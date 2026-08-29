@@ -4184,44 +4184,195 @@ function exportToExcel(records, filename) {
   }
 
   try {
-    // 准备数据
-    const headers = ['日期', '客户名称', '门牌号', '发票单号', '产品款式', '件数', '每件重量(斤)', '总斤数', '单价(元/斤)', '总价', '已收款', '未收款', '收款状态', '备注'];
-    const rows = records.map(r => {
-      const total = parseFloat(r.totalAmount) || 0;
-      const paid = parseFloat(r.paidAmount) || 0;
-      const qty = parseFloat(r.quantity) || 0;
-      const weight = parseFloat(r.weightPerPiece) || 0;
-      return [
-        r.date,
-        r.customerName || '',
-        r.doorNo || '',
-        r.invoiceNo || '',
-        r.style || '',
-        qty,
-        weight,
-        qty * weight,
-        parseFloat(r.unitPrice) || 0,
-        total,
-        paid,
-        Math.max(0, total - paid),
-        getStatusText(getPaymentStatus(r)),
-        ''
-      ];
+    // 按日期排序
+    const sortedRecords = [...records].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    
+    // 计算统计数据
+    const totalQty = sortedRecords.reduce((sum, r) => sum + (parseFloat(r.quantity) || 0), 0);
+    const totalAmount = sortedRecords.reduce((sum, r) => sum + (parseFloat(r.totalAmount) || 0), 0);
+    const totalPaid = sortedRecords.reduce((sum, r) => sum + (parseFloat(r.paidAmount) || 0), 0);
+    
+    // 确定对账单位（如果只有一个客户则显示客户名，否则显示全部客户）
+    const uniqueCustomers = [...new Set(sortedRecords.map(r => r.customerName).filter(n => n))];
+    const customerName = uniqueCustomers.length === 1 ? uniqueCustomers[0] : '全部客户';
+    
+    // 确定对账期间
+    const dates = sortedRecords.map(r => r.date).filter(d => d).sort();
+    const dateRange = dates.length > 0 ? `${dates[0]}~${dates[dates.length - 1]}` : '';
+    
+    // 21列的二维数组
+    const aoa = [];
+    
+    // 行0：公司标题（合并A1:U1）
+    const row0 = new Array(21).fill('');
+    row0[0] = '温州鼎炬金属科技有限公司';
+    aoa.push(row0);
+    
+    // 行1：对账单副标题（合并A2:U2）
+    const row1 = new Array(21).fill('');
+    row1[0] = '对账单';
+    aoa.push(row1);
+    
+    // 行2：对账信息
+    const row2 = new Array(21).fill('');
+    row2[0] = '对账单位：';
+    row2[4] = customerName;
+    row2[10] = '对账期间：';
+    row2[13] = dateRange;
+    aoa.push(row2);
+    
+    // 行3：表头（带合并单元格）
+    const row3 = new Array(21).fill('');
+    row3[0] = '行号';
+    row3[1] = '单据日期';
+    row3[2] = '单据类型';  // 合并C:E
+    row3[5] = '商品全名';  // 合并F:H
+    row3[8] = '材质';
+    row3[9] = '加工工艺';  // 合并J:N
+    row3[14] = '数量';     // 合并O:P
+    row3[16] = '单价';     // 合并Q:R
+    row3[18] = '金额';     // 合并S:T
+    row3[20] = '备注';
+    aoa.push(row3);
+    
+    // 行4+：数据行
+    sortedRecords.forEach((r, index) => {
+      const row = new Array(21).fill('');
+      row[0] = index + 1;
+      row[1] = r.date || '';
+      row[2] = '销售单';
+      row[5] = r.style || '';
+      row[8] = '';  // 材质（app无此字段）
+      row[9] = '';  // 加工工艺（app无此字段）
+      row[14] = parseFloat(r.quantity) || 0;
+      row[16] = parseFloat(r.unitPrice) || 0;
+      row[18] = parseFloat(r.totalAmount) || 0;
+      // 备注：门牌号 + 发票号
+      const remarkParts = [];
+      if (r.doorNo) remarkParts.push(r.doorNo);
+      if (r.invoiceNo) remarkParts.push(r.invoiceNo);
+      row[20] = remarkParts.join('；');
+      aoa.push(row);
     });
-
+    
+    // 合计行
+    const totalRowIdx = 4 + sortedRecords.length;
+    const totalRow = new Array(21).fill('');
+    totalRow[0] = '合计：';
+    totalRow[14] = totalQty;
+    totalRow[18] = totalAmount;
+    aoa.push(totalRow);
+    
+    // 空行
+    aoa.push(new Array(21).fill(''));
+    
+    // 余额信息行
+    const balanceRow = new Array(21).fill('');
+    balanceRow[0] = '上期余额：';
+    balanceRow[6] = '本期销售：';
+    balanceRow[7] = totalAmount;
+    balanceRow[11] = '本期回款：';
+    balanceRow[12] = totalPaid;
+    balanceRow[17] = '本期余额：';
+    balanceRow[19] = totalAmount - totalPaid;
+    aoa.push(balanceRow);
+    
+    // 客户确认签字行
+    const signRow = new Array(21).fill('');
+    signRow[15] = '客户确认签字:';
+    aoa.push(signRow);
+    
     // 创建工作簿
     const wb = XLSX.utils.book_new();
-    const wsData = [headers, ...rows];
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-    // 设置列宽
-    ws['!cols'] = [
-      { wch: 12 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 15 },
-      { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 12 },
-      { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 15 }
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    
+    // 设置合并单元格
+    const merges = [
+      // 公司标题（行0，列0-20）
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 20 } },
+      // 对账单副标题（行1，列0-20）
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 20 } },
+      // 对账单位标签（行2，列0-3）
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } },
+      // 对账单位值（行2，列4-9）
+      { s: { r: 2, c: 4 }, e: { r: 2, c: 9 } },
+      // 对账期间标签（行2，列10-12）
+      { s: { r: 2, c: 10 }, e: { r: 2, c: 12 } },
+      // 对账期间值（行2，列13-20）
+      { s: { r: 2, c: 13 }, e: { r: 2, c: 20 } },
+      // 表头：单据类型（行3，列2-4）
+      { s: { r: 3, c: 2 }, e: { r: 3, c: 4 } },
+      // 表头：商品全名（行3，列5-7）
+      { s: { r: 3, c: 5 }, e: { r: 3, c: 7 } },
+      // 表头：加工工艺（行3，列9-13）
+      { s: { r: 3, c: 9 }, e: { r: 3, c: 13 } },
+      // 表头：数量（行3，列14-15）
+      { s: { r: 3, c: 14 }, e: { r: 3, c: 15 } },
+      // 表头：单价（行3，列16-17）
+      { s: { r: 3, c: 16 }, e: { r: 3, c: 17 } },
+      // 表头：金额（行3，列18-19）
+      { s: { r: 3, c: 18 }, e: { r: 3, c: 19 } },
     ];
-
-    XLSX.utils.book_append_sheet(wb, ws, '鼎炬账本');
+    
+    // 数据行的合并单元格（单据类型、商品全名、加工工艺、数量、单价、金额）
+    for (let i = 0; i < sortedRecords.length; i++) {
+      const rowIdx = 4 + i;
+      merges.push({ s: { r: rowIdx, c: 2 }, e: { r: rowIdx, c: 4 } });  // 单据类型
+      merges.push({ s: { r: rowIdx, c: 5 }, e: { r: rowIdx, c: 7 } });  // 商品全名
+      merges.push({ s: { r: rowIdx, c: 9 }, e: { r: rowIdx, c: 13 } }); // 加工工艺
+      merges.push({ s: { r: rowIdx, c: 14 }, e: { r: rowIdx, c: 15 } }); // 数量
+      merges.push({ s: { r: rowIdx, c: 16 }, e: { r: rowIdx, c: 17 } }); // 单价
+      merges.push({ s: { r: rowIdx, c: 18 }, e: { r: rowIdx, c: 19 } }); // 金额
+    }
+    
+    // 合计行合并
+    merges.push({ s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 13 } }); // 合计标签
+    merges.push({ s: { r: totalRowIdx, c: 14 }, e: { r: totalRowIdx, c: 15 } }); // 总数量
+    merges.push({ s: { r: totalRowIdx, c: 16 }, e: { r: totalRowIdx, c: 17 } }); // 空
+    merges.push({ s: { r: totalRowIdx, c: 18 }, e: { r: totalRowIdx, c: 19 } }); // 总金额
+    
+    ws['!merges'] = merges;
+    
+    // 设置列宽（参考范本）
+    ws['!cols'] = [
+      { wch: 6 },   // A: 行号
+      { wch: 12 },  // B: 单据日期
+      { wch: 4 },   // C: 单据类型(合并)
+      { wch: 6 },   // D
+      { wch: 8 },   // E
+      { wch: 15 },  // F: 商品全名(合并)
+      { wch: 8 },   // G
+      { wch: 6 },   // H
+      { wch: 8 },   // I: 材质
+      { wch: 6 },   // J: 加工工艺(合并)
+      { wch: 6 },   // K
+      { wch: 8 },   // L
+      { wch: 4 },   // M
+      { wch: 4 },   // N
+      { wch: 4 },   // O: 数量(合并)
+      { wch: 8 },   // P
+      { wch: 6 },   // Q: 单价(合并)
+      { wch: 8 },   // R
+      { wch: 10 },  // S: 金额(合并)
+      { wch: 4 },   // T
+      { wch: 20 }   // U: 备注
+    ];
+    
+    // 设置行高
+    ws['!rows'] = [
+      { hpt: 32 },  // 公司标题
+      { hpt: 24 },  // 对账单
+      { hpt: 24 },  // 对账信息
+      { hpt: 20 },  // 表头
+      ...sortedRecords.map(() => ({ hpt: 18 })),  // 数据行
+      { hpt: 20 },  // 合计行
+      { hpt: 12 },  // 空行
+      { hpt: 20 },  // 余额信息
+      { hpt: 30 }   // 签字行
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, '对账单');
+    
     // 使用 Blob 方式下载，兼容电脑端和手机端浏览器
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -4233,7 +4384,7 @@ function exportToExcel(records, filename) {
     dlLink.click();
     document.body.removeChild(dlLink);
     setTimeout(() => URL.revokeObjectURL(dlUrl), 1500);
-    showToast('Excel导出成功，已开始下载', 'success');
+    showToast('对账单导出成功，已开始下载', 'success');
   } catch (e) {
     console.error('Excel导出失败', e);
     showToast('导出失败：' + e.message, 'error');
