@@ -2286,7 +2286,7 @@ body::before {
           </div>
           <div class="form-group">
             <label class="form-label">发票单号</label>
-            <input type="text" class="form-input" id="invoiceNo" placeholder="如 FP26082501">
+            <input type="text" class="form-input" id="invoiceNo" placeholder="如 1234#">
           </div>
         </div>
         <div class="form-group">
@@ -4558,7 +4558,7 @@ function importFromExcel(file) {
             // 门牌号格式：字母+连字符+数字，如 A-12、B-3、A12
             const doorNoPattern = /^[A-Za-z]+[-]?\d+$/;
             // 发票号格式：两个字母+数字，如 FP26082501、FP-26082501
-            const invoiceNoPattern = /^[A-Za-z]{2}[-]?\d+$/;
+            const invoiceNoPattern = /^\d+#$/;
             
             // 尝试用分号、逗号分隔
             const parts = remark.split(/[；;，,]+/).map(p => p.trim()).filter(p => p);
