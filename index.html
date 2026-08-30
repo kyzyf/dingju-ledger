@@ -721,22 +721,6 @@ body::before {
   filter: blur(6px);
   user-select: none;
 }
-.amount-hidden .record-unit-price,
-.amount-hidden .detail-unit-price {
-  filter: blur(6px);
-  user-select: none;
-}
-/* 编辑表单中的金额计算结果也模糊 */
-.amount-hidden #calcResult,
-.amount-hidden #calcFormula {
-  filter: blur(6px);
-  user-select: none;
-}
-/* 操作日志中的金额也模糊 */
-.amount-hidden .audit-log-detail {
-  filter: blur(6px);
-  user-select: none;
-}
 
 /* ===== 登录页 ===== */
 .login-overlay {
@@ -977,11 +961,6 @@ body::before {
   justify-content: space-around;
   flex-shrink: 0;
   padding-bottom: env(safe-area-inset-bottom);
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
 }
 
 .bottom-nav-item {
@@ -2115,515 +2094,6 @@ body::before {
   border-bottom: 10px solid rgba(30,30,30,0.92);
 }
 
-
-/* ===== 结账窗口样式 ===== */
-.settlement-modal {
-  max-width: 900px;
-  width: 95vw;
-  max-height: 92vh;
-  display: flex;
-  flex-direction: column;
-}
-.settlement-modal .modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-.settlement-header {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-.settlement-header .form-group {
-  flex: 1;
-  min-width: 150px;
-  margin-bottom: 0;
-}
-.settlement-records-list {
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-.settlement-records-header {
-  display: grid;
-  grid-template-columns: 40px 1fr 100px 80px 100px 100px;
-  gap: 8px;
-  padding: 10px 12px;
-  background: var(--bg-secondary);
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  font-weight: 600;
-  border-bottom: 1px solid var(--border-color);
-}
-.settlement-record-item {
-  display: grid;
-  grid-template-columns: 40px 1fr 100px 80px 100px 100px;
-  gap: 8px;
-  padding: 10px 12px;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color);
-  font-size: var(--font-size-sm);
-  transition: background 0.2s;
-}
-.settlement-record-item:hover {
-  background: var(--bg-card-hover);
-}
-.settlement-record-item.selected {
-  background: var(--accent-dim);
-}
-.settlement-record-item .record-info {
-  min-width: 0;
-}
-.settlement-record-item .record-customer {
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.settlement-record-item .record-meta {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  margin-top: 2px;
-}
-.settlement-record-item input[type="number"] {
-  width: 100%;
-  padding: 4px 6px;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-}
-.settlement-record-item .amount-col {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-.settlement-records-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
-}
-.settlement-records-toolbar label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-}
-.settlement-summary {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 16px;
-}
-.settlement-summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  font-size: var(--font-size-sm);
-}
-.settlement-summary-row.label-row {
-  color: var(--text-secondary);
-}
-.settlement-summary-row .value {
-  font-variant-numeric: tabular-nums;
-}
-.settlement-summary-row.negative .value {
-  color: var(--danger);
-}
-.settlement-summary-row.total {
-  border-top: 1px solid var(--border-color);
-  margin-top: 8px;
-  padding-top: 12px;
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-}
-.settlement-summary-row.receivable {
-  font-size: var(--font-size-xl);
-  font-weight: 900;
-  color: var(--accent);
-}
-.settlement-discount-section {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 12px;
-  margin-bottom: 16px;
-}
-.settlement-discount-title {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: var(--text-primary);
-}
-.discount-input-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.discount-input-row select,
-.discount-input-row input {
-  padding: 6px 10px;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-}
-.discount-input-row input[type="number"] {
-  width: 100px;
-}
-.settlement-footer {
-  display: flex;
-  gap: 10px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-}
-.settlement-footer .btn {
-  flex: 1;
-}
-
-/* 结账凭证详情 */
-.settlement-detail-modal {
-  max-width: 700px;
-  width: 95vw;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-.settlement-detail-modal .modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-.settlement-detail-header {
-  text-align: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color);
-}
-.settlement-detail-id {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--accent);
-}
-.settlement-detail-meta {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-.settlement-detail-section {
-  margin-bottom: 16px;
-}
-.settlement-detail-section-title {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.settlement-detail-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-}
-.settlement-detail-table th {
-  text-align: left;
-  padding: 8px;
-  background: var(--bg-secondary);
-  font-weight: 600;
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-color);
-}
-.settlement-detail-table td {
-  padding: 8px;
-  border-bottom: 1px solid var(--border-color);
-}
-.settlement-detail-table .num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-.payment-record-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: var(--bg-card);
-  border-radius: var(--radius-sm);
-  margin-bottom: 6px;
-  font-size: var(--font-size-sm);
-}
-.payment-record-item .payment-info {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-.payment-record-item .payment-amount {
-  font-weight: 600;
-  color: var(--success);
-}
-.status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-}
-.status-badge.paid { background: var(--success-dim); color: var(--success); }
-.status-badge.partial { background: var(--warning-dim); color: var(--warning); }
-.status-badge.unpaid { background: var(--danger-dim); color: var(--danger); }
-
-/* 打印样式 */
-.print-area {
-  display: none;
-}
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  .print-area, .print-area * {
-    visibility: visible;
-  }
-  .print-area {
-    display: block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 20px;
-    background: white;
-    color: black;
-    font-size: 12px;
-  }
-  .print-header {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  .print-company-logo {
-    max-width: 120px;
-    max-height: 60px;
-    margin-bottom: 8px;
-  }
-  .print-company-name {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
-  .print-company-info {
-    font-size: 11px;
-    color: #666;
-  }
-  .print-title {
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-    margin: 16px 0;
-    letter-spacing: 4px;
-  }
-  .print-meta {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 12px;
-  }
-  .print-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 16px;
-  }
-  .print-table th, .print-table td {
-    border: 1px solid #333;
-    padding: 6px 8px;
-    text-align: left;
-    font-size: 11px;
-  }
-  .print-table th {
-    background: #f0f0f0;
-    font-weight: bold;
-  }
-  .print-table .num {
-    text-align: right;
-  }
-  .print-summary {
-    margin-left: auto;
-    width: 300px;
-    margin-bottom: 20px;
-  }
-  .print-summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 3px 0;
-    font-size: 12px;
-  }
-  .print-summary-row.total {
-    border-top: 1px solid #333;
-    margin-top: 4px;
-    padding-top: 6px;
-    font-weight: bold;
-    font-size: 14px;
-  }
-  .print-signatures {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 40px;
-  }
-  .print-signature-block {
-    width: 45%;
-  }
-  .print-signature-line {
-    border-bottom: 1px solid #333;
-    height: 40px;
-    margin-bottom: 4px;
-  }
-  .print-signature-label {
-    font-size: 12px;
-    margin-bottom: 4px;
-  }
-  .print-footer {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 10px;
-    color: #666;
-  }
-  .print-remark {
-    margin: 12px 0;
-    font-size: 12px;
-  }
-  .print-remark-label {
-    font-weight: bold;
-  }
-}
-
-/* 结账FAB按钮组 */
-.fab-group {
-  position: fixed;
-  right: 20px;
-  bottom: calc(var(--bottom-nav-height) + 20px);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 100;
-}
-.fab-secondary {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  color: var(--accent);
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-md);
-  transition: all 0.2s;
-}
-.fab-secondary:hover {
-  background: var(--accent-dim);
-  transform: scale(1.05);
-}
-.fab-secondary svg {
-  width: 22px;
-  height: 22px;
-}
-.fab-secondary .fab-tooltip {
-  position: absolute;
-  right: 60px;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  border: 1px solid var(--border-color);
-}
-.fab-secondary:hover .fab-tooltip {
-  opacity: 1;
-}
-
-/* 对账单样式 */
-.statement-modal {
-  max-width: 800px;
-  width: 95vw;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-.statement-modal .modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-
-/* 已结账标记 */
-.record-settled-badge {
-  display: inline-block;
-  padding: 1px 6px;
-  background: var(--info-dim);
-  color: var(--info);
-  border-radius: 8px;
-  font-size: 10px;
-  font-weight: 600;
-  margin-left: 6px;
-}
-
-/* 其他费用项 */
-.other-fee-item {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 6px;
-}
-.other-fee-item input {
-  padding: 6px 10px;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-}
-.other-fee-item input[name="feeName"] {
-  flex: 1;
-}
-.other-fee-item input[name="feeAmount"] {
-  width: 100px;
-}
-.other-fee-item .remove-fee-btn {
-  background: var(--danger-dim);
-  color: var(--danger);
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.add-fee-btn {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border: 1px dashed var(--accent);
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  width: 100%;
-}
-
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2662,7 +2132,7 @@ body::before {
     <button type="submit" class="login-btn" id="loginSubmitBtn" onclick="doLogin();return false;">登 录</button>
   </form>
   <div class="login-error" id="loginError"></div>
-  <div class="login-version">DINGJU LEDGER v1.0 &nbsp;|&nbsp; 默认账号 admin / zhangsan / lisi</div>
+  <div class="login-version">DINGJU LEDGER v4.0 &nbsp;|&nbsp; 默认账号 admin / zhangsan / lisi</div>
 </div>
 <div class="app-container" id="app">
   <!-- 侧边栏（大屏） -->
@@ -2693,7 +2163,7 @@ body::before {
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="nameplate">DINGJU LEDGER v1.0</div>
+      <div class="nameplate">DINGJU LEDGER v4.0</div>
     </div>
   </aside>
 
@@ -2758,16 +2228,10 @@ body::before {
       <!-- 动态渲染 -->
     </div>
 
-    <!-- 浮动按钮组 -->
-    <div class="fab-group">
-      <button class="fab" id="addBtn" title="新增单据">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-      <button class="fab-secondary" id="settlementBtn" title="客户结账">
-        <span class="fab-tooltip">客户结账</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
-      </button>
-    </div>
+    <!-- 浮动添加按钮 -->
+    <button class="fab" id="addBtn" title="新增单据">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
 
     <!-- 底部导航（手机） -->
     <nav class="bottom-nav">
@@ -2810,23 +2274,19 @@ body::before {
             <div class="autocomplete-dropdown" id="customerAutocomplete"></div>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">发票单号</label>
-          <input type="text" class="form-input" id="invoiceNo" placeholder="如 1234#">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">门牌号</label>
+            <input type="text" class="form-input" id="doorNo" placeholder="如 A-12">
+          </div>
+          <div class="form-group">
+            <label class="form-label">发票单号</label>
+            <input type="text" class="form-input" id="invoiceNo" placeholder="如 FP26082501">
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">产品款式</label>
           <input type="text" class="form-input" id="style" placeholder="如 不锈钢法兰">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">材质</label>
-            <input type="text" class="form-input" id="material" placeholder="如 35K / 35# / 45# / 不锈钢">
-          </div>
-          <div class="form-group">
-            <label class="form-label">加工工艺</label>
-            <input type="text" class="form-input" id="process" placeholder="如 调质 / 淬火 / 退火 / 镀锌">
-          </div>
         </div>
         <div class="form-row-3">
           <div class="form-group">
@@ -2842,12 +2302,8 @@ body::before {
             <input type="number" class="form-input" id="unitPrice" placeholder="0" step="0.01" min="0">
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">额外斤数 <span style="color:#999;font-size:12px;">可选，如3*130+125中的125</span></label>
-          <input type="number" class="form-input" id="extraWeight" placeholder="0" step="0.01" min="0">
-        </div>
         <div class="calc-display">
-          <div class="calc-formula" id="calcFormula">件数 × 每件斤数 + 额外斤数 = 总重量，总重量 × 单价 = 总金额</div>
+          <div class="calc-formula" id="calcFormula">件数 × 每件斤数 × 单价 = 总金额</div>
           <div class="calc-result tabular-nums"><span class="currency">¥</span><span id="calcResult">0.00</span></div>
         </div>
         <div class="form-row">
@@ -2859,10 +2315,6 @@ body::before {
             <label class="form-label">单据日期</label>
             <input type="date" class="form-input" id="recordDate">
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">备注</label>
-          <textarea class="form-input" id="remark" placeholder="客户特殊要求或其他备注信息" rows="2" style="resize:vertical;"></textarea>
         </div>
       </form>
     </div>
@@ -2892,51 +2344,6 @@ body::before {
       <button class="btn btn-danger" id="deleteRecordBtn">删除</button>
       <button class="btn btn-secondary" id="viewCustomerBtn">客户档案</button>
       <button class="btn btn-primary" id="editRecordBtn">编辑</button>
-    </div>
-  </div>
-</div>
-
-<!-- 回收站列表弹窗 -->
-<div class="modal-overlay" id="trashModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" style="color:var(--warning);">回收站</div>
-      <button class="modal-close" data-close="trashModal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body" style="padding:0;">
-      <div id="trashListContainer" class="record-list" style="padding:12px;">
-        <!-- 动态渲染已删除记录 -->
-      </div>
-      <div id="trashEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--text-muted);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:16px;opacity:0.5;"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        <div style="font-size:var(--font-size-md);">回收站为空</div>
-        <div style="font-size:var(--font-size-xs);margin-top:8px;opacity:0.7;">已删除的单据会显示在这里</div>
-      </div>
-    </div>
-    <div class="modal-footer" style="justify-content:space-between;">
-      <div id="trashCountInfo" style="font-size:var(--font-size-xs);color:var(--text-muted);">共 0 条已删除记录</div>
-      <button class="btn btn-danger" id="emptyTrashBtn" style="display:none;">清空全部</button>
-    </div>
-  </div>
-</div>
-
-<!-- 回收站详情弹窗 -->
-<div class="modal-overlay" id="trashDetailModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" style="color:var(--warning);">已删除单据详情</div>
-      <button class="modal-close" onclick="closeModal('trashDetailModal');">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body" id="trashDetailBody">
-      <!-- 动态渲染 -->
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-danger" id="permanentDeleteBtn">永久删除</button>
-      <button class="btn btn-primary" id="restoreRecordBtn">复原</button>
     </div>
   </div>
 </div>
@@ -3043,13 +2450,6 @@ body::before {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-muted)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </div>
         <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none;">
-        <div class="settings-item" id="trashBtn" style="border-color: var(--warning);">
-          <div>
-            <div class="settings-item-label" style="color: var(--warning);">回收站</div>
-            <div class="settings-item-desc" id="trashCountDesc">查看已删除的单据，可复原或永久删除</div>
-          </div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--warning)"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-        </div>
         <div class="settings-item" id="clearDataBtn" style="border-color: var(--danger);">
           <div>
             <div class="settings-item-label" style="color: var(--danger);">清空所有数据</div>
@@ -3110,15 +2510,7 @@ body::before {
         </div>
         <div class="settings-item" id="pullCloudBtn" style="cursor:pointer;">
           <div class="settings-item-label">从云端拉取</div>
-          <div class="settings-item-desc">合并云端数据：新增合并增加，删除/修改同步</div>
-        </div>
-        <div class="settings-item" style="flex-direction:column;align-items:stretch;gap:8px;border-top:1px solid var(--border-color);padding-top:12px;">
-          <div class="settings-item-label" style="color:var(--danger);">按客户名删除云端数据</div>
-          <div class="settings-item-desc">输入客户名，标记删除并同步到所有账号（可在回收站恢复）</div>
-          <div style="display:flex;gap:8px;">
-            <input type="text" id="deleteCustomerInput" placeholder="输入客户名，如：洪友" style="flex:1;padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text-primary);font-size:13px;">
-            <button id="deleteCustomerCloudBtn" style="padding:8px 16px;background:var(--danger);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;">删除</button>
-          </div>
+          <div class="settings-item-desc">用云端数据覆盖本地</div>
         </div>
       </div>
 <div class="settings-group">
@@ -3126,9 +2518,9 @@ body::before {
         <div class="settings-item" style="cursor: default;">
           <div>
             <div class="settings-item-label">鼎炬账本</div>
-            <div class="settings-item-desc">版本 1.0.0 · 金属加工记账系统</div>
+            <div class="settings-item-desc">版本 4.0.0 · 金属加工记账系统</div>
           </div>
-          <div class="nameplate">v1.0</div>
+          <div class="nameplate">v4.0</div>
         </div>
       </div>
     </div>
@@ -3209,7 +2601,6 @@ const CLOUD_CONFIG_KEY = 'dingju_cloud_config';
 let supabaseClient = null;
 let cloudSyncEnabled = false;
 let isSyncing = false;
-let skipCloudSync = false;
 
 function initCloudSync() {
   try {
@@ -3243,182 +2634,24 @@ function updateSyncStatus(text) {
   if (el) el.textContent = text;
 }
 
-// 合并两组记录：按ID去重，相同ID以更新时间较新的为准，保留 deleted 标记
-// 返回 {records: 合并后数组, conflicts: 冲突记录ID列表}
-function mergeRecords(localRecords, cloudRecords) {
-  const map = {};
-  const conflicts = [];
-  // 先加入云端记录
-  (cloudRecords || []).forEach(r => {
-    if (r && r.id) map[r.id] = r;
-  });
-  // 再加入本地记录，相同ID比较更新时间
-  (localRecords || []).forEach(r => {
-    if (!r || !r.id) return;
-    const existing = map[r.id];
-    if (!existing) {
-      map[r.id] = r;
-    } else {
-      // 比较更新时间，取较新的
-      const localTime = new Date(r.updatedAt || r.createdAt || 0).getTime();
-      const cloudTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
-      // 检测冲突：双方都有修改且更新时间不同
-      if (localTime > 0 && cloudTime > 0 && localTime !== cloudTime) {
-        conflicts.push(r.id);
-      }
-      if (localTime >= cloudTime) {
-        map[r.id] = r;
-      }
-    }
-  });
-  return { records: Object.values(map), conflicts };
-}
-
-// 从合并后的完整记录中分离出活跃记录和已删除记录
-function separateRecords(allRecords) {
-  const active = [];
-  const deleted = [];
-  (allRecords || []).forEach(r => {
-    if (r && r.deleted) {
-      deleted.push(r);
-    } else if (r) {
-      // 确保没有 deleted 标记
-      if (r.deleted !== undefined) delete r.deleted;
-      active.push(r);
-    }
-  });
-  return { active, deleted };
-}
-
 async function syncToCloud() {
   if (!cloudSyncEnabled || !supabaseClient || isSyncing) return;
   isSyncing = true;
   updateSyncStatus('同步中...');
-  
-  const maxRetries = 3;
-  let lastConflictCount = 0;
-  
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      // 步骤1：从云端拉取当前最新数据
-      let cloudRecords = [];
-      let cloudSettings = {};
-      let cloudSettlements = [];
-      let cloudUpdatedAt = null;
-      try {
-        const { data: existing } = await supabaseClient
-          .from('ledger_sync')
-          .select('*')
-          .eq('id', 'dingju_ledger_data')
-          .maybeSingle();
-        if (existing && existing.records) {
-          cloudRecords = existing.records;
-          cloudSettings = existing.settings || {};
-          cloudSettlements = existing.settlements || [];
-          cloudUpdatedAt = existing.updated_at;
-        }
-      } catch(e) {
-        console.log('云端无现有数据，直接上传');
-      }
-      
-      // 步骤2：合并本地与云端数据（包含活跃和已删除）
-      const localAll = [...state.records, ...state.deletedRecords];
-      const mergeResult = mergeRecords(localAll, cloudRecords);
-      let mergedAll = mergeResult.records;
-      lastConflictCount = mergeResult.conflicts.length;
-      const mergedSettings = {...cloudSettings, ...state.settings};
-      // 合并结账凭证（按ID去重，保留最新版本）
-      const mergedSettlements = mergeSettlements(state.settlements, cloudSettlements);
-      
-      // 关键：从合并结果中移除待永久删除的记录（确保云端也删除）
-      if (state.pendingPermanentDeletes.length > 0) {
-        const beforeCount = mergedAll.length;
-        mergedAll = mergedAll.filter(r => !state.pendingPermanentDeletes.includes(r.id));
-        const removedCount = beforeCount - mergedAll.length;
-        if (removedCount > 0) {
-          console.log(`永久删除同步：从云端数据中移除 ${removedCount} 条记录`);
-        }
-      }
-      
-      // 步骤3：上传合并结果
-      const myUpdatedAt = new Date().toISOString();
-      const payload = {
-        id: 'dingju_ledger_data',
-        records: mergedAll,
-        settlements: mergedSettlements,
-        settings: mergedSettings,
-        updated_at: myUpdatedAt
-      };
-      const { error } = await supabaseClient.from('ledger_sync').upsert(payload);
-      if (error) throw error;
-      
-      // 步骤4：并发验证 - 立即拉取确认我们的写入生效
-      let verifyPassed = true;
-      try {
-        const { data: verify } = await supabaseClient
-          .from('ledger_sync')
-          .select('*')
-          .eq('id', 'dingju_ledger_data')
-          .maybeSingle();
-        // 如果云端 updated_at 与我们写入的不一致，说明其他设备在期间也写入了，需要重试
-        if (verify && verify.updated_at && verify.updated_at !== myUpdatedAt) {
-          console.warn(`并发冲突检测（第${attempt}次），其他设备同时更新，重新合并...`);
-          verifyPassed = false;
-          if (attempt < maxRetries) {
-            await new Promise(r => setTimeout(r, 500 * attempt)); // 递增延迟
-            continue;
-          }
-        }
-        
-        // 关键验证：确认待永久删除的记录确实不在云端数据中
-        if (verifyPassed && state.pendingPermanentDeletes.length > 0 && verify && verify.records) {
-          const cloudIds = verify.records.map(r => r.id);
-          const stillInCloud = state.pendingPermanentDeletes.filter(id => cloudIds.includes(id));
-          if (stillInCloud.length > 0) {
-            console.error(`永久删除验证失败：${stillInCloud.length}条记录仍在云端，将保留待删除列表下次重试`, stillInCloud);
-            verifyPassed = false;
-            // 不重试，保留pendingPermanentDeletes，下次同步时再删
-          } else {
-            console.log(`永久删除验证通过：${state.pendingPermanentDeletes.length}条记录已从云端彻底删除`);
-          }
-        }
-      } catch(e) {
-        console.warn('验证写入失败，假设写入成功:', e);
-      }
-      
-      // 步骤5：同步成功，将合并结果写回本地
-      const separated = separateRecords(mergedAll);
-      state.records = separated.active;
-      state.deletedRecords = separated.deleted;
-      // 同步成功后清空待永久删除列表（只有验证通过才清空）
-      if (state.pendingPermanentDeletes.length > 0 && verifyPassed) {
-        state.pendingPermanentDeletes = [];
-        console.log('待永久删除列表已清空');
-      }
-      saveData();
-      renderAll();
-      
-      updateSyncStatus('已同步 ' + new Date().toLocaleTimeString());
-      addAuditLog('cloud_sync', `推送到云端（合并后${mergedAll.length}条，活跃${state.records.length}条，已删除${state.deletedRecords.length}条${lastConflictCount > 0 ? '，冲突' + lastConflictCount + '条' : ''}）`);
-      
-      // 冲突提示
-      if (lastConflictCount > 0) {
-        setTimeout(() => {
-          showToast(`检测到${lastConflictCount}条记录多设备修改，已自动保留最新版本`, 'info', 5000);
-        }, 500);
-      }
-      
-      isSyncing = false;
-      return;
-    } catch(e) {
-      console.error(`云端同步失败（第${attempt}次）:`, e);
-      if (attempt === maxRetries) {
-        updateSyncStatus('同步失败: ' + (e.message || '未知错误'));
-        showToast('同步失败，请稍后重试', 'error');
-      } else {
-        await new Promise(r => setTimeout(r, 500 * attempt));
-      }
-    }
+  try {
+    const payload = {
+      id: 'dingju_ledger_data',
+      records: state.records,
+      settings: state.settings,
+      updated_at: new Date().toISOString()
+    };
+    const { error } = await supabaseClient.from('ledger_sync').upsert(payload);
+    if (error) throw error;
+    updateSyncStatus('已同步 ' + new Date().toLocaleTimeString());
+    addAuditLog('cloud_sync', `推送到云端（${state.records.length}条）`);
+  } catch(e) {
+    console.error('云端同步失败:', e);
+    updateSyncStatus('同步失败: ' + (e.message || '未知错误'));
   }
   isSyncing = false;
 }
@@ -3428,7 +2661,7 @@ async function pullFromCloud() {
     alert('请先配置云端同步');
     return;
   }
-  if (!confirm('确定要从云端拉取数据吗？\n\n云端数据将与本地数据合并：\n• 新增数据会合并增加（如李四录7月、张三录5月，两边都有）\n• 删除/修改会同步（任一方删除，另一方拉取后也消失）\n• 相同单据按最新版本保留\n\n三个账号共享同一云端数据。')) return;
+  if (!confirm('确定要用云端数据覆盖本地数据吗？本地未同步的数据将丢失！')) return;
   updateSyncStatus('拉取中...');
   try {
     const { data, error } = await supabaseClient.from('ledger_sync').select('*').eq('id', 'dingju_ledger_data').maybeSingle();
@@ -3439,36 +2672,13 @@ async function pullFromCloud() {
       return;
     }
     if (data.records) {
-      // 合并云端数据到本地（包含活跃和已删除），按ID去重，相同ID保留最新版本
-      // 这样新增数据会合并增加，删除操作（deleted=true）也会同步
-      const beforeActive = state.records.length;
-      const beforeDeleted = state.deletedRecords.length;
-      const beforeSettlements = state.settlements.length;
-      const localAll = [...state.records, ...state.deletedRecords];
-      const mergeResult = mergeRecords(localAll, data.records);
-      const mergedAll = mergeResult.records;
-      const conflictCount = mergeResult.conflicts.length;
-      const separated = separateRecords(mergedAll);
-      state.records = separated.active;
-      state.deletedRecords = separated.deleted;
-      // 合并结账凭证
-      if (data.settlements && data.settlements.length > 0) {
-        state.settlements = mergeSettlements(state.settlements, data.settlements);
-      }
+      state.records = data.records;
       if (data.settings) state.settings = {...state.settings, ...data.settings};
-      const addedActive = state.records.length - beforeActive;
-      addAuditLog('cloud_pull', `从云端拉取合并数据（云端${data.records.length}条，合并后活跃${state.records.length}条，已删除${state.deletedRecords.length}条${conflictCount > 0 ? '，冲突' + conflictCount + '条' : ''}）`);
-      // 合并后跳过自动同步，避免把刚拉取合并的数据又上传回去
-      skipCloudSync = true;
+      addAuditLog('cloud_pull', `从云端拉取数据（${data.records.length}条）`);
       saveData();
       renderAll();
       updateSyncStatus('拉取成功 ' + new Date().toLocaleTimeString());
-      const addedSettlements = state.settlements.length - beforeSettlements;
-      let msg = `云端数据已合并到本地\n\n云端：单据${data.records.length}条 / 结账凭证${(data.settlements || []).length}份\n本地原有：活跃${beforeActive}条 / 已删除${beforeDeleted}条 / 凭证${beforeSettlements}份\n合并后：活跃${state.records.length}条 / 已删除${state.deletedRecords.length}条 / 凭证${state.settlements.length}份\n新增活跃：${addedActive}条 / 新增凭证：${addedSettlements}份\n\n✓ 新增数据已合并增加\n✓ 删除/修改已同步\n✓ 结账凭证已同步`;
-      if (conflictCount > 0) {
-        msg += `\n\n⚠️ 检测到${conflictCount}条记录多设备修改，已自动保留最新版本`;
-      }
-      alert(msg);
+      alert('云端数据已拉取到本地');
     } else {
       alert('云端暂无数据');
       updateSyncStatus('云端暂无数据');
@@ -3482,130 +2692,6 @@ async function pullFromCloud() {
       alert('拉取失败: ' + (e.message || '未知错误'));
       updateSyncStatus('拉取失败');
     }
-  }
-}
-
-// 合并结账凭证（按ID去重，保留最新版本，已撤销的保留）
-function mergeSettlements(local, cloud) {
-  const map = new Map();
-  [...local, ...cloud].forEach(s => {
-    if (!s || !s.id) return;
-    const existing = map.get(s.id);
-    if (!existing) {
-      map.set(s.id, s);
-    } else {
-      // 保留更新时间较新的版本
-      const localTime = new Date(s.updatedAt || s.createdAt || 0).getTime();
-      const existingTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
-      if (localTime > existingTime) {
-        map.set(s.id, s);
-      }
-    }
-  });
-  return Array.from(map.values()).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-}
-
-// 按客户名彻底删除云端数据（包括活跃和已删除单据）
-async function deleteCustomerFromCloud() {
-  const customerName = document.getElementById('deleteCustomerInput').value.trim();
-  if (!customerName) {
-    alert('请输入要删除的客户名');
-    return;
-  }
-  if (!cloudSyncEnabled || !supabaseClient) {
-    alert('云端同步未配置或未启用');
-    return;
-  }
-  if (!confirm(`确定要删除云端所有客户名为"${customerName}"的单据吗？
-
-删除后会同步到所有账号：
-• 其他账号从云端拉取后，这些单据会进入回收站
-• 可在回收站中恢复或彻底删除
-• 三个账号数据保持统一`)) return;
-  
-  try {
-    updateSyncStatus('正在删除云端数据...');
-    // 步骤1：从云端获取当前最新数据
-    const { data, error } = await supabaseClient
-      .from('ledger_sync')
-      .select('*')
-      .eq('id', 'dingju_ledger_data')
-      .maybeSingle();
-    
-    if (error) throw error;
-    
-    if (!data || !data.records) {
-      alert('云端暂无数据');
-      updateSyncStatus('云端暂无数据');
-      return;
-    }
-    
-    const allRecords = data.records || [];
-    // 统计要删除的数量（只统计未删除的）
-    const toDelete = allRecords.filter(r => 
-      r.customerName && r.customerName.includes(customerName) && !r.deleted
-    );
-    const deletedCount = toDelete.length;
-    
-    if (deletedCount === 0) {
-      alert(`云端未找到客户名为"${customerName}"的活跃单据`);
-      updateSyncStatus('未找到匹配数据');
-      return;
-    }
-    
-    // 关键：不彻底删除，而是标记为deleted=true并更新时间戳
-    // 这样合并时，deleted=true的版本会覆盖其他账号本地的deleted=false版本
-    // 确保删除操作能同步到所有账号
-    const now = new Date().toISOString();
-    const updatedRecords = allRecords.map(r => {
-      if (r.customerName && r.customerName.includes(customerName) && !r.deleted) {
-        return {...r, deleted: true, deletedAt: now, updated_at: now};
-      }
-      return r;
-    });
-    
-    // 步骤2：把标记删除后的数据写回云端
-    const payload = {
-      id: 'dingju_ledger_data',
-      records: updatedRecords,
-      settings: data.settings || state.settings,
-      updated_at: now
-    };
-    
-    const { error: upsertError } = await supabaseClient
-      .from('ledger_sync')
-      .upsert(payload);
-    
-    if (upsertError) throw upsertError;
-    
-    // 步骤3：同时更新本地数据
-    const separated = separateRecords(updatedRecords);
-    state.records = separated.active;
-    state.deletedRecords = separated.deleted;
-    skipCloudSync = true; // 避免把刚同步的数据又上传回去
-    saveData();
-    renderAll();
-    
-    addAuditLog('cloud_delete_customer', `按客户名删除云端数据（标记删除，同步所有账号）：${customerName}，共删除${deletedCount}条`);
-    
-    updateSyncStatus('删除成功 ' + new Date().toLocaleTimeString());
-    alert(`删除成功！
-
-已将云端客户"${customerName}"的 ${deletedCount} 条单据标记为已删除
-
-✓ 删除操作会同步到所有账号
-✓ 其他账号从云端拉取后，这些单据会进入回收站
-✓ 可在回收站中恢复或彻底删除
-
-三个账号数据已统一。`);
-    
-    // 清空输入框
-    document.getElementById('deleteCustomerInput').value = '';
-    
-  } catch(e) {
-    console.error('按客户名删除云端数据失败:', e);
-    alert('删除失败: ' + (e.message || '未知错误'));
-    updateSyncStatus('删除失败');
   }
 }
 
@@ -3632,8 +2718,6 @@ function bindCloudSyncEvents() {
   if (saveBtn) saveBtn.addEventListener('click', saveCloudConfig);
   if (syncBtn) syncBtn.addEventListener('click', syncToCloud);
   if (pullBtn) pullBtn.addEventListener('click', pullFromCloud);
-  const deleteCustomerBtn = document.getElementById('deleteCustomerCloudBtn');
-  if (deleteCustomerBtn) deleteCustomerBtn.addEventListener('click', deleteCustomerFromCloud);
 }
 
 // ===== 操作审计日志 =====
@@ -3682,7 +2766,7 @@ function renderAuditLog() {
       html += `<td style="padding:8px 6px;color:var(--text-secondary);white-space:nowrap;">${log.time}</td>`;
       html += `<td style="padding:8px 6px;color:var(--text-primary);">${log.operator}</td>`;
       html += `<td style="padding:8px 6px;"><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:var(--info-dim);color:var(--info);font-size:11px;">${actionLabels[log.action]||log.action}</span></td>`;
-      html += `<td class="audit-log-detail" style="padding:8px 6px;color:var(--text-secondary);">${log.detail}</td>`;
+      html += `<td style="padding:8px 6px;color:var(--text-secondary);">${log.detail}</td>`;
       html += '</tr>';
     }
     html += '</tbody></table>';
@@ -3707,7 +2791,6 @@ function checkBackupReminder() {
       setTimeout(() => {
         if (confirm('检测到您从未导出过数据备份。\n为防止数据丢失，建议定期导出Excel备份。\n\n是否现在前往设置页导出备份？')) {
           openModal('settingsModal');
-          updateTrashCount();
         }
       }, 2000);
       return;
@@ -3765,20 +2848,13 @@ const SETTINGS_KEY = 'dingju_ledger_settings';
 
 let state = {
   records: [],
-  deletedRecords: [],  // 软删除：已删除但未永久清除的记录（带 deleted: true 标记）
-  pendingPermanentDeletes: [],  // 待永久删除的记录ID列表，同步时从云端数据中移除
-  settlements: [],  // 结账凭证数组
   currentDate: new Date(),
   currentView: 'records',
   searchQuery: '',
   amountHidden: false,
   settings: {
     theme: 'dark',
-    fontSize: 'medium',
-    companyName: '温州鼎炬金属科技有限公司',
-    companyLogo: '',
-    companyAddress: '',
-    companyPhone: ''
+    fontSize: 'medium'
   },
   editingRecordId: null,
   selectedCustomer: null,
@@ -3786,22 +2862,7 @@ let state = {
   calendarViewDate: new Date(),
   pendingDeleteId: null,
   pendingDeleteTimer: null,
-  modalStack: [],  // 逐级导航栈：记录弹窗打开顺序，支持逐级返回
-  // 结账窗口临时状态
-  settlement: {
-    customerName: '',
-    date: '',
-    selectedRecordIds: [],
-    itemAdjustments: {},  // {recordId: {actualWeight, itemDiscountType, itemDiscountValue, itemDiscountReason}}
-    wholeDiscountType: 'none',  // none/percentage/amount
-    wholeDiscountValue: 0,
-    wholeDiscountReason: '',
-    roundingAmount: 0,
-    paidAmount: 0,
-    remark: '',
-    otherFees: []  // [{name, amount}]
-  },
-  viewingSettlementId: null
+  modalStack: []  // 逐级导航栈：记录弹窗打开顺序，支持逐级返回
 };
 
 // 加载数据
@@ -3809,32 +2870,15 @@ function loadData() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const parsed = JSON.parse(saved);
-      // 兼容新旧格式：旧格式是纯数组，新格式是 {records, deletedRecords}
-      if (Array.isArray(parsed)) {
-        state.records = parsed;
-        state.deletedRecords = [];
-      } else {
-        state.records = parsed.records || [];
-        state.deletedRecords = parsed.deletedRecords || [];
-        state.pendingPermanentDeletes = parsed.pendingPermanentDeletes || [];
-        state.settlements = parsed.settlements || [];
-        if (parsed.settings) {
-          state.settings = { ...state.settings, ...parsed.settings };
-        }
-      }
+      state.records = JSON.parse(saved);
     } else {
       // 首次使用，加载初始数据
       state.records = JSON.parse(JSON.stringify(INITIAL_RECORDS));
-      state.deletedRecords = [];
-      state.pendingPermanentDeletes = [];
       saveData();
     }
   } catch (e) {
     console.error('加载数据失败', e);
     state.records = JSON.parse(JSON.stringify(INITIAL_RECORDS));
-    state.deletedRecords = [];
-    state.pendingPermanentDeletes = [];
     saveData();
   }
   try {
@@ -3850,20 +2894,13 @@ function loadData() {
 // 保存数据
 function saveData() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      records: state.records,
-      deletedRecords: state.deletedRecords,
-      pendingPermanentDeletes: state.pendingPermanentDeletes,
-      settlements: state.settlements
-    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.records));
   } catch (e) {
     console.error('保存数据失败', e);
     showToast('保存失败，请检查存储空间', 'error');
   }
   // 云端同步（异步，不阻塞界面）
-  if (skipCloudSync) {
-    skipCloudSync = false;
-  } else if (typeof cloudSyncEnabled !== 'undefined' && cloudSyncEnabled && !isSyncing) {
+  if (typeof cloudSyncEnabled !== 'undefined' && cloudSyncEnabled && !isSyncing) {
     setTimeout(syncToCloud, 500);
   }
 }
@@ -3911,12 +2948,11 @@ function formatMoneyWithComma(num) {
   return Number(num).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function calculateTotal(quantity, weightPerPiece, unitPrice, extraWeight) {
+function calculateTotal(quantity, weightPerPiece, unitPrice) {
   const q = parseFloat(quantity) || 0;
   const w = parseFloat(weightPerPiece) || 0;
   const p = parseFloat(unitPrice) || 0;
-  const e = parseFloat(extraWeight) || 0;
-  return (q * w + e) * p;
+  return q * w * p;
 }
 
 function getPaymentStatus(record) {
@@ -3964,8 +3000,6 @@ function getFilteredRecords() {
     records = records.filter(r =>
       (r.customerName && r.customerName.toLowerCase().includes(q)) ||
       (r.style && r.style.toLowerCase().includes(q)) ||
-      (r.material && r.material.toLowerCase().includes(q)) ||
-      (r.process && r.process.toLowerCase().includes(q)) ||
       (r.invoiceNo && r.invoiceNo.toLowerCase().includes(q)) ||
       (r.doorNo && r.doorNo.toLowerCase().includes(q))
     );
@@ -4000,7 +3034,7 @@ function renderSummary() {
     const total = parseFloat(r.totalAmount) || 0;
     const paid = parseFloat(r.paidAmount) || 0;
     totalQuantity += qty;
-    totalWeight += qty * weight + (parseFloat(r.extraWeight) || 0);
+    totalWeight += qty * weight;
     totalReceived += paid;
     totalUnpaid += Math.max(0, total - paid);
   });
@@ -4039,8 +3073,8 @@ function renderRecordList() {
       <div class="record-card" data-id="${r.id}">
         <div class="record-card-header">
           <div class="record-customer">
-            ${escapeHtml(r.customerName || '未命名客户')}${r.doorNo ? '（' + escapeHtml(r.doorNo) + '）' : ''}
-            ${r.settled ? '<span class="record-settled-badge">已结账</span>' : ''}
+            ${escapeHtml(r.customerName || '未命名客户')}
+            ${r.doorNo ? `<span class="door-tag">${escapeHtml(r.doorNo)}</span>` : ''}
             ${state.searchQuery ? `<span class="door-tag" style="background:var(--bg-secondary);color:var(--text-muted);">${r.date}</span>` : ''}
           </div>
           <span class="record-status ${status}">${getStatusText(status)}</span>
@@ -4049,7 +3083,7 @@ function renderRecordList() {
           ${r.style ? `
           <div class="record-style">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-            ${escapeHtml(r.style)}${r.material ? ` · ${escapeHtml(r.material)}` : ''}
+            ${escapeHtml(r.style)}
           </div>` : ''}
           <div class="key-stats">
             <div class="key-stat">
@@ -4064,7 +3098,7 @@ function renderRecordList() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 总重量
               </div>
-              <div class="key-stat-value tabular-nums">${formatMoney((r.quantity || 0) * (r.weightPerPiece || 0) + (r.extraWeight || 0))}<span class="unit">斤</span></div>
+              <div class="key-stat-value tabular-nums">${formatMoney((r.quantity || 0) * (r.weightPerPiece || 0))}<span class="unit">斤</span></div>
             </div>
             <div class="key-stat amount">
               <div class="key-stat-label">
@@ -4079,7 +3113,7 @@ function renderRecordList() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
               ${r.weightPerPiece || 0}斤/件
             </span>
-            <span class="record-unit-price">
+            <span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
               ¥${r.unitPrice || 0}/斤
             </span>
@@ -4260,17 +3294,14 @@ function openRecordModal(recordId = null) {
       document.getElementById('recordModalTitle').textContent = '编辑单据';
       document.getElementById('recordId').value = record.id;
       document.getElementById('customerName').value = record.customerName || '';
+      document.getElementById('doorNo').value = record.doorNo || '';
       document.getElementById('invoiceNo').value = record.invoiceNo || '';
       document.getElementById('style').value = record.style || '';
-      document.getElementById('material').value = record.material || '';
-      document.getElementById('process').value = record.process || '';
       document.getElementById('quantity').value = record.quantity || '';
       document.getElementById('weightPerPiece').value = record.weightPerPiece || '';
-      document.getElementById('extraWeight').value = record.extraWeight || '';
       document.getElementById('unitPrice').value = record.unitPrice || '';
       document.getElementById('paidAmount').value = record.paidAmount || '';
       document.getElementById('recordDate').value = record.date || formatDate(new Date());
-      document.getElementById('remark').value = record.remark || '';
     }
   } else {
     document.getElementById('recordModalTitle').textContent = '新增单据';
@@ -4286,20 +3317,11 @@ function openRecordModal(recordId = null) {
 function updateCalcDisplay() {
   const q = document.getElementById('quantity').value;
   const w = document.getElementById('weightPerPiece').value;
-  const e = document.getElementById('extraWeight').value;
   const p = document.getElementById('unitPrice').value;
-  const total = calculateTotal(q, w, p, e);
+  const total = calculateTotal(q, w, p);
 
-  const qty = parseFloat(q) || 0;
-  const weight = parseFloat(w) || 0;
-  const extra = parseFloat(e) || 0;
-  const totalWeight = qty * weight + extra;
-  
-  let formula = `${qty} × ${weight}斤`;
-  if (extra > 0) formula += ` + ${extra}斤`;
-  formula += ` = ${totalWeight}斤 × ${p || 0}元/斤`;
-  
-  document.getElementById('calcFormula').textContent = formula;
+  document.getElementById('calcFormula').textContent =
+    `${q || 0} × ${w || 0} × ${p || 0} = 总金额`;
   document.getElementById('calcResult').textContent = formatMoney(total);
 }
 
@@ -4313,27 +3335,22 @@ function saveRecord() {
 
   const quantity = parseFloat(document.getElementById('quantity').value) || 0;
   const weightPerPiece = parseFloat(document.getElementById('weightPerPiece').value) || 0;
-  const extraWeight = parseFloat(document.getElementById('extraWeight').value) || 0;
   const unitPrice = parseFloat(document.getElementById('unitPrice').value) || 0;
-  const totalAmount = calculateTotal(quantity, weightPerPiece, unitPrice, extraWeight);
+  const totalAmount = calculateTotal(quantity, weightPerPiece, unitPrice);
   const paidAmount = parseFloat(document.getElementById('paidAmount').value) || 0;
   const date = document.getElementById('recordDate').value || formatDate(new Date());
 
   const recordData = {
     customerName,
-    doorNo: '',  // 门牌号不再单独录入，导入时合并到客户名
+    doorNo: document.getElementById('doorNo').value.trim(),
     invoiceNo: document.getElementById('invoiceNo').value.trim(),
     style: document.getElementById('style').value.trim(),
-    material: document.getElementById('material').value.trim(),
-    process: document.getElementById('process').value.trim(),
     quantity,
     weightPerPiece,
-    extraWeight,
     unitPrice,
     totalAmount,
     paidAmount,
-    date,
-    remark: document.getElementById('remark').value.trim()
+    date
   };
 
   if (state.editingRecordId) {
@@ -4372,17 +3389,17 @@ function openDetailModal(recordId) {
       <div class="detail-section-title">基本信息</div>
       <div class="detail-row">
         <span class="label">客户名称</span>
-        <span class="value">${escapeHtml(record.customerName)}${record.doorNo ? '（' + escapeHtml(record.doorNo) + '）' : ''}</span>
+        <span class="value">${escapeHtml(record.customerName)}</span>
       </div>
+      ${record.doorNo ? `
+      <div class="detail-row">
+        <span class="label">门牌号</span>
+        <span class="value">${escapeHtml(record.doorNo)}</span>
+      </div>` : ''}
       ${record.invoiceNo ? `
       <div class="detail-row">
         <span class="label">发票单号</span>
         <span class="value">${escapeHtml(record.invoiceNo)}</span>
-      </div>` : ''}
-      ${record.remark ? `
-      <div class="detail-row">
-        <span class="label">备注</span>
-        <span class="value">${escapeHtml(record.remark)}</span>
       </div>` : ''}
       <div class="detail-row">
         <span class="label">单据日期</span>
@@ -4400,16 +3417,6 @@ function openDetailModal(recordId) {
         <span class="label">产品款式</span>
         <span class="value">${escapeHtml(record.style)}</span>
       </div>` : ''}
-      ${record.material ? `
-      <div class="detail-row">
-        <span class="label">材质</span>
-        <span class="value">${escapeHtml(record.material)}</span>
-      </div>` : ''}
-      ${record.process ? `
-      <div class="detail-row">
-        <span class="label">加工工艺</span>
-        <span class="value">${escapeHtml(record.process)}</span>
-      </div>` : ''}
       <div class="detail-row">
         <span class="label">件数</span>
         <span class="value">${record.quantity || 0} 件</span>
@@ -4418,25 +3425,20 @@ function openDetailModal(recordId) {
         <span class="label">每件重量</span>
         <span class="value">${record.weightPerPiece || 0} 斤</span>
       </div>
-      ${record.extraWeight ? `
-      <div class="detail-row">
-        <span class="label">额外斤数</span>
-        <span class="value">${record.extraWeight} 斤</span>
-      </div>` : ''}
       <div class="detail-row">
         <span class="label" style="color:var(--accent);font-weight:600;">总重量</span>
-        <span class="value" style="color:var(--accent);font-weight:700;font-size:var(--font-size-lg);">${formatMoney((record.quantity || 0) * (record.weightPerPiece || 0) + (record.extraWeight || 0))} 斤</span>
+        <span class="value" style="color:var(--accent);font-weight:700;font-size:var(--font-size-lg);">${formatMoney((record.quantity || 0) * (record.weightPerPiece || 0))} 斤</span>
       </div>
       <div class="detail-row">
         <span class="label">单价</span>
-        <span class="value detail-unit-price">¥${formatMoney(record.unitPrice)} /斤</span>
+        <span class="value">¥${formatMoney(record.unitPrice)} /斤</span>
       </div>
     </div>
     <div class="detail-section">
       <div class="detail-section-title">金额信息</div>
       <div class="detail-row">
         <span class="label">计算公式</span>
-        <span class="value" style="font-size:var(--font-size-xs);color:var(--text-muted);font-family:monospace;">${record.quantity || 0}×${record.weightPerPiece || 0}${record.extraWeight ? '+' + record.extraWeight : ''} × ${record.unitPrice || 0}</span>
+        <span class="value" style="font-size:var(--font-size-xs);color:var(--text-muted);font-family:monospace;">${record.quantity || 0} × ${record.weightPerPiece || 0} × ${record.unitPrice || 0}</span>
       </div>
       <div class="detail-row">
         <span class="label">总金额</span>
@@ -4463,15 +3465,11 @@ function deleteRecord(recordId) {
   const record = state.records.find(r => r.id === recordId);
   if (!record) return;
 
-  // 软删除：从活跃数组移除，加入已删除数组，标记 deleted: true
+  // 先从数组移除
   const index = state.records.findIndex(r => r.id === recordId);
   if (index === -1) return;
 
   const deletedRecord = state.records.splice(index, 1)[0];
-  deletedRecord.deleted = true;
-  deletedRecord.updatedAt = new Date().toISOString();
-  state.deletedRecords.push(deletedRecord);
-  
   addAuditLog('delete', `删除单据：${deletedRecord.customerName}，金额¥${(deletedRecord.totalAmount||0).toFixed(2)}`);
   saveData();
   renderAll();
@@ -4479,13 +3477,7 @@ function deleteRecord(recordId) {
 
   // 显示撤销toast（8秒后自动消失，期间可撤销）
   showToast('单据已删除', 'info', 8000, () => {
-    // 撤销操作：从已删除数组移除，取消标记，加回活跃数组
-    const delIndex = state.deletedRecords.findIndex(r => r.id === deletedRecord.id);
-    if (delIndex !== -1) {
-      state.deletedRecords.splice(delIndex, 1);
-    }
-    delete deletedRecord.deleted;
-    deletedRecord.updatedAt = new Date().toISOString();
+    // 撤销操作
     state.records.push(deletedRecord);
     addAuditLog('create', `恢复已删除单据：${deletedRecord.customerName}`);
     saveData();
@@ -4498,11 +3490,7 @@ function deleteRecord(recordId) {
 function openCustomerModal(customerName) {
   state.selectedCustomer = customerName;
   const customerRecords = state.records
-    .filter(r => r.customerName === customerName && !r.deleted)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const customerSettlements = state.settlements
-    .filter(s => !s.voided && s.customerName === customerName)
+    .filter(r => r.customerName === customerName)
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   let totalAmount = 0;
@@ -4515,26 +3503,9 @@ function openCustomerModal(customerName) {
     totalAmount += parseFloat(r.totalAmount) || 0;
     totalPaid += parseFloat(r.paidAmount) || 0;
     totalQuantity += qty;
-    totalWeight += qty * weight + (parseFloat(r.extraWeight) || 0);
+    totalWeight += qty * weight;
   });
-
-  // 未结账单据欠款
-  const unsettledRecords = customerRecords.filter(r => !r.settled);
-  let unsettledUnpaid = 0;
-  unsettledRecords.forEach(r => {
-    unsettledUnpaid += Math.max(0, (r.totalAmount || 0) - (r.paidAmount || 0));
-  });
-
-  // 结账凭证未收款
-  let settlementUnpaid = 0;
-  let settlementPaid = 0;
-  customerSettlements.forEach(s => {
-    settlementUnpaid += s.unpaidAmount || 0;
-    settlementPaid += s.totalPaid || 0;
-  });
-
-  const totalUnpaid = unsettledUnpaid + settlementUnpaid;
-  const isHidden = state.amountHidden;
+  const totalUnpaid = totalAmount - totalPaid;
 
   // 获取门牌号（取最近的）
   const doorNo = customerRecords.find(r => r.doorNo)?.doorNo || '';
@@ -4544,12 +3515,8 @@ function openCustomerModal(customerName) {
       <div class="customer-avatar">${escapeHtml(customerName.charAt(0))}</div>
       <div class="customer-info">
         <h3>${escapeHtml(customerName)}</h3>
-        <p>${doorNo ? '门牌：' + escapeHtml(doorNo) + ' · ' : ''}共 ${customerRecords.length} 笔交易 · ${customerSettlements.length} 次结账</p>
+        <p>${doorNo ? '门牌：' + escapeHtml(doorNo) + ' · ' : ''}共 ${customerRecords.length} 笔交易</p>
       </div>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
-      <button class="btn btn-primary" style="flex:1;padding:8px;font-size:var(--font-size-sm);" onclick="closeModal('customerModal');openSettlementModal('${escapeHtml(customerName)}')">去结账</button>
-      <button class="btn btn-secondary" style="flex:1;padding:8px;font-size:var(--font-size-sm);" onclick="generateStatement('${escapeHtml(customerName)}')">对账单</button>
     </div>
     <div class="customer-stats">
       <div class="customer-stat">
@@ -4561,40 +3528,27 @@ function openCustomerModal(customerName) {
         <div class="lbl">总重量(斤)</div>
       </div>
       <div class="customer-stat">
-        <div class="num total">${isHidden ? '****' : '¥' + formatMoneyWithComma(totalAmount)}</div>
+        <div class="num total">¥${formatMoneyWithComma(totalAmount)}</div>
         <div class="lbl">累计供货</div>
       </div>
       <div class="customer-stat">
-        <div class="num paid">${isHidden ? '****' : '¥' + formatMoneyWithComma(totalPaid + settlementPaid)}</div>
+        <div class="num paid">¥${formatMoneyWithComma(totalPaid)}</div>
         <div class="lbl">已收款</div>
       </div>
       <div class="customer-stat">
-        <div class="num unpaid">${isHidden ? '****' : '¥' + formatMoneyWithComma(Math.max(0, totalUnpaid))}</div>
-        <div class="lbl">总欠款</div>
+        <div class="num unpaid">¥${formatMoneyWithComma(Math.max(0, totalUnpaid))}</div>
+        <div class="lbl">未收款</div>
       </div>
     </div>
-    ${customerSettlements.length > 0 ? `
-    <div class="detail-section">
-      <div class="detail-section-title">结账记录 (${customerSettlements.length})</div>
-      ${customerSettlements.map(s => `
-        <div class="customer-history-item" onclick="openSettlementDetail('${s.id}')" style="cursor:pointer;">
-          <div class="customer-history-date">${s.date} · <span class="status-badge ${s.status}">${{paid:'已结清',partial:'部分收款',unpaid:'未收款'}[s.status]}</span>${s.invoiceNo ? ' · 发票:' + escapeHtml(s.invoiceNo) : ''}</div>
-          <div class="customer-history-row">
-            <span class="customer-history-style">${escapeHtml(s.id)} · ${s.records.length}张单据</span>
-            <span class="customer-history-amount">${isHidden ? '****' : '¥' + formatMoneyWithComma(s.receivableAmount)}</span>
-          </div>
-        </div>
-      `).join('')}
-    </div>` : ''}
     <div class="detail-section">
       <div class="detail-section-title">历史交易 (${customerRecords.length})</div>
       ${customerRecords.length === 0 ? '<p style="color:var(--text-muted);text-align:center;padding:20px;">暂无交易记录</p>' :
         customerRecords.map(r => `
           <div class="customer-history-item" data-id="${r.id}">
-            <div class="customer-history-date">${r.date} · ${getStatusText(getPaymentStatus(r))}${r.settled ? ' · <span style="color:var(--info);">已结账</span>' : ''}</div>
+            <div class="customer-history-date">${r.date} · ${getStatusText(getPaymentStatus(r))}</div>
             <div class="customer-history-row">
               <span class="customer-history-style">${escapeHtml(r.style || '未填写款式')}</span>
-              <span class="customer-history-amount">${isHidden ? '****' : '¥' + formatMoneyWithComma(r.totalAmount)}</span>
+              <span class="customer-history-amount">¥${formatMoneyWithComma(r.totalAmount)}</span>
             </div>
           </div>
         `).join('')
@@ -4697,7 +3651,7 @@ function renderMonthlyView() {
     totalAmount += parseFloat(r.totalAmount) || 0;
     totalPaid += parseFloat(r.paidAmount) || 0;
     totalQuantity += qty;
-    totalWeight += qty * weight + (parseFloat(r.extraWeight) || 0);
+    totalWeight += qty * weight;
   });
   const totalUnpaid = totalAmount - totalPaid;
 
@@ -4928,15 +3882,14 @@ function exportToCSV(records, filename) {
     return;
   }
 
-  const headers = ['日期', '客户名称', '发票单号', '产品款式', '件数', '每件斤数', '单价(元/斤)', '总金额', '已收款', '未收款', '收款状态'];
+  const headers = ['日期', '客户名称', '门牌号', '发票单号', '产品款式', '件数', '每件斤数', '单价(元/斤)', '总金额', '已收款', '未收款', '收款状态'];
   const rows = records.map(r => {
     const total = parseFloat(r.totalAmount) || 0;
     const paid = parseFloat(r.paidAmount) || 0;
-    // 门牌号合并到客户名后面
-    const exportCustomerName = r.customerName + (r.doorNo ? '（' + r.doorNo + '）' : '');
     return [
       r.date,
-      exportCustomerName,
+      r.customerName,
+      r.doorNo || '',
       r.invoiceNo || '',
       r.style || '',
       r.quantity || 0,
@@ -4990,213 +3943,44 @@ function exportToExcel(records, filename) {
   }
 
   try {
-    // 按日期排序
-    const sortedRecords = [...records].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-    
-    // 计算统计数据
-    const totalQty = sortedRecords.reduce((sum, r) => sum + (parseFloat(r.quantity) || 0), 0);
-    const totalAmount = sortedRecords.reduce((sum, r) => sum + (parseFloat(r.totalAmount) || 0), 0);
-    const totalPaid = sortedRecords.reduce((sum, r) => sum + (parseFloat(r.paidAmount) || 0), 0);
-    
-    // 确定对账单位（如果只有一个客户则显示客户名+门牌号，否则显示全部客户）
-    const uniqueCustomers = [...new Set(sortedRecords.map(r => r.customerName + (r.doorNo ? '（' + r.doorNo + '）' : '')).filter(n => n))];
-    const customerName = uniqueCustomers.length === 1 ? uniqueCustomers[0] : '全部客户';
-    
-    // 确定对账期间
-    const dates = sortedRecords.map(r => r.date).filter(d => d).sort();
-    const dateRange = dates.length > 0 ? `${dates[0]}~${dates[dates.length - 1]}` : '';
-    
-    // 21列的二维数组
-    const aoa = [];
-    
-    // 行0：公司标题（合并A1:U1）
-    const row0 = new Array(21).fill('');
-    row0[0] = '温州鼎炬金属科技有限公司';
-    aoa.push(row0);
-    
-    // 行1：对账单副标题（合并A2:U2）
-    const row1 = new Array(21).fill('');
-    row1[0] = '对账单';
-    aoa.push(row1);
-    
-    // 行2：对账信息
-    const row2 = new Array(21).fill('');
-    row2[0] = '对账单位：';
-    row2[4] = customerName;
-    row2[10] = '对账期间：';
-    row2[13] = dateRange;
-    aoa.push(row2);
-    
-    // 行3：表头（带合并单元格）
-    const row3 = new Array(21).fill('');
-    row3[0] = '行号';
-    row3[1] = '单据日期';
-    row3[2] = '单据类型';  // 合并C:E
-    row3[5] = '商品全名';  // 合并F:H
-    row3[8] = '材质';
-    row3[9] = '加工工艺';  // 合并J:N
-    row3[14] = '数量';     // 合并O:P
-    row3[16] = '单价';     // 合并Q:R
-    row3[18] = '金额';     // 合并S:T
-    row3[20] = '备注';
-    aoa.push(row3);
-    
-    // 行4+：数据行
-    let calculatedTotalQty = 0;  // 重新计算总重量
-    sortedRecords.forEach((r, index) => {
-      const row = new Array(21).fill('');
-      row[0] = index + 1;
-      row[1] = r.date || '';
-      row[2] = '销售单';
-      row[5] = r.style || '';
-      row[8] = r.material || '';  // 材质
-      row[9] = r.process || '';   // 加工工艺
-      
-      // 直接使用 extraWeight 字段
-      const extraWeight = parseFloat(r.extraWeight) || 0;
-      
-      // 计算总重量 = 件数 × 每件重量 + 零散重量
+    // 准备数据
+    const headers = ['日期', '客户名称', '门牌号', '发票单号', '产品款式', '件数', '每件重量(斤)', '总斤数', '单价(元/斤)', '总价', '已收款', '未收款', '收款状态', '备注'];
+    const rows = records.map(r => {
+      const total = parseFloat(r.totalAmount) || 0;
+      const paid = parseFloat(r.paidAmount) || 0;
       const qty = parseFloat(r.quantity) || 0;
-      const weightPerPiece = parseFloat(r.weightPerPiece) || 0;
-      const totalWeight = qty * weightPerPiece + extraWeight;
-      calculatedTotalQty += totalWeight;
-      
-      row[14] = totalWeight;  // 数量列是总重量
-      row[16] = parseFloat(r.unitPrice) || 0;
-      row[18] = parseFloat(r.totalAmount) || 0;
-      
-      // 备注：件数*每件重量[+零散重量] + 发票号 + 其他备注
-      const remarkParts = [];
-      if (qty > 0 && weightPerPiece > 0) {
-        let qtyStr = qty + '*' + weightPerPiece;
-        if (extraWeight > 0) qtyStr += '+' + extraWeight;
-        remarkParts.push(qtyStr);
-      }
-      if (r.invoiceNo) remarkParts.push(r.invoiceNo);
-      if (r.remark) remarkParts.push(r.remark);
-      row[20] = remarkParts.join('；');
-      
-      aoa.push(row);
+      const weight = parseFloat(r.weightPerPiece) || 0;
+      return [
+        r.date,
+        r.customerName || '',
+        r.doorNo || '',
+        r.invoiceNo || '',
+        r.style || '',
+        qty,
+        weight,
+        qty * weight,
+        parseFloat(r.unitPrice) || 0,
+        total,
+        paid,
+        Math.max(0, total - paid),
+        getStatusText(getPaymentStatus(r)),
+        ''
+      ];
     });
-    
-    // 合计行
-    const totalRowIdx = 4 + sortedRecords.length;
-    const totalRow = new Array(21).fill('');
-    totalRow[0] = '合计：';
-    totalRow[14] = calculatedTotalQty;  // 使用重新计算的总重量
-    totalRow[18] = totalAmount;
-    aoa.push(totalRow);
-    
-    // 空行
-    aoa.push(new Array(21).fill(''));
-    
-    // 余额信息行
-    const balanceRow = new Array(21).fill('');
-    balanceRow[0] = '上期余额：';
-    balanceRow[6] = '本期销售：';
-    balanceRow[7] = totalAmount;
-    balanceRow[11] = '本期回款：';
-    balanceRow[12] = totalPaid;
-    balanceRow[17] = '本期余额：';
-    balanceRow[19] = totalAmount - totalPaid;
-    aoa.push(balanceRow);
-    
-    // 客户确认签字行
-    const signRow = new Array(21).fill('');
-    signRow[15] = '客户确认签字:';
-    aoa.push(signRow);
-    
+
     // 创建工作簿
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    
-    // 设置合并单元格
-    const merges = [
-      // 公司标题（行0，列0-20）
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 20 } },
-      // 对账单副标题（行1，列0-20）
-      { s: { r: 1, c: 0 }, e: { r: 1, c: 20 } },
-      // 对账单位标签（行2，列0-3）
-      { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } },
-      // 对账单位值（行2，列4-9）
-      { s: { r: 2, c: 4 }, e: { r: 2, c: 9 } },
-      // 对账期间标签（行2，列10-12）
-      { s: { r: 2, c: 10 }, e: { r: 2, c: 12 } },
-      // 对账期间值（行2，列13-20）
-      { s: { r: 2, c: 13 }, e: { r: 2, c: 20 } },
-      // 表头：单据类型（行3，列2-4）
-      { s: { r: 3, c: 2 }, e: { r: 3, c: 4 } },
-      // 表头：商品全名（行3，列5-7）
-      { s: { r: 3, c: 5 }, e: { r: 3, c: 7 } },
-      // 表头：加工工艺（行3，列9-13）
-      { s: { r: 3, c: 9 }, e: { r: 3, c: 13 } },
-      // 表头：数量（行3，列14-15）
-      { s: { r: 3, c: 14 }, e: { r: 3, c: 15 } },
-      // 表头：单价（行3，列16-17）
-      { s: { r: 3, c: 16 }, e: { r: 3, c: 17 } },
-      // 表头：金额（行3，列18-19）
-      { s: { r: 3, c: 18 }, e: { r: 3, c: 19 } },
-    ];
-    
-    // 数据行的合并单元格（单据类型、商品全名、加工工艺、数量、单价、金额）
-    for (let i = 0; i < sortedRecords.length; i++) {
-      const rowIdx = 4 + i;
-      merges.push({ s: { r: rowIdx, c: 2 }, e: { r: rowIdx, c: 4 } });  // 单据类型
-      merges.push({ s: { r: rowIdx, c: 5 }, e: { r: rowIdx, c: 7 } });  // 商品全名
-      merges.push({ s: { r: rowIdx, c: 9 }, e: { r: rowIdx, c: 13 } }); // 加工工艺
-      merges.push({ s: { r: rowIdx, c: 14 }, e: { r: rowIdx, c: 15 } }); // 数量
-      merges.push({ s: { r: rowIdx, c: 16 }, e: { r: rowIdx, c: 17 } }); // 单价
-      merges.push({ s: { r: rowIdx, c: 18 }, e: { r: rowIdx, c: 19 } }); // 金额
-    }
-    
-    // 合计行合并
-    merges.push({ s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 13 } }); // 合计标签
-    merges.push({ s: { r: totalRowIdx, c: 14 }, e: { r: totalRowIdx, c: 15 } }); // 总数量
-    merges.push({ s: { r: totalRowIdx, c: 16 }, e: { r: totalRowIdx, c: 17 } }); // 空
-    merges.push({ s: { r: totalRowIdx, c: 18 }, e: { r: totalRowIdx, c: 19 } }); // 总金额
-    
-    ws['!merges'] = merges;
-    
-    // 设置列宽（参考范本）
+    const wsData = [headers, ...rows];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // 设置列宽
     ws['!cols'] = [
-      { wch: 6 },   // A: 行号
-      { wch: 12 },  // B: 单据日期
-      { wch: 4 },   // C: 单据类型(合并)
-      { wch: 6 },   // D
-      { wch: 8 },   // E
-      { wch: 15 },  // F: 商品全名(合并)
-      { wch: 8 },   // G
-      { wch: 6 },   // H
-      { wch: 8 },   // I: 材质
-      { wch: 6 },   // J: 加工工艺(合并)
-      { wch: 6 },   // K
-      { wch: 8 },   // L
-      { wch: 4 },   // M
-      { wch: 4 },   // N
-      { wch: 4 },   // O: 数量(合并)
-      { wch: 8 },   // P
-      { wch: 6 },   // Q: 单价(合并)
-      { wch: 8 },   // R
-      { wch: 10 },  // S: 金额(合并)
-      { wch: 4 },   // T
-      { wch: 20 }   // U: 备注
+      { wch: 12 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 15 },
+      { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 12 },
+      { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 15 }
     ];
-    
-    // 设置行高
-    ws['!rows'] = [
-      { hpt: 32 },  // 公司标题
-      { hpt: 24 },  // 对账单
-      { hpt: 24 },  // 对账信息
-      { hpt: 20 },  // 表头
-      ...sortedRecords.map(() => ({ hpt: 18 })),  // 数据行
-      { hpt: 20 },  // 合计行
-      { hpt: 12 },  // 空行
-      { hpt: 20 },  // 余额信息
-      { hpt: 30 }   // 签字行
-    ];
-    
-    XLSX.utils.book_append_sheet(wb, ws, '对账单');
-    
+
+    XLSX.utils.book_append_sheet(wb, ws, '鼎炬账本');
     // 使用 Blob 方式下载，兼容电脑端和手机端浏览器
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -5208,7 +3992,7 @@ function exportToExcel(records, filename) {
     dlLink.click();
     document.body.removeChild(dlLink);
     setTimeout(() => URL.revokeObjectURL(dlUrl), 1500);
-    showToast('对账单导出成功，已开始下载', 'success');
+    showToast('Excel导出成功，已开始下载', 'success');
   } catch (e) {
     console.error('Excel导出失败', e);
     showToast('导出失败：' + e.message, 'error');
@@ -5237,311 +4021,65 @@ function exportAllExcel() {
 
 function importFromExcel(file) {
   const reader = new FileReader();
-  
-  // 生成导入批次ID（基于文件名、大小、修改时间、内容前500字符）
-  // 重复导入同一文件会生成相同ID，用于覆盖处理
-  let importBatchId = '';
-  const fileInfo = file.name + '_' + file.size + '_' + file.lastModified;
-  
   reader.onload = function(e) {
     try {
       const data = new Uint8Array(e.target.result);
-      
-      // 用文件内容前500字符生成简单哈希
-      let contentHash = 0;
-      const sampleLen = Math.min(500, data.length);
-      for (let i = 0; i < sampleLen; i++) {
-        contentHash = ((contentHash << 5) - contentHash + data[i]) | 0;
-      }
-      importBatchId = 'imp_' + fileInfo + '_' + contentHash;
-      
       const workbook = XLSX.read(data, { type: 'array' });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      
-      // 获取二维数组（用于检测对账单范本格式）
-      const aoaData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
-      
-      if (aoaData.length === 0) {
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+      if (jsonData.length === 0) {
         showToast('Excel文件中没有数据', 'warning');
         return;
       }
 
-      // 检测是否是对账单范本格式
-      const isStatementFormat = aoaData.some(row => 
-        row.some(cell => {
-          const cellStr = String(cell);
-          return cellStr.includes('温州鼎炬') || 
-                 cellStr.includes('对账单') ||
-                 cellStr.includes('对账单位') ||
-                 (cellStr.includes('单据日期') && aoaData.some(r => r.some(c => String(c).includes('商品全名'))));
-        })
-      );
-      
-      console.log('导入格式检测:', isStatementFormat ? '对账单格式' : '普通格式');
-      console.log('Excel总行数:', aoaData.length);
-
-      let importedRecords = [];
-
-      if (isStatementFormat) {
-        // ===== 对账单范本格式导入 =====
-        // 找到表头行（包含"单据日期"和"商品全名"的行）
-        let headerRowIndex = -1;
-        for (let i = 0; i < aoaData.length; i++) {
-          const row = aoaData[i];
-          const hasDate = row.some(cell => String(cell).trim() === '单据日期');
-          const hasProduct = row.some(cell => String(cell).trim() === '商品全名');
-          if (hasDate && hasProduct) {
-            headerRowIndex = i;
-            break;
+      // 转换为应用格式
+      const importedRecords = jsonData.map((row, index) => {
+        const dateVal = row['日期'];
+        let dateStr = formatDate(new Date());
+        if (dateVal) {
+          if (typeof dateVal === 'number') {
+            // Excel日期序列号
+            const excelDate = new Date((dateVal - 25569) * 86400 * 1000);
+            dateStr = formatDate(excelDate);
+          } else {
+            const parsed = new Date(dateVal);
+            if (!isNaN(parsed.getTime())) {
+              dateStr = formatDate(parsed);
+            }
           }
         }
 
-        if (headerRowIndex === -1) {
-          showToast('未找到对账单表头行', 'warning');
-          return;
-        }
+        const quantity = parseFloat(row['件数']) || 0;
+        const weightPerPiece = parseFloat(row['每件重量(斤)']) || parseFloat(row['每件重量']) || 0;
+        const unitPrice = parseFloat(row['单价(元/斤)']) || parseFloat(row['单价']) || 0;
+        const totalAmountRaw = parseFloat(row['总价']);
+        const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : quantity * weightPerPiece * unitPrice;
+        const paidAmount = parseFloat(row['已收款']) || 0;
 
-        // 从对账信息行获取客户名称（表头行的上一行，即对账单位所在行）
-        let customerName = '';
-        for (let i = headerRowIndex - 1; i >= 0; i--) {
-          const row = aoaData[i];
-          for (let j = 0; j < row.length; j++) {
-            if (String(row[j]).includes('对账单位') && row[j + 1]) {
-              customerName = String(row[j + 1]).trim();
-              break;
-            }
-            if (String(row[j]).includes('对账单位') && j + 4 < row.length && row[j + 4]) {
-              customerName = String(row[j + 4]).trim();
-              break;
-            }
-          }
-          if (customerName) break;
-        }
-
-        // 解析数据行（从表头行的下一行开始）
-        for (let i = headerRowIndex + 1; i < aoaData.length; i++) {
-          const row = aoaData[i];
-          
-          // 跳过空行
-          const isEmpty = row.every(cell => !cell || String(cell).trim() === '');
-          if (isEmpty) continue;
-
-          // 跳过合计行、余额信息行、签字区行
-          const rowText = row.join(' ');
-          if (rowText.includes('合计') || 
-              rowText.includes('上期余额') || 
-              rowText.includes('本期销售') || 
-              rowText.includes('本期回款') || 
-              rowText.includes('本期余额') ||
-              rowText.includes('客户确认签字') ||
-              rowText.includes('制单') ||
-              rowText.includes('审核')) {
-            continue;
-          }
-
-          // 解析日期（列1）
-          const dateVal = row[1];
-          let dateStr = formatDate(new Date());
-          if (dateVal) {
-            if (typeof dateVal === 'number') {
-              const excelDate = new Date((dateVal - 25569) * 86400 * 1000);
-              dateStr = formatDate(excelDate);
-            } else {
-              const parsed = new Date(dateVal);
-              if (!isNaN(parsed.getTime())) {
-                dateStr = formatDate(parsed);
-              }
-            }
-          }
-
-          // 解析字段（根据对账单范本的列位置）
-          const style = String(row[5] || '').trim();  // 商品全名（列5）
-          const material = String(row[8] || '').trim();  // 材质（列8）
-          const process = String(row[9] || '').trim();  // 加工工艺（列9）
-          const quantity = parseFloat(row[14]) || 0;  // 数量（列14）
-          const unitPrice = parseFloat(row[16]) || 0;  // 单价（列16）
-          const totalAmountRaw = parseFloat(row[18]);
-          const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : quantity * unitPrice;
-
-          // 解析备注（列20）
-          const remark = String(row[20] || '').trim();
-          let doorNo = '';
-          let invoiceNo = '';
-          let parsedQuantity = 0;  // 从备注解析的件数
-          let parsedWeightPerPiece = 0;  // 从备注解析的每件重量
-          let parsedExtraWeight = 0;  // 从备注解析的额外重量
-          let otherRemarks = [];  // 其他备注信息
-          
-          if (remark) {
-            // 门牌号格式：字母+连字符+数字，如 A-12、B-3、A12
-            const doorNoPattern = /^[A-Za-z]+[-]?\d+$/;
-            // 发票号格式：数字+#，如 1234#
-            const invoiceNoPattern = /^\d+#$/;
-            // 数量格式：N*M 或 N*M+K，如 3*130、3*130+125
-            const quantityPattern = /^(\d+)\*(\d+)(?:\+(\d+))?$/;
-            
-            // 尝试用分号、逗号分隔
-            const parts = remark.split(/[；;，,]+/).map(p => p.trim()).filter(p => p);
-            
-            // 先解析数量（遍历所有部分找匹配的）
-            for (const part of parts) {
-              const qtyMatch = part.match(quantityPattern);
-              if (qtyMatch) {
-                parsedQuantity = parseInt(qtyMatch[1]);
-                parsedWeightPerPiece = parseFloat(qtyMatch[2]);
-                parsedExtraWeight = qtyMatch[3] ? parseFloat(qtyMatch[3]) : 0;
-                break;
-              }
-            }
-            
-            // 再解析门牌号和发票号，其他信息保留为备注
-            for (const part of parts) {
-              if (part.match(quantityPattern)) continue;  // 跳过数量格式
-              if (doorNoPattern.test(part)) {
-                doorNo = part;
-              } else if (invoiceNoPattern.test(part)) {
-                invoiceNo = part;
-              } else {
-                otherRemarks.push(part);  // 其他没有对应字段的信息保留在备注中
-              }
-            }
-          }
-          
-          // 确定件数和每件重量：优先使用从备注解析的值
-          const finalQuantity = parsedQuantity > 0 ? parsedQuantity : 0;  // 件数只从备注解析，数量列是总重量
-          const finalWeightPerPiece = parsedWeightPerPiece > 0 ? parsedWeightPerPiece : 0;
-          
-          // 构建备注字段：只保留其他备注（额外重量放到 extraWeight 字段）
-          const finalRemark = otherRemarks.join('；');
-
-          // 放宽条件：只要有任意关键字段有值就认为是有效数据
-          const hasAnyData = dateStr || style || material || process || quantity > 0 || totalAmount > 0 || remark;
-          if (!hasAnyData) {
-            console.log('跳过空行:', i, row);
-            continue;
-          }
-
-          console.log('解析数据行:', i, {dateStr, style, material, process, quantity: finalQuantity, weightPerPiece: finalWeightPerPiece, totalAmount, remark});
-
-          // 门牌号合并到客户名后面
-          const finalCustomerName = (customerName || '未知客户') + (doorNo ? '（' + doorNo + '）' : '');
-          importedRecords.push({
-            id: 'imp_' + importBatchId + '_' + i,
-            importBatchId: importBatchId,
-            date: dateStr,
-            customerName: finalCustomerName,
-            doorNo: '',  // 门牌号已合并到客户名，不再单独存储
-            invoiceNo: invoiceNo,
-            style: style,
-            material: material,
-            process: process,
-            quantity: finalQuantity,
-            weightPerPiece: finalWeightPerPiece,
-            extraWeight: parsedExtraWeight,  // 零散重量（如3*130+125中的125）
-            remark: finalRemark,  // 备注：其他信息
-            unitPrice: unitPrice,
-            totalAmount: totalAmount,
-            paidAmount: 0,  // 对账单范本中没有已收款
-            createdAt: new Date().toISOString()
-          });
-        }
-      } else {
-        // ===== 普通格式导入（原有逻辑） =====
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-        if (jsonData.length === 0) {
-          showToast('Excel文件中没有数据', 'warning');
-          return;
-        }
-
-        importedRecords = jsonData.map((row, index) => {
-          const dateVal = row['日期'];
-          let dateStr = formatDate(new Date());
-          if (dateVal) {
-            if (typeof dateVal === 'number') {
-              const excelDate = new Date((dateVal - 25569) * 86400 * 1000);
-              dateStr = formatDate(excelDate);
-            } else {
-              const parsed = new Date(dateVal);
-              if (!isNaN(parsed.getTime())) {
-                dateStr = formatDate(parsed);
-              }
-            }
-          }
-
-          const quantity = parseFloat(row['件数']) || 0;
-          const weightPerPiece = parseFloat(row['每件重量(斤)']) || parseFloat(row['每件重量']) || 0;
-          const extraWeight = parseFloat(row['零散重量(斤)']) || parseFloat(row['零散重量']) || parseFloat(row['额外重量']) || 0;
-          const unitPrice = parseFloat(row['单价(元/斤)']) || parseFloat(row['单价']) || 0;
-          const totalAmountRaw = parseFloat(row['总价']);
-          const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : (quantity * weightPerPiece + extraWeight) * unitPrice;
-          const paidAmount = parseFloat(row['已收款']) || 0;
-
-          // 支持多种列名变体
-          const getField = (row, keys) => {
-            for (const key of keys) {
-              if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') {
-                return String(row[key]).trim();
-              }
-            }
-            return '';
-          };
-
-          // 门牌号合并到客户名后面
-          const rawCustomerName = getField(row, ['客户名称', '客户', '单位名称', '单位', '对账单位', '公司名称']);
-          const rawDoorNo = getField(row, ['门牌号', '门牌', '地址', '位置']);
-          const finalCustomerName = rawCustomerName + (rawDoorNo ? '（' + rawDoorNo + '）' : '');
-
-          // 备注：从备注列读取，没有对应字段的信息都记录在备注中
-          const normalRemark = getField(row, ['备注', '说明', '摘要', 'note', 'remark']);
-          
-          return {
-            id: 'imp_' + importBatchId + '_' + index,
-            importBatchId: importBatchId,
-            date: dateStr,
-            customerName: finalCustomerName,
-            doorNo: '',  // 门牌号已合并到客户名，不再单独存储
-            invoiceNo: getField(row, ['发票单号', '发票号', '发票', '单号', '单据号']),
-            style: getField(row, ['产品款式', '款式', '商品全名', '商品名称', '产品名称', '品名', '规格']),
-            material: getField(row, ['材质', '材料', '材质规格']),
-            process: getField(row, ['加工工艺', '工艺', '处理方式', '表面处理']),
-            quantity: quantity,
-            weightPerPiece: weightPerPiece,
-            extraWeight: extraWeight,  // 零散重量
-            remark: normalRemark,  // 备注信息
-            unitPrice: unitPrice,
-            totalAmount: totalAmount,
-            paidAmount: paidAmount,
-            createdAt: new Date().toISOString()
-          };
-        }).filter(r => r.date || r.style || r.customerName);
-      }
+        return {
+          id: 'imp_' + Date.now().toString(36) + '_' + index,
+          date: dateStr,
+          customerName: String(row['客户名称'] || '').trim(),
+          doorNo: String(row['门牌号'] || '').trim(),
+          invoiceNo: String(row['发票单号'] || '').trim(),
+          style: String(row['产品款式'] || '').trim(),
+          quantity: quantity,
+          weightPerPiece: weightPerPiece,
+          unitPrice: unitPrice,
+          totalAmount: totalAmount,
+          paidAmount: paidAmount,
+          createdAt: new Date().toISOString()
+        };
+      }).filter(r => r.customerName); // 过滤掉没有客户名称的行
 
       if (importedRecords.length === 0) {
-        if (isStatementFormat) {
-          console.error('对账单格式导入失败，aoaData:', aoaData);
-          showToast(`未找到有效数据：检测到对账单格式，共${aoaData.length}行，但未解析到有效单据。请打开浏览器控制台(F12)查看详细调试信息`, 'warning');
-        } else {
-          console.error('普通格式导入失败，jsonData:', jsonData);
-          showToast(`未找到有效数据：共${jsonData ? jsonData.length : 0}行，但未解析到有效单据。请确保表格包含日期/款式/客户名称等列`, 'warning');
-        }
+        showToast('未找到有效的单据数据', 'warning');
         return;
       }
 
-      console.log(`导入成功：${importedRecords.length}条记录（${isStatementFormat ? '对账单格式' : '普通格式'}）`);
-
-      // 检查是否是重复导入（相同批次ID）
-      const existingBatchRecords = state.records.filter(r => r.importBatchId === importBatchId);
-      const isDuplicateImport = existingBatchRecords.length > 0;
-      
-      if (isDuplicateImport) {
-        // 重复导入：先删除旧记录，再添加新记录（覆盖）
-        state.records = state.records.filter(r => r.importBatchId !== importBatchId);
-        state.records = [...state.records, ...importedRecords];
-        addAuditLog('import', `重复导入覆盖（${existingBatchRecords.length}条旧记录→${importedRecords.length}条新记录）`);
-        showToast(`检测到重复导入，已覆盖 ${importedRecords.length} 条记录`, 'success');
-      } else if (state.records.length > 0) {
-        // 非重复导入且已有数据：询问追加还是替换
+      // 询问是追加还是替换
+      if (state.records.length > 0) {
         if (!confirm(`将导入 ${importedRecords.length} 条记录。\n点击"确定"追加到现有数据，点击"取消"替换现有数据。`)) {
           // 替换
           state.records = importedRecords;
@@ -5613,17 +4151,6 @@ function applySettings() {
   document.documentElement.setAttribute('data-theme', state.settings.theme);
   document.documentElement.setAttribute('data-font-size', state.settings.fontSize);
 
-  // 恢复隐藏金额状态
-  if (state.amountHidden) {
-    document.body.classList.add('amount-hidden');
-  } else {
-    document.body.classList.remove('amount-hidden');
-  }
-  const hideAmountBtn = document.getElementById('hideAmountBtn');
-  if (hideAmountBtn) {
-    hideAmountBtn.classList.toggle('active', state.amountHidden);
-  }
-
   // 更新开关状态
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
@@ -5655,7 +4182,6 @@ function switchView(view) {
   } else if (view === 'settings') {
     updateCurrentUserDisplay();
     openModal('settingsModal');
-    updateTrashCount();
   }
 }
 
@@ -5706,7 +4232,7 @@ function bindEvents() {
   document.getElementById('addBtn').addEventListener('click', () => openRecordModal());
 
   // 表单计算
-  ['quantity', 'weightPerPiece', 'extraWeight', 'unitPrice'].forEach(id => {
+  ['quantity', 'weightPerPiece', 'unitPrice'].forEach(id => {
     document.getElementById(id).addEventListener('input', updateCalcDisplay);
   });
 
@@ -5818,57 +4344,17 @@ function bindEvents() {
     }
   });
 
-  // 设置 - 回收站（打开回收站列表）
-  const trashBtn = document.getElementById('trashBtn');
-  if (trashBtn) {
-    trashBtn.addEventListener('click', () => {
-      openTrashModal();
-    });
-  }
-
-  // 回收站详情页 - 复原按钮
-  const restoreBtn = document.getElementById('restoreRecordBtn');
-  if (restoreBtn) {
-    restoreBtn.addEventListener('click', () => {
-      const recordId = document.getElementById('trashDetailBody').dataset.recordId;
-      if (recordId) restoreRecord(recordId);
-    });
-  }
-
-  // 回收站详情页 - 永久删除按钮
-  const permDelBtn = document.getElementById('permanentDeleteBtn');
-  if (permDelBtn) {
-    permDelBtn.addEventListener('click', () => {
-      const recordId = document.getElementById('trashDetailBody').dataset.recordId;
-      if (recordId) permanentDeleteRecord(recordId);
-    });
-  }
-
-  // 设置 - 清空数据（软删除：所有活跃单据进入回收站，可恢复或彻底删除）
+  // 设置 - 清空数据
   document.getElementById('clearDataBtn').addEventListener('click', () => {
-    const count = state.records.length;
-    if (count === 0) {
-      showToast('当前没有活跃数据', 'info');
-      return;
+    if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+      const count = state.records.length;
+      addAuditLog('clear', `清空全部数据（共${count}条）`);
+      state.records = [];
+      saveData();
+      renderAll();
+      closeModal('settingsModal');
+      showToast('所有数据已清空', 'success');
     }
-    if (!confirm(`确定要清空所有活跃数据吗？\n\n共 ${count} 条活跃单据将移入回收站。\n\n注意：\n• 这是软删除，数据会进入回收站\n• 可在回收站中恢复或彻底删除\n• 删除操作会同步到所有账号\n• 只有回收站中的"彻底删除"才会真正删除云端数据`)) return;
-    
-    const now = new Date().toISOString();
-    // 把所有活跃单据标记为已删除，进入回收站
-    const toTrash = state.records.map(r => ({
-      ...r,
-      deleted: true,
-      deletedAt: now,
-      updated_at: now
-    }));
-    state.deletedRecords = [...state.deletedRecords, ...toTrash];
-    state.records = [];
-    
-    addAuditLog('clear', `清空活跃数据（软删除，${count}条移入回收站）`);
-    saveData();  // 会自动同步到云端，标记删除会同步到所有账号
-    renderAll();
-    closeModal('settingsModal');
-    showToast(`${count}条数据已移入回收站`, 'success');
   });
 
   // 设置 - 修改密码
@@ -6040,10 +4526,6 @@ function doLogin() {
     errorEl.textContent = '';
     hideLogin();
     addAuditLog('login', '用户登录', username);
-    // 单点登录：更新用户会话，记录当前设备
-    updateUserSession(username);
-    // 启动会话检查定时器
-    startSessionCheck();
     // 登录成功后触发新手引导（仅首次）
     if (!localStorage.getItem('dingju_guide_shown')) {
       setTimeout(startGuide, 600);
@@ -6059,89 +4541,7 @@ function doLogout() {
   addAuditLog('logout', '用户退出', getCurrentUser());
   sessionStorage.removeItem(LOGIN_KEY);
   sessionStorage.removeItem(CURRENT_USER_KEY);
-  // 停止会话检查定时器
-  if (window._sessionCheckTimer) {
-    clearInterval(window._sessionCheckTimer);
-    window._sessionCheckTimer = null;
-  }
   showLogin();
-}
-
-// ===== 单点登录：设备ID与会话管理 =====
-const DEVICE_ID_KEY = 'dingju_device_id';
-const SESSION_RECORD_ID = 'dingju_user_sessions';
-
-// 获取或生成设备唯一ID
-function getDeviceId() {
-  let deviceId = localStorage.getItem(DEVICE_ID_KEY);
-  if (!deviceId) {
-    deviceId = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 8);
-    localStorage.setItem(DEVICE_ID_KEY, deviceId);
-  }
-  return deviceId;
-}
-
-// 更新用户会话（登录时调用，记录当前设备）
-async function updateUserSession(username) {
-  if (!supabaseClient || !username) return;
-  try {
-    const deviceId = getDeviceId();
-    // 读取现有会话记录
-    const { data: existing } = await supabaseClient
-      .from('ledger_sync')
-      .select('data')
-      .eq('id', SESSION_RECORD_ID)
-      .maybeSingle();
-    
-    let sessions = existing && existing.data ? existing.data : {};
-    sessions[username] = {
-      device_id: deviceId,
-      login_time: new Date().toISOString()
-    };
-    
-    // 写回会话记录
-    await supabaseClient
-      .from('ledger_sync')
-      .upsert({ id: SESSION_RECORD_ID, data: sessions, updated_at: new Date().toISOString() });
-  } catch (e) {
-    console.warn('更新用户会话失败:', e);
-  }
-}
-
-// 检查当前用户会话是否有效（是否被其他设备踢下线）
-async function checkUserSession() {
-  if (!supabaseClient || !checkLogin()) return;
-  try {
-    const username = getCurrentUser();
-    const currentDeviceId = getDeviceId();
-    
-    const { data } = await supabaseClient
-      .from('ledger_sync')
-      .select('data')
-      .eq('id', SESSION_RECORD_ID)
-      .maybeSingle();
-    
-    if (data && data.data && data.data[username]) {
-      const session = data.data[username];
-      if (session.device_id !== currentDeviceId) {
-        // 当前设备与登录设备不一致，说明在其他设备登录了
-        const loginTime = new Date(session.login_time);
-        const timeStr = loginTime.toLocaleString('zh-CN');
-        alert('您的账号已在其他设备登录（' + timeStr + '），当前设备已被踢下线。');
-        doLogout();
-      }
-    }
-  } catch (e) {
-    console.warn('检查用户会话失败:', e);
-  }
-}
-
-// 启动会话检查定时器（每30秒检查一次）
-function startSessionCheck() {
-  if (window._sessionCheckTimer) {
-    clearInterval(window._sessionCheckTimer);
-  }
-  window._sessionCheckTimer = setInterval(checkUserSession, 30000);
 }
 
 function bindLoginEvents() {
@@ -6162,30 +4562,12 @@ function init() {
     bindCloudSyncEvents();
   applySettings();
   bindEvents();
-  bindSettlementEvents();
-  // 绑定结账FAB按钮
-  const settlementBtn = document.getElementById('settlementBtn');
-  if (settlementBtn) {
-    settlementBtn.addEventListener('click', () => openSettlementModal());
-  }
-  // 绑定凭证详情按钮
-  const printSettlementBtn = document.getElementById('printSettlementBtn');
-  if (printSettlementBtn) printSettlementBtn.addEventListener('click', printSettlement);
-  const addPaymentBtn = document.getElementById('addPaymentBtn');
-  if (addPaymentBtn) addPaymentBtn.addEventListener('click', addSettlementPayment);
-  const editInvoiceBtn = document.getElementById('editInvoiceBtn');
-  if (editInvoiceBtn) editInvoiceBtn.addEventListener('click', editSettlementInvoice);
-  // 绑定对账单打印
-  const printStatementBtn = document.getElementById('printStatementBtn');
-  if (printStatementBtn) printStatementBtn.addEventListener('click', printStatement);
   renderAll();
   if (!checkLogin()) {
     showLogin();
   } else {
     // 更新当前用户显示
     updateCurrentUserDisplay();
-    // 单点登录：启动会话检查定时器
-    startSessionCheck();
     // 登录后触发新手引导（仅首次）
     if (!localStorage.getItem('dingju_guide_shown')) {
       setTimeout(startGuide, 800);
@@ -6199,250 +4581,6 @@ function init() {
       showToast('欢迎使用鼎炬账本，点击右下角按钮开始记账，或从设置页导入历史数据', 'info', 5000);
     }, 500);
   }
-}
-
-// 更新回收站数量显示
-function updateTrashCount() {
-  const el = document.getElementById('trashCountDesc');
-  if (el) {
-    const count = state.deletedRecords.length;
-    if (count > 0) {
-      el.textContent = `当前有 ${count} 条已删除记录，可复原或永久删除`;
-    } else {
-      el.textContent = '查看已删除的单据，可复原或永久删除';
-    }
-  }
-}
-
-// 打开回收站列表
-function openTrashModal() {
-  closeModal('settingsModal');  // 先关闭设置弹窗，避免遮挡
-  renderTrashList();
-  openModal('trashModal');  // 直接弹出，不使用导航栈
-}
-
-// 渲染回收站列表
-function renderTrashList() {
-  const container = document.getElementById('trashListContainer');
-  const emptyEl = document.getElementById('trashEmpty');
-  const countInfo = document.getElementById('trashCountInfo');
-  const emptyBtn = document.getElementById('emptyTrashBtn');
-  
-  const records = state.deletedRecords;
-  
-  if (countInfo) countInfo.textContent = `共 ${records.length} 条已删除记录`;
-  if (emptyBtn) emptyBtn.style.display = records.length > 0 ? 'flex' : 'none';
-  
-  if (records.length === 0) {
-    if (container) container.style.display = 'none';
-    if (emptyEl) emptyEl.style.display = 'block';
-    return;
-  }
-  
-  if (container) container.style.display = 'block';
-  if (emptyEl) emptyEl.style.display = 'none';
-  
-  // 按删除时间倒序排列（最新删除的在前）
-  const sorted = [...records].sort((a, b) => {
-    return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
-  });
-  
-  container.innerHTML = sorted.map(r => {
-    const status = getPaymentStatus(r);
-    const delTime = r.updatedAt ? new Date(r.updatedAt).toLocaleString('zh-CN') : '未知';
-    return `
-      <div class="record-card" data-id="${r.id}" style="opacity:0.7;border-left:3px solid var(--warning);">
-        <div class="record-card-header">
-          <div class="record-customer">
-            ${escapeHtml(r.customerName || '未命名客户')}${r.doorNo ? '（' + escapeHtml(r.doorNo) + '）' : ''}
-          </div>
-          <span class="record-status" style="background:var(--bg-secondary);color:var(--warning);">已删除</span>
-        </div>
-        <div class="record-card-body">
-          ${r.style ? `
-          <div class="record-style">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-            ${escapeHtml(r.style)}${r.material ? ` · ${escapeHtml(r.material)}` : ''}
-          </div>` : ''}
-          <div class="key-stats">
-            <div class="key-stat">
-              <div class="key-stat-label">件数</div>
-              <div class="key-stat-value tabular-nums">${r.quantity || 0}<span class="unit">件</span></div>
-            </div>
-            <div class="key-stat weight">
-              <div class="key-stat-label">总重量</div>
-              <div class="key-stat-value tabular-nums">${formatMoney((r.quantity || 0) * (r.weightPerPiece || 0) + (r.extraWeight || 0))}<span class="unit">斤</span></div>
-            </div>
-            <div class="key-stat amount">
-              <div class="key-stat-label">总金额</div>
-              <div class="key-stat-value tabular-nums"><span class="unit">¥</span>${formatMoneyWithComma(r.totalAmount)}</div>
-            </div>
-          </div>
-          <div class="record-meta" style="color:var(--warning);font-size:var(--font-size-xs);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            删除时间：${delTime}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-  
-  // 绑定卡片点击
-  container.querySelectorAll('.record-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const id = card.dataset.id;
-      openTrashDetail(id);
-    });
-  });
-}
-
-// 打开回收站详情
-function openTrashDetail(recordId) {
-  const record = state.deletedRecords.find(r => r.id === recordId);
-  if (!record) return;
-
-  const status = getPaymentStatus(record);
-  const unpaid = Math.max(0, (record.totalAmount || 0) - (record.paidAmount || 0));
-  const delTime = record.updatedAt ? new Date(record.updatedAt).toLocaleString('zh-CN') : '未知';
-
-  document.getElementById('trashDetailBody').innerHTML = `
-    <div class="detail-section" style="border-left:3px solid var(--warning);padding-left:12px;margin-bottom:16px;">
-      <div class="detail-section-title" style="color:var(--warning);">删除信息</div>
-      <div class="detail-row">
-        <span class="label">删除时间</span>
-        <span class="value" style="color:var(--warning);">${delTime}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">状态</span>
-        <span class="value"><span class="record-status" style="background:var(--bg-secondary);color:var(--warning);">已删除</span></span>
-      </div>
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">基本信息</div>
-      <div class="detail-row">
-        <span class="label">客户名称</span>
-        <span class="value">${escapeHtml(record.customerName)}</span>
-      </div>
-      ${record.invoiceNo ? `
-      <div class="detail-row">
-        <span class="label">发票单号</span>
-        <span class="value">${escapeHtml(record.invoiceNo)}</span>
-      </div>` : ''}
-      ${record.remark ? `
-      <div class="detail-row">
-        <span class="label">备注</span>
-        <span class="value">${escapeHtml(record.remark)}</span>
-      </div>` : ''}
-      <div class="detail-row">
-        <span class="label">单据日期</span>
-        <span class="value">${record.date}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">收款状态</span>
-        <span class="value"><span class="record-status ${status}">${getStatusText(status)}</span></span>
-      </div>
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">产品信息</div>
-      ${record.style ? `
-      <div class="detail-row">
-        <span class="label">产品款式</span>
-        <span class="value">${escapeHtml(record.style)}</span>
-      </div>` : ''}
-      ${record.material ? `
-      <div class="detail-row">
-        <span class="label">材质</span>
-        <span class="value">${escapeHtml(record.material)}</span>
-      </div>` : ''}
-      ${record.process ? `
-      <div class="detail-row">
-        <span class="label">加工工艺</span>
-        <span class="value">${escapeHtml(record.process)}</span>
-      </div>` : ''}
-      <div class="detail-row">
-        <span class="label">件数</span>
-        <span class="value">${record.quantity || 0} 件</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">每件重量</span>
-        <span class="value">${record.weightPerPiece || 0} 斤</span>
-      </div>
-      ${record.extraWeight ? `
-      <div class="detail-row">
-        <span class="label">额外斤数</span>
-        <span class="value">${record.extraWeight} 斤</span>
-      </div>` : ''}
-      <div class="detail-row">
-        <span class="label" style="color:var(--accent);font-weight:600;">总重量</span>
-        <span class="value" style="color:var(--accent);font-weight:700;font-size:var(--font-size-lg);">${formatMoney((record.quantity || 0) * (record.weightPerPiece || 0) + (record.extraWeight || 0))} 斤</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">单价</span>
-        <span class="value detail-unit-price">¥${formatMoney(record.unitPrice)} /斤</span>
-      </div>
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">金额信息</div>
-      <div class="detail-row">
-        <span class="label">总金额</span>
-        <span class="value amount">¥${formatMoneyWithComma(record.totalAmount)}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">已收款</span>
-        <span class="value success">¥${formatMoneyWithComma(record.paidAmount)}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">未收款</span>
-        <span class="value danger">¥${formatMoneyWithComma(unpaid)}</span>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('trashDetailBody').dataset.recordId = recordId;
-  openModal('trashDetailModal');  // 直接弹出详情，不使用导航栈
-}
-
-// 复原记录（从回收站移回活跃列表）
-function restoreRecord(recordId) {
-  const index = state.deletedRecords.findIndex(r => r.id === recordId);
-  if (index === -1) return;
-  
-  const record = state.deletedRecords.splice(index, 1)[0];
-  delete record.deleted;
-  record.updatedAt = new Date().toISOString();
-  state.records.push(record);
-  
-  addAuditLog('restore', `复原已删除单据：${record.customerName}，金额¥${(record.totalAmount||0).toFixed(2)}`);
-  saveData();
-  renderAll();
-  renderTrashList();
-  closeModal('trashDetailModal');
-  showToast('单据已复原', 'success');
-}
-
-// 永久删除记录（从回收站彻底删除，并同步云端）
-function permanentDeleteRecord(recordId) {
-  const record = state.deletedRecords.find(r => r.id === recordId);
-  if (!record) return;
-  
-  if (!confirm(`确定要永久删除这条记录吗？\n\n客户：${record.customerName}\n金额：¥${(record.totalAmount||0).toFixed(2)}\n\n此操作不可恢复，删除后云端对应数据也将一并删除！`)) return;
-  
-  const index = state.deletedRecords.findIndex(r => r.id === recordId);
-  if (index !== -1) {
-    state.deletedRecords.splice(index, 1);
-  }
-  
-  // 关键：记录待永久删除的ID，同步时从云端数据中移除
-  if (!state.pendingPermanentDeletes.includes(recordId)) {
-    state.pendingPermanentDeletes.push(recordId);
-  }
-  
-  addAuditLog('permanent_delete', `永久删除单据：${record.customerName}，金额¥${(record.totalAmount||0).toFixed(2)}`);
-  saveData();  // 会自动同步到云端，云端的已删除记录也会被清除
-  renderAll();
-  renderTrashList();
-  closeModal('trashDetailModal');
-  showToast('记录已永久删除', 'success');
 }
 
 function updateCurrentUserDisplay() {
@@ -6566,1055 +4704,8 @@ window.addEventListener('resize', () => {
 });
 
 
-
-// ============================================================
-// ===== 客户结账功能 =====
-// ============================================================
-
-// 计算单据总重量
-function getRecordWeight(record) {
-  const qty = parseFloat(record.quantity) || 0;
-  const wpp = parseFloat(record.weightPerPiece) || 0;
-  const extra = parseFloat(record.extraWeight) || 0;
-  return qty * wpp + extra;
-}
-
-// 获取未结账的活跃单据
-function getUnsettledRecords(customerName) {
-  return state.records.filter(r =>
-    !r.deleted &&
-    !r.settled &&
-    r.customerName &&
-    r.customerName.trim() === customerName.trim()
-  ).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-}
-
-// 重置结账临时状态
-function resetSettlementState() {
-  state.settlement = {
-    customerName: '',
-    date: formatDate(new Date()),
-    selectedRecordIds: [],
-    itemAdjustments: {},
-    wholeDiscountType: 'none',
-    wholeDiscountValue: 0,
-    wholeDiscountReason: '',
-    roundingAmount: 0,
-    paidAmount: 0,
-    remark: '',
-    otherFees: []
-  };
-}
-
-// 打开结账窗口
-function openSettlementModal(customerName) {
-  resetSettlementState();
-  if (customerName) {
-    state.settlement.customerName = customerName;
-    document.getElementById('settlementCustomer').value = customerName;
-    loadSettlementRecords();
-  } else {
-    document.getElementById('settlementCustomer').value = '';
-    document.getElementById('settlementRecordsBody').innerHTML =
-      '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);">请先选择客户</div>';
-  }
-  document.getElementById('settlementDate').value = formatDate(new Date());
-  document.getElementById('wholeDiscountType').value = 'none';
-  document.getElementById('wholeDiscountValueWrap').style.display = 'none';
-  document.getElementById('wholeDiscountValue').value = '';
-  document.getElementById('wholeDiscountReason').value = '';
-  document.getElementById('roundingAmount').value = '';
-  document.getElementById('settlementPaidAmount').value = '';
-  document.getElementById('settlementRemark').value = '';
-  document.getElementById('otherFeesList').innerHTML = '';
-  updateSettlementSummary();
-  openModal('settlementModal');
-  // 绑定客户自动完成
-  bindSettlementCustomerAutocomplete();
-}
-
-// 绑定结账客户自动完成
-function bindSettlementCustomerAutocomplete() {
-  const input = document.getElementById('settlementCustomer');
-  const dropdown = document.getElementById('settlementCustomerAutocomplete');
-  if (!input || !dropdown) return;
-
-  input.addEventListener('input', () => {
-    const q = input.value.trim().toLowerCase();
-    const customers = [...new Set(state.records
-      .filter(r => !r.deleted && r.customerName)
-      .map(r => r.customerName)
-    )].filter(c => c.toLowerCase().includes(q)).slice(0, 8);
-
-    if (customers.length > 0 && q) {
-      dropdown.innerHTML = customers.map(c =>
-        `<div class="autocomplete-item" data-customer="${escapeHtml(c)}">${escapeHtml(c)}</div>`
-      ).join('');
-      dropdown.style.display = 'block';
-      dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
-        item.addEventListener('click', () => {
-          input.value = item.dataset.customer;
-          dropdown.style.display = 'none';
-          state.settlement.customerName = item.dataset.customer;
-          loadSettlementRecords();
-        });
-      });
-    } else {
-      dropdown.style.display = 'none';
-    }
-  });
-
-  input.addEventListener('blur', () => {
-    setTimeout(() => {
-      dropdown.style.display = 'none';
-      if (input.value.trim()) {
-        state.settlement.customerName = input.value.trim();
-        loadSettlementRecords();
-      }
-    }, 200);
-  });
-
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      dropdown.style.display = 'none';
-      if (input.value.trim()) {
-        state.settlement.customerName = input.value.trim();
-        loadSettlementRecords();
-      }
-    }
-  });
-}
-
-// 加载结账单据列表
-function loadSettlementRecords() {
-  const customerName = state.settlement.customerName;
-  if (!customerName) return;
-
-  const records = getUnsettledRecords(customerName);
-  const body = document.getElementById('settlementRecordsBody');
-
-  if (records.length === 0) {
-    body.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);">客户"${escapeHtml(customerName)}"暂无未结账单据</div>`;
-    state.settlement.selectedRecordIds = [];
-    state.settlement.itemAdjustments = {};
-    updateSettlementSummary();
-    return;
-  }
-
-  body.innerHTML = records.map(r => {
-    const weight = getRecordWeight(r);
-    const adj = state.settlement.itemAdjustments[r.id] || {};
-    const actualWeight = adj.actualWeight !== undefined ? adj.actualWeight : weight;
-    const isSelected = state.settlement.selectedRecordIds.includes(r.id);
-    const productInfo = [r.style, r.material, r.process].filter(Boolean).join(' / ') || '标准件';
-    return `
-      <div class="settlement-record-item ${isSelected ? 'selected' : ''}" data-record-id="${r.id}">
-        <div style="text-align:center;"><input type="checkbox" class="settlement-record-checkbox" data-record-id="${r.id}" ${isSelected ? 'checked' : ''}></div>
-        <div class="record-info">
-          <div class="record-customer">${escapeHtml(productInfo)}</div>
-          <div class="record-meta">${r.date || ''} ${r.invoiceNo ? '· ' + escapeHtml(r.invoiceNo) : ''}</div>
-        </div>
-        <div style="text-align:center;font-variant-numeric:tabular-nums;">${weight.toFixed(2)}</div>
-        <div><input type="number" class="actual-weight-input" data-record-id="${r.id}" value="${actualWeight}" step="0.01" min="0" ${!isSelected ? 'disabled' : ''}></div>
-        <div style="text-align:right;font-variant-numeric:tabular-nums;">¥${(r.unitPrice || 0).toFixed(2)}</div>
-        <div class="amount-col" style="font-weight:600;">¥${(actualWeight * (r.unitPrice || 0)).toFixed(2)}</div>
-      </div>
-    `;
-  }).join('');
-
-  // 绑定勾选事件
-  body.querySelectorAll('.settlement-record-checkbox').forEach(cb => {
-    cb.addEventListener('change', (e) => {
-      const recordId = e.target.dataset.recordId;
-      const item = e.target.closest('.settlement-record-item');
-      const weightInput = item.querySelector('.actual-weight-input');
-      if (e.target.checked) {
-        if (!state.settlement.selectedRecordIds.includes(recordId)) {
-          state.settlement.selectedRecordIds.push(recordId);
-        }
-        item.classList.add('selected');
-        weightInput.disabled = false;
-      } else {
-        state.settlement.selectedRecordIds = state.settlement.selectedRecordIds.filter(id => id !== recordId);
-        item.classList.remove('selected');
-        weightInput.disabled = true;
-      }
-      updateSettlementSelectedCount();
-      updateSettlementSummary();
-    });
-  });
-
-  // 绑定实际重量输入
-  body.querySelectorAll('.actual-weight-input').forEach(input => {
-    input.addEventListener('input', (e) => {
-      const recordId = e.target.dataset.recordId;
-      const val = parseFloat(e.target.value) || 0;
-      if (!state.settlement.itemAdjustments[recordId]) {
-        state.settlement.itemAdjustments[recordId] = {};
-      }
-      state.settlement.itemAdjustments[recordId].actualWeight = val;
-      // 更新该行金额显示
-      const item = e.target.closest('.settlement-record-item');
-      const record = records.find(r => r.id === recordId);
-      const amountCol = item.querySelector('.amount-col');
-      if (record && amountCol) {
-        amountCol.textContent = '¥' + (val * (record.unitPrice || 0)).toFixed(2);
-      }
-      updateSettlementSummary();
-    });
-  });
-
-  updateSettlementSelectedCount();
-  updateSettlementSummary();
-}
-
-// 更新已选数量
-function updateSettlementSelectedCount() {
-  const count = state.settlement.selectedRecordIds.length;
-  document.getElementById('settlementSelectedCount').textContent = `已选 ${count} 张`;
-  const selectAll = document.getElementById('settlementSelectAll');
-  const customerName = state.settlement.customerName;
-  if (customerName) {
-    const total = getUnsettledRecords(customerName).length;
-    selectAll.checked = count > 0 && count === total;
-  }
-}
-
-
-
-// 计算结账汇总
-function calculateSettlementSummary() {
-  const selectedIds = state.settlement.selectedRecordIds;
-  const customerName = state.settlement.customerName;
-  const records = getUnsettledRecords(customerName).filter(r => selectedIds.includes(r.id));
-
-  let totalOriginalAmount = 0;
-  let totalActualAmount = 0;
-  let totalItemDiscount = 0;
-
-  records.forEach(r => {
-    const originalWeight = getRecordWeight(r);
-    const adj = state.settlement.itemAdjustments[r.id] || {};
-    const actualWeight = adj.actualWeight !== undefined ? adj.actualWeight : originalWeight;
-    const unitPrice = parseFloat(r.unitPrice) || 0;
-    const originalAmount = originalWeight * unitPrice;
-    const itemDiscount = parseFloat(adj.itemDiscountAmount) || 0;
-    const actualAmount = actualWeight * unitPrice - itemDiscount;
-
-    totalOriginalAmount += originalAmount;
-    totalActualAmount += actualAmount;
-    totalItemDiscount += itemDiscount;
-  });
-
-  const weightAdjustment = totalActualAmount + totalItemDiscount - totalOriginalAmount;
-
-  // 整单折扣
-  let wholeDiscountAmount = 0;
-  const discountType = state.settlement.wholeDiscountType;
-  const discountValue = parseFloat(state.settlement.wholeDiscountValue) || 0;
-  if (discountType === 'percentage' && discountValue > 0) {
-    wholeDiscountAmount = totalActualAmount * (1 - discountValue / 100);
-  } else if (discountType === 'amount' && discountValue > 0) {
-    wholeDiscountAmount = discountValue;
-  }
-
-  // 其他费用
-  let totalOtherFees = 0;
-  state.settlement.otherFees.forEach(fee => {
-    totalOtherFees += parseFloat(fee.amount) || 0;
-  });
-
-  const subtotal = totalActualAmount - wholeDiscountAmount + totalOtherFees;
-  const rounding = parseFloat(state.settlement.roundingAmount) || 0;
-  const receivable = Math.max(0, subtotal - rounding);
-  const paid = parseFloat(state.settlement.paidAmount) || 0;
-  const unpaid = Math.max(0, receivable - paid);
-
-  return {
-    totalOriginalAmount,
-    weightAdjustment,
-    totalItemDiscount,
-    wholeDiscountAmount,
-    totalOtherFees,
-    subtotal,
-    rounding,
-    receivable,
-    paid,
-    unpaid,
-    records
-  };
-}
-
-// 更新结账汇总显示
-function updateSettlementSummary() {
-  const s = calculateSettlementSummary();
-  const isHidden = state.amountHidden;
-
-  document.getElementById('sumOriginalAmount').textContent = isHidden ? '****' : '¥' + s.totalOriginalAmount.toFixed(2);
-  document.getElementById('sumWeightAdjustment').textContent = isHidden ? '****' : (s.weightAdjustment >= 0 ? '+' : '') + '¥' + s.weightAdjustment.toFixed(2);
-  document.getElementById('sumItemDiscount').textContent = isHidden ? '****' : '-¥' + s.totalItemDiscount.toFixed(2);
-  document.getElementById('sumWholeDiscount').textContent = isHidden ? '****' : '-¥' + s.wholeDiscountAmount.toFixed(2);
-  document.getElementById('sumOtherFees').textContent = isHidden ? '****' : '+¥' + s.totalOtherFees.toFixed(2);
-  document.getElementById('sumSubtotal').textContent = isHidden ? '****' : '¥' + s.subtotal.toFixed(2);
-  document.getElementById('sumRounding').textContent = isHidden ? '****' : '-¥' + s.rounding.toFixed(2);
-  document.getElementById('sumReceivable').textContent = isHidden ? '****' : '¥' + s.receivable.toFixed(2);
-  document.getElementById('sumUnpaid').textContent = isHidden ? '未收 ****' : '未收 ¥' + s.unpaid.toFixed(2);
-
-  // 整单折扣金额显示
-  const discountDisplay = document.getElementById('wholeDiscountAmountDisplay');
-  if (state.settlement.wholeDiscountType !== 'none' && s.wholeDiscountAmount > 0) {
-    discountDisplay.textContent = isHidden ? '减免 ****' : '减免 ¥' + s.wholeDiscountAmount.toFixed(2);
-  } else {
-    discountDisplay.textContent = '';
-  }
-}
-
-// 绑定结账窗口事件
-function bindSettlementEvents() {
-  // 全选
-  document.getElementById('settlementSelectAll').addEventListener('change', (e) => {
-    const customerName = state.settlement.customerName;
-    if (!customerName) return;
-    const records = getUnsettledRecords(customerName);
-    if (e.target.checked) {
-      state.settlement.selectedRecordIds = records.map(r => r.id);
-    } else {
-      state.settlement.selectedRecordIds = [];
-    }
-    loadSettlementRecords();
-  });
-
-  // 整单折扣类型
-  document.getElementById('wholeDiscountType').addEventListener('change', (e) => {
-    state.settlement.wholeDiscountType = e.target.value;
-    const wrap = document.getElementById('wholeDiscountValueWrap');
-    const unit = document.getElementById('wholeDiscountUnit');
-    if (e.target.value === 'none') {
-      wrap.style.display = 'none';
-      state.settlement.wholeDiscountValue = 0;
-    } else if (e.target.value === 'percentage') {
-      wrap.style.display = 'inline-block';
-      unit.textContent = '%（如98表示九八折）';
-    } else if (e.target.value === 'amount') {
-      wrap.style.display = 'inline-block';
-      unit.textContent = '元';
-    }
-    updateSettlementSummary();
-  });
-
-  // 整单折扣值
-  document.getElementById('wholeDiscountValue').addEventListener('input', (e) => {
-    state.settlement.wholeDiscountValue = parseFloat(e.target.value) || 0;
-    updateSettlementSummary();
-  });
-
-  // 整单折扣原因
-  document.getElementById('wholeDiscountReason').addEventListener('change', (e) => {
-    state.settlement.wholeDiscountReason = e.target.value;
-  });
-
-  // 抹零
-  document.getElementById('roundingAmount').addEventListener('input', (e) => {
-    state.settlement.roundingAmount = parseFloat(e.target.value) || 0;
-    updateSettlementSummary();
-  });
-
-  // 实收
-  document.getElementById('settlementPaidAmount').addEventListener('input', (e) => {
-    state.settlement.paidAmount = parseFloat(e.target.value) || 0;
-    updateSettlementSummary();
-  });
-
-  // 备注
-  document.getElementById('settlementRemark').addEventListener('input', (e) => {
-    state.settlement.remark = e.target.value;
-  });
-
-  // 结账日期
-  document.getElementById('settlementDate').addEventListener('change', (e) => {
-    state.settlement.date = e.target.value;
-  });
-
-  // 添加其他费用
-  document.getElementById('addOtherFeeBtn').addEventListener('click', () => {
-    state.settlement.otherFees.push({ name: '', amount: 0 });
-    renderOtherFees();
-  });
-
-  // 确认结账
-  document.getElementById('confirmSettlementBtn').addEventListener('click', confirmSettlement);
-}
-
-// 渲染其他费用列表
-function renderOtherFees() {
-  const list = document.getElementById('otherFeesList');
-  list.innerHTML = state.settlement.otherFees.map((fee, idx) => `
-    <div class="other-fee-item">
-      <input type="text" name="feeName" placeholder="费用名称（如：运费）" value="${escapeHtml(fee.name)}" data-idx="${idx}">
-      <input type="number" name="feeAmount" placeholder="金额" value="${fee.amount || ''}" step="0.01" min="0" data-idx="${idx}">
-      <button class="remove-fee-btn" data-idx="${idx}">×</button>
-    </div>
-  `).join('');
-
-  list.querySelectorAll('input[name="feeName"]').forEach(input => {
-    input.addEventListener('input', (e) => {
-      const idx = parseInt(e.target.dataset.idx);
-      state.settlement.otherFees[idx].name = e.target.value;
-    });
-  });
-
-  list.querySelectorAll('input[name="feeAmount"]').forEach(input => {
-    input.addEventListener('input', (e) => {
-      const idx = parseInt(e.target.dataset.idx);
-      state.settlement.otherFees[idx].amount = parseFloat(e.target.value) || 0;
-      updateSettlementSummary();
-    });
-  });
-
-  list.querySelectorAll('.remove-fee-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const idx = parseInt(e.target.dataset.idx);
-      state.settlement.otherFees.splice(idx, 1);
-      renderOtherFees();
-      updateSettlementSummary();
-    });
-  });
-}
-
-// 确认结账
-function confirmSettlement() {
-  const customerName = state.settlement.customerName;
-  if (!customerName) {
-    showToast('请选择客户', 'warning');
-    return;
-  }
-  if (state.settlement.selectedRecordIds.length === 0) {
-    showToast('请至少选择一张单据', 'warning');
-    return;
-  }
-
-  const s = calculateSettlementSummary();
-
-  // 生成结账凭证
-  const settlementId = 'JS' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const settlementRecords = s.records.map(r => {
-    const originalWeight = getRecordWeight(r);
-    const adj = state.settlement.itemAdjustments[r.id] || {};
-    const actualWeight = adj.actualWeight !== undefined ? adj.actualWeight : originalWeight;
-    const itemDiscount = parseFloat(adj.itemDiscountAmount) || 0;
-    return {
-      recordId: r.id,
-      date: r.date,
-      style: r.style || '',
-      material: r.material || '',
-      process: r.process || '',
-      invoiceNo: r.invoiceNo || '',
-      originalWeight,
-      actualWeight,
-      unitPrice: parseFloat(r.unitPrice) || 0,
-      originalAmount: originalWeight * (parseFloat(r.unitPrice) || 0),
-      itemDiscount,
-      actualAmount: actualWeight * (parseFloat(r.unitPrice) || 0) - itemDiscount
-    };
-  });
-
-  const payments = [];
-  if (s.paid > 0) {
-    payments.push({
-      amount: s.paid,
-      date: state.settlement.date || formatDate(new Date()),
-      operator: state.currentUser || '未知',
-      remark: '结账时收款'
-    });
-  }
-
-  const settlement = {
-    id: settlementId,
-    customerName,
-    date: state.settlement.date || formatDate(new Date()),
-    records: settlementRecords,
-    totalOriginalAmount: s.totalOriginalAmount,
-    weightAdjustment: s.weightAdjustment,
-    totalItemDiscount: s.totalItemDiscount,
-    wholeDiscountType: state.settlement.wholeDiscountType,
-    wholeDiscountValue: state.settlement.wholeDiscountValue,
-    wholeDiscountAmount: s.wholeDiscountAmount,
-    wholeDiscountReason: state.settlement.wholeDiscountReason,
-    otherFees: [...state.settlement.otherFees],
-    totalOtherFees: s.totalOtherFees,
-    subtotal: s.subtotal,
-    roundingAmount: s.rounding,
-    receivableAmount: s.receivable,
-    payments,
-    totalPaid: s.paid,
-    unpaidAmount: s.unpaid,
-    invoiceNo: '',
-    status: s.unpaid > 0 ? (s.paid > 0 ? 'partial' : 'unpaid') : 'paid',
-    remark: state.settlement.remark,
-    createdBy: state.currentUser || '未知',
-    createdAt: new Date().toISOString(),
-    voided: false
-  };
-
-  state.settlements.push(settlement);
-
-  // 标记关联单据为已结账
-  state.settlement.selectedRecordIds.forEach(recordId => {
-    const record = state.records.find(r => r.id === recordId);
-    if (record) {
-      record.settled = true;
-      record.settlementId = settlementId;
-    }
-  });
-
-  saveData();
-  closeModal('settlementModal');
-  renderAll();
-  showToast('结账成功，凭证号：' + settlementId, 'success');
-  addAuditLog('settlement', `客户结账：${customerName}，${state.settlement.selectedRecordIds.length}张单据，应收¥${s.receivable.toFixed(2)}，实收¥${s.paid.toFixed(2)}`);
-
-  // 自动打开凭证详情
-  setTimeout(() => openSettlementDetail(settlementId), 300);
-}
-
-
-
-// 打开结账凭证详情
-function openSettlementDetail(settlementId) {
-  const settlement = state.settlements.find(s => s.id === settlementId);
-  if (!settlement) return;
-
-  state.viewingSettlementId = settlementId;
-  const isHidden = state.amountHidden;
-  const statusText = { paid: '已结清', partial: '部分收款', unpaid: '未收款' }[settlement.status] || settlement.status;
-
-  const body = document.getElementById('settlementDetailBody');
-  body.innerHTML = `
-    <div class="settlement-detail-header">
-      <div class="settlement-detail-id">${escapeHtml(settlement.id)}</div>
-      <div class="settlement-detail-meta">
-        ${escapeHtml(settlement.customerName)} · ${settlement.date} ·
-        <span class="status-badge ${settlement.status}">${statusText}</span>
-        ${settlement.invoiceNo ? ' · 发票号：' + escapeHtml(settlement.invoiceNo) : ''}
-      </div>
-    </div>
-
-    <div class="settlement-detail-section">
-      <div class="settlement-detail-section-title">单据明细（共${settlement.records.length}张）</div>
-      <table class="settlement-detail-table">
-        <thead>
-          <tr>
-            <th>日期</th>
-            <th>产品</th>
-            <th class="num">原重量</th>
-            <th class="num">实际重量</th>
-            <th class="num">单价</th>
-            <th class="num">原金额</th>
-            <th class="num">实金额</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${settlement.records.map(r => {
-            const product = [r.style, r.material, r.process].filter(Boolean).join('/') || '标准件';
-            return `<tr>
-              <td>${r.date || ''}</td>
-              <td>${escapeHtml(product)}${r.invoiceNo ? '<br><small>' + escapeHtml(r.invoiceNo) + '</small>' : ''}</td>
-              <td class="num">${r.originalWeight.toFixed(2)}</td>
-              <td class="num">${r.actualWeight.toFixed(2)}</td>
-              <td class="num">¥${r.unitPrice.toFixed(2)}</td>
-              <td class="num">${isHidden ? '****' : '¥' + r.originalAmount.toFixed(2)}</td>
-              <td class="num" style="font-weight:600;">${isHidden ? '****' : '¥' + r.actualAmount.toFixed(2)}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="settlement-detail-section">
-      <div class="settlement-detail-section-title">金额汇总</div>
-      <div class="settlement-summary" style="margin-bottom:0;">
-        <div class="settlement-summary-row label-row"><span>原总金额</span><span class="value">${isHidden ? '****' : '¥' + settlement.totalOriginalAmount.toFixed(2)}</span></div>
-        <div class="settlement-summary-row label-row negative"><span>重量调整</span><span class="value">${isHidden ? '****' : (settlement.weightAdjustment >= 0 ? '+' : '') + '¥' + settlement.weightAdjustment.toFixed(2)}</span></div>
-        ${settlement.totalItemDiscount > 0 ? `<div class="settlement-summary-row label-row negative"><span>单单据折扣</span><span class="value">${isHidden ? '****' : '-¥' + settlement.totalItemDiscount.toFixed(2)}</span></div>` : ''}
-        ${settlement.wholeDiscountAmount > 0 ? `<div class="settlement-summary-row label-row negative"><span>整单折扣（${settlement.wholeDiscountType === 'percentage' ? settlement.wholeDiscountValue + '%' : '减钱'}${settlement.wholeDiscountReason ? '· ' + settlement.wholeDiscountReason : ''}）</span><span class="value">${isHidden ? '****' : '-¥' + settlement.wholeDiscountAmount.toFixed(2)}</span></div>` : ''}
-        ${settlement.totalOtherFees > 0 ? `<div class="settlement-summary-row label-row"><span>其他费用</span><span class="value">${isHidden ? '****' : '+¥' + settlement.totalOtherFees.toFixed(2)}</span></div>` : ''}
-        <div class="settlement-summary-row total"><span>小计</span><span class="value">${isHidden ? '****' : '¥' + settlement.subtotal.toFixed(2)}</span></div>
-        ${settlement.roundingAmount > 0 ? `<div class="settlement-summary-row label-row negative"><span>抹零</span><span class="value">${isHidden ? '****' : '-¥' + settlement.roundingAmount.toFixed(2)}</span></div>` : ''}
-        <div class="settlement-summary-row receivable"><span>应收金额</span><span class="value">${isHidden ? '****' : '¥' + settlement.receivableAmount.toFixed(2)}</span></div>
-        <div class="settlement-summary-row label-row"><span>已收金额</span><span class="value" style="color:var(--success);">${isHidden ? '****' : '¥' + settlement.totalPaid.toFixed(2)}</span></div>
-        <div class="settlement-summary-row label-row"><span>未收金额</span><span class="value" style="color:var(--warning);font-weight:600;">${isHidden ? '****' : '¥' + settlement.unpaidAmount.toFixed(2)}</span></div>
-      </div>
-    </div>
-
-    ${settlement.payments && settlement.payments.length > 0 ? `
-    <div class="settlement-detail-section">
-      <div class="settlement-detail-section-title">收款记录（共${settlement.payments.length}次）</div>
-      ${settlement.payments.map((p, i) => `
-        <div class="payment-record-item">
-          <div class="payment-info">
-            <span style="color:var(--text-secondary);">第${i + 1}次</span>
-            <span>${p.date}</span>
-            <span style="color:var(--text-secondary);">${escapeHtml(p.operator || '')}</span>
-            ${p.remark ? '<span style="color:var(--text-muted);font-size:var(--font-size-xs);">' + escapeHtml(p.remark) + '</span>' : ''}
-          </div>
-          <span class="payment-amount">${isHidden ? '****' : '+¥' + p.amount.toFixed(2)}</span>
-        </div>
-      `).join('')}
-    </div>` : ''}
-
-    ${settlement.remark ? `
-    <div class="settlement-detail-section">
-      <div class="settlement-detail-section-title">备注</div>
-      <div style="font-size:var(--font-size-sm);color:var(--text-secondary);">${escapeHtml(settlement.remark)}</div>
-    </div>` : ''}
-
-    <div class="settlement-detail-section" style="margin-top:16px;">
-      <button class="btn btn-secondary" style="width:100%;" onclick="voidSettlement('${settlement.id}')">撤销结账（恢复单据为未结账）</button>
-    </div>
-  `;
-
-  openModal('settlementDetailModal');
-}
-
-// 追加收款
-function addSettlementPayment() {
-  const settlementId = state.viewingSettlementId;
-  if (!settlementId) return;
-  const settlement = state.settlements.find(s => s.id === settlementId);
-  if (!settlement || settlement.status === 'paid') {
-    showToast('该凭证已结清', 'info');
-    return;
-  }
-
-  const amount = prompt(`请输入收款金额（未收：¥${settlement.unpaidAmount.toFixed(2)}）：`, settlement.unpaidAmount.toFixed(2));
-  if (amount === null) return;
-  const amt = parseFloat(amount);
-  if (isNaN(amt) || amt <= 0) {
-    showToast('请输入有效金额', 'warning');
-    return;
-  }
-  if (amt > settlement.unpaidAmount + 0.01) {
-    showToast('收款金额不能超过未收金额', 'warning');
-    return;
-  }
-
-  settlement.payments.push({
-    amount: amt,
-    date: formatDate(new Date()),
-    operator: state.currentUser || '未知',
-    remark: '追加收款'
-  });
-  settlement.totalPaid += amt;
-  settlement.unpaidAmount = Math.max(0, settlement.unpaidAmount - amt);
-  settlement.status = settlement.unpaidAmount < 0.01 ? 'paid' : 'partial';
-
-  saveData();
-  openSettlementDetail(settlementId);
-  renderAll();
-  showToast('收款成功', 'success');
-  addAuditLog('payment', `结账凭证${settlementId}追加收款¥${amt.toFixed(2)}`);
-}
-
-// 编辑发票号
-function editSettlementInvoice() {
-  const settlementId = state.viewingSettlementId;
-  if (!settlementId) return;
-  const settlement = state.settlements.find(s => s.id === settlementId);
-  if (!settlement) return;
-
-  const invoiceNo = prompt('请输入发票号（如 1234#）：', settlement.invoiceNo || '');
-  if (invoiceNo === null) return;
-  settlement.invoiceNo = invoiceNo.trim();
-  saveData();
-  openSettlementDetail(settlementId);
-  showToast('发票号已更新', 'success');
-}
-
-// 撤销结账
-function voidSettlement(settlementId) {
-  const settlement = state.settlements.find(s => s.id === settlementId);
-  if (!settlement) return;
-  if (!confirm(`确定要撤销结账凭证"${settlementId}"吗？
-关联的${settlement.records.length}张单据将恢复为未结账状态，收款记录将被清除。`)) return;
-
-  // 恢复关联单据
-  settlement.records.forEach(r => {
-    const record = state.records.find(rec => rec.id === r.recordId);
-    if (record) {
-      record.settled = false;
-      record.settlementId = null;
-    }
-  });
-
-  // 标记凭证为已撤销
-  settlement.voided = true;
-
-  saveData();
-  closeModal('settlementDetailModal');
-  renderAll();
-  showToast('结账已撤销', 'success');
-  addAuditLog('void_settlement', `撤销结账凭证：${settlementId}`);
-}
-
-// 打印结账单
-function printSettlement() {
-  const settlementId = state.viewingSettlementId;
-  if (!settlementId) return;
-  const settlement = state.settlements.find(s => s.id === settlementId);
-  if (!settlement) return;
-
-  const companyName = state.settings.companyName || '温州鼎炬金属科技有限公司';
-  const companyLogo = state.settings.companyLogo || '';
-  const companyAddress = state.settings.companyAddress || '';
-  const companyPhone = state.settings.companyPhone || '';
-
-  const printArea = document.getElementById('printArea');
-  printArea.innerHTML = `
-    <div class="print-header">
-      ${companyLogo ? `<img src="${companyLogo}" class="print-company-logo" alt="Logo">` : ''}
-      <div class="print-company-name">${escapeHtml(companyName)}</div>
-      ${companyAddress ? `<div class="print-company-info">地址：${escapeHtml(companyAddress)}</div>` : ''}
-      ${companyPhone ? `<div class="print-company-info">电话：${escapeHtml(companyPhone)}</div>` : ''}
-    </div>
-    <div class="print-title">结 账 凭 证 单</div>
-    <div class="print-meta">
-      <span>凭证编号：${escapeHtml(settlement.id)}</span>
-      <span>结账日期：${settlement.date}</span>
-    </div>
-    <div class="print-meta">
-      <span>甲方（客户）：${escapeHtml(settlement.customerName)}</span>
-      <span>乙方（供方）：${escapeHtml(companyName)}</span>
-    </div>
-    <table class="print-table">
-      <thead>
-        <tr>
-          <th style="width:40px;">序号</th>
-          <th>日期</th>
-          <th>产品/材质/工艺</th>
-          <th class="num">原重量(斤)</th>
-          <th class="num">实际重量(斤)</th>
-          <th class="num">单价(元/斤)</th>
-          <th class="num">原金额(元)</th>
-          <th class="num">实金额(元)</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${settlement.records.map((r, i) => {
-          const product = [r.style, r.material, r.process].filter(Boolean).join('/') || '标准件';
-          return `<tr>
-            <td>${i + 1}</td>
-            <td>${r.date || ''}</td>
-            <td>${escapeHtml(product)}${r.invoiceNo ? ' (' + escapeHtml(r.invoiceNo) + ')' : ''}</td>
-            <td class="num">${r.originalWeight.toFixed(2)}</td>
-            <td class="num">${r.actualWeight.toFixed(2)}</td>
-            <td class="num">${r.unitPrice.toFixed(2)}</td>
-            <td class="num">${r.originalAmount.toFixed(2)}</td>
-            <td class="num">${r.actualAmount.toFixed(2)}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-    <div class="print-summary">
-      <div class="print-summary-row"><span>原总金额</span><span>¥${settlement.totalOriginalAmount.toFixed(2)}</span></div>
-      ${settlement.weightAdjustment !== 0 ? `<div class="print-summary-row"><span>重量调整</span><span>${settlement.weightAdjustment >= 0 ? '+' : ''}¥${settlement.weightAdjustment.toFixed(2)}</span></div>` : ''}
-      ${settlement.totalItemDiscount > 0 ? `<div class="print-summary-row"><span>单单据折扣</span><span>-¥${settlement.totalItemDiscount.toFixed(2)}</span></div>` : ''}
-      ${settlement.wholeDiscountAmount > 0 ? `<div class="print-summary-row"><span>整单折扣（${settlement.wholeDiscountType === 'percentage' ? settlement.wholeDiscountValue + '%' : '减钱'}${settlement.wholeDiscountReason ? '· ' + settlement.wholeDiscountReason : ''}）</span><span>-¥${settlement.wholeDiscountAmount.toFixed(2)}</span></div>` : ''}
-      ${settlement.totalOtherFees > 0 ? `<div class="print-summary-row"><span>其他费用</span><span>+¥${settlement.totalOtherFees.toFixed(2)}</span></div>` : ''}
-      <div class="print-summary-row"><span>小计</span><span>¥${settlement.subtotal.toFixed(2)}</span></div>
-      ${settlement.roundingAmount > 0 ? `<div class="print-summary-row"><span>抹零</span><span>-¥${settlement.roundingAmount.toFixed(2)}</span></div>` : ''}
-      <div class="print-summary-row total"><span>应收金额</span><span>¥${settlement.receivableAmount.toFixed(2)}</span></div>
-      <div class="print-summary-row"><span>已收金额</span><span>¥${settlement.totalPaid.toFixed(2)}</span></div>
-      <div class="print-summary-row"><span>未收金额</span><span>¥${settlement.unpaidAmount.toFixed(2)}</span></div>
-      ${settlement.invoiceNo ? `<div class="print-summary-row"><span>发票号</span><span>${escapeHtml(settlement.invoiceNo)}</span></div>` : ''}
-    </div>
-    ${settlement.remark ? `<div class="print-remark"><span class="print-remark-label">备注：</span>${escapeHtml(settlement.remark)}</div>` : ''}
-    <div class="print-signatures">
-      <div class="print-signature-block">
-        <div class="print-signature-label">甲方签字（盖章）：</div>
-        <div class="print-signature-line"></div>
-        <div style="font-size:11px;color:#666;">日期：___________</div>
-      </div>
-      <div class="print-signature-block">
-        <div class="print-signature-label">乙方签字（盖章）：</div>
-        <div class="print-signature-line"></div>
-        <div style="font-size:11px;color:#666;">日期：___________</div>
-      </div>
-    </div>
-    <div class="print-footer">本凭证一式两份，甲乙双方各执一份 · 制单人：${escapeHtml(settlement.createdBy || '')}</div>
-  `;
-
-  setTimeout(() => window.print(), 200);
-}
-
-// 生成对账单
-function generateStatement(customerName) {
-  const customerRecords = state.records.filter(r =>
-    !r.deleted && r.customerName && r.customerName.trim() === customerName.trim()
-  ).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-
-  const unsettled = customerRecords.filter(r => !r.settled);
-  const settlements = state.settlements.filter(s =>
-    !s.voided && s.customerName.trim() === customerName.trim()
-  ).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-
-  let totalUnsettled = 0;
-  unsettled.forEach(r => {
-    totalUnsettled += (r.totalAmount || 0) - (r.paidAmount || 0);
-  });
-
-  let totalSettlementUnpaid = 0;
-  settlements.forEach(s => {
-    totalSettlementUnpaid += s.unpaidAmount || 0;
-  });
-
-  const totalDue = totalUnsettled + totalSettlementUnpaid;
-
-  const body = document.getElementById('statementBody');
-  const isHidden = state.amountHidden;
-  const companyName = state.settings.companyName || '温州鼎炬金属科技有限公司';
-
-  body.innerHTML = `
-    <div class="settlement-detail-header">
-      <div class="settlement-detail-id" style="font-size:var(--font-size-xl);">客户对账单</div>
-      <div class="settlement-detail-meta">
-        ${escapeHtml(customerName)} · 截至 ${formatDate(new Date())} ·
-        总欠款 <span style="color:var(--warning);font-weight:700;">${isHidden ? '****' : '¥' + totalDue.toFixed(2)}</span>
-      </div>
-    </div>
-
-    <div class="settlement-detail-section">
-      <div class="settlement-detail-section-title">未结账单据（共${unsettled.length}张，欠款${isHidden ? '****' : '¥' + totalUnsettled.toFixed(2)}）</div>
-      ${unsettled.length > 0 ? `
-      <table class="settlement-detail-table">
-        <thead><tr><th>日期</th><th>产品</th><th class="num">重量</th><th class="num">金额</th><th class="num">已收</th><th class="num">未收</th></tr></thead>
-        <tbody>
-          ${unsettled.map(r => {
-            const weight = getRecordWeight(r);
-            const unpaid = Math.max(0, (r.totalAmount || 0) - (r.paidAmount || 0));
-            const product = [r.style, r.material, r.process].filter(Boolean).join('/') || '标准件';
-            return `<tr>
-              <td>${r.date || ''}</td>
-              <td>${escapeHtml(product)}</td>
-              <td class="num">${weight.toFixed(2)}</td>
-              <td class="num">${isHidden ? '****' : '¥' + (r.totalAmount || 0).toFixed(2)}</td>
-              <td class="num">${isHidden ? '****' : '¥' + (r.paidAmount || 0).toFixed(2)}</td>
-              <td class="num" style="color:var(--warning);">${isHidden ? '****' : '¥' + unpaid.toFixed(2)}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>` : '<div style="padding:20px;text-align:center;color:var(--text-muted);">暂无未结账单据</div>'}
-    </div>
-
-    <div class="settlement-detail-section">
-      <div class="settlement-detail-section-title">结账凭证（共${settlements.length}份，未收${isHidden ? '****' : '¥' + totalSettlementUnpaid.toFixed(2)}）</div>
-      ${settlements.length > 0 ? `
-      <table class="settlement-detail-table">
-        <thead><tr><th>凭证号</th><th>日期</th><th class="num">单据数</th><th class="num">应收</th><th class="num">已收</th><th class="num">未收</th><th>状态</th><th>操作</th></tr></thead>
-        <tbody>
-          ${settlements.map(s => `<tr>
-            <td>${escapeHtml(s.id)}</td>
-            <td>${s.date}</td>
-            <td class="num">${s.records.length}</td>
-            <td class="num">${isHidden ? '****' : '¥' + s.receivableAmount.toFixed(2)}</td>
-            <td class="num">${isHidden ? '****' : '¥' + s.totalPaid.toFixed(2)}</td>
-            <td class="num" style="color:var(--warning);">${isHidden ? '****' : '¥' + s.unpaidAmount.toFixed(2)}</td>
-            <td><span class="status-badge ${s.status}">${{paid:'已结清',partial:'部分收款',unpaid:'未收款'}[s.status]}</span></td>
-            <td><a href="javascript:void(0)" onclick="closeModal('statementModal');openSettlementDetail('${s.id}')" style="color:var(--accent);">查看</a></td>
-          </tr>`).join('')}
-        </tbody>
-      </table>` : '<div style="padding:20px;text-align:center;color:var(--text-muted);">暂无结账记录</div>'}
-    </div>
-
-    <div class="settlement-summary" style="margin-top:16px;">
-      <div class="settlement-summary-row total"><span>未结账单据欠款</span><span class="value">${isHidden ? '****' : '¥' + totalUnsettled.toFixed(2)}</span></div>
-      <div class="settlement-summary-row total"><span>结账凭证未收款</span><span class="value">${isHidden ? '****' : '¥' + totalSettlementUnpaid.toFixed(2)}</span></div>
-      <div class="settlement-summary-row receivable"><span>总欠款</span><span class="value">${isHidden ? '****' : '¥' + totalDue.toFixed(2)}</span></div>
-    </div>
-  `;
-
-  openModal('statementModal');
-}
-
-// 打印对账单
-function printStatement() {
-  // 简单实现：调用浏览器打印
-  window.print();
-}
-
-
 // 启动应用
 document.addEventListener('DOMContentLoaded', init);
 </script>
-
-<!-- ===== 结账窗口模态框 ===== -->
-<div class="modal-overlay" id="settlementModal">
-  <div class="modal settlement-modal">
-    <div class="modal-header">
-      <div class="modal-title">客户结账</div>
-      <button class="modal-close" data-close="settlementModal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <!-- 客户和日期选择 -->
-      <div class="settlement-header">
-        <div class="form-group">
-          <label class="form-label">客户名称<span class="required">*</span></label>
-          <div class="autocomplete-wrap">
-            <input type="text" class="form-input" id="settlementCustomer" placeholder="选择或输入客户名称" autocomplete="off">
-            <div class="autocomplete-dropdown" id="settlementCustomerAutocomplete"></div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">结账日期</label>
-          <input type="date" class="form-input" id="settlementDate">
-        </div>
-      </div>
-
-      <!-- 待结账单据列表 -->
-      <div class="settlement-records-list" id="settlementRecordsList">
-        <div class="settlement-records-toolbar">
-          <label><input type="checkbox" id="settlementSelectAll"> 全选</label>
-          <span id="settlementSelectedCount" style="font-size:var(--font-size-xs);color:var(--text-secondary);">已选 0 张</span>
-        </div>
-        <div class="settlement-records-header">
-          <div></div>
-          <div>单据信息</div>
-          <div style="text-align:center;">原重量</div>
-          <div style="text-align:center;">实际重量</div>
-          <div style="text-align:right;">单价</div>
-          <div style="text-align:right;">金额</div>
-        </div>
-        <div id="settlementRecordsBody">
-          <div style="padding:30px;text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);">请先选择客户</div>
-        </div>
-      </div>
-
-      <!-- 整单折扣 -->
-      <div class="settlement-discount-section">
-        <div class="settlement-discount-title">整单折扣</div>
-        <div class="discount-input-row">
-          <select id="wholeDiscountType">
-            <option value="none">不打折</option>
-            <option value="percentage">比例折扣（打折）</option>
-            <option value="amount">金额折扣（减钱）</option>
-          </select>
-          <div id="wholeDiscountValueWrap" style="display:none;">
-            <input type="number" id="wholeDiscountValue" placeholder="折扣值" step="0.01" min="0">
-            <span id="wholeDiscountUnit" style="font-size:var(--font-size-sm);color:var(--text-secondary);">%</span>
-          </div>
-          <select id="wholeDiscountReason">
-            <option value="">折扣原因</option>
-            <option value="订单超时补偿">订单超时补偿</option>
-            <option value="质量问题补偿">质量问题补偿</option>
-            <option value="长期客户优惠">长期客户优惠</option>
-            <option value="批量优惠">批量优惠</option>
-            <option value="其他">其他</option>
-          </select>
-          <span style="font-size:var(--font-size-sm);color:var(--danger);" id="wholeDiscountAmountDisplay"></span>
-        </div>
-      </div>
-
-      <!-- 其他费用 -->
-      <div class="settlement-discount-section">
-        <div class="settlement-discount-title">其他费用（运费/加急费等）</div>
-        <div id="otherFeesList"></div>
-        <button class="add-fee-btn" id="addOtherFeeBtn">+ 添加费用项</button>
-      </div>
-
-      <!-- 汇总 -->
-      <div class="settlement-summary">
-        <div class="settlement-summary-row label-row">
-          <span>原总金额</span>
-          <span class="value" id="sumOriginalAmount">¥0.00</span>
-        </div>
-        <div class="settlement-summary-row label-row negative">
-          <span>重量调整差额</span>
-          <span class="value" id="sumWeightAdjustment">¥0.00</span>
-        </div>
-        <div class="settlement-summary-row label-row negative">
-          <span>单单据折扣</span>
-          <span class="value" id="sumItemDiscount">¥0.00</span>
-        </div>
-        <div class="settlement-summary-row label-row negative">
-          <span>整单折扣</span>
-          <span class="value" id="sumWholeDiscount">¥0.00</span>
-        </div>
-        <div class="settlement-summary-row label-row">
-          <span>其他费用</span>
-          <span class="value" id="sumOtherFees">¥0.00</span>
-        </div>
-        <div class="settlement-summary-row total">
-          <span>小计（折扣后）</span>
-          <span class="value" id="sumSubtotal">¥0.00</span>
-        </div>
-        <div class="settlement-summary-row label-row negative">
-          <span>抹零 <input type="number" id="roundingAmount" placeholder="0" step="0.01" min="0" style="width:80px;padding:2px 6px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:4px;color:var(--text-primary);font-size:var(--font-size-sm);margin-left:8px;"></span>
-          <span class="value" id="sumRounding">¥0.00</span>
-        </div>
-        <div class="settlement-summary-row receivable">
-          <span>应收金额</span>
-          <span class="value" id="sumReceivable">¥0.00</span>
-        </div>
-        <div class="settlement-summary-row label-row" style="margin-top:8px;">
-          <span>本次实收 <input type="number" id="settlementPaidAmount" placeholder="0" step="0.01" min="0" style="width:100px;padding:4px 8px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:4px;color:var(--text-primary);font-size:var(--font-size-sm);margin-left:8px;"></span>
-          <span class="value" id="sumUnpaid" style="color:var(--warning);">未收 ¥0.00</span>
-        </div>
-      </div>
-
-      <!-- 备注 -->
-      <div class="form-group">
-        <label class="form-label">备注</label>
-        <textarea class="form-input" id="settlementRemark" rows="2" placeholder="可选备注信息"></textarea>
-      </div>
-    </div>
-    <div class="settlement-footer">
-      <button class="btn btn-secondary" data-close="settlementModal">取消</button>
-      <button class="btn btn-primary" id="confirmSettlementBtn">确认结账</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== 结账凭证详情模态框 ===== -->
-<div class="modal-overlay" id="settlementDetailModal">
-  <div class="modal settlement-detail-modal">
-    <div class="modal-header">
-      <div class="modal-title">结账凭证详情</div>
-      <button class="modal-close" data-close="settlementDetailModal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body" id="settlementDetailBody">
-    </div>
-    <div class="settlement-footer">
-      <button class="btn btn-secondary" id="printSettlementBtn">打印结账单</button>
-      <button class="btn btn-secondary" id="addPaymentBtn">追加收款</button>
-      <button class="btn btn-primary" id="editInvoiceBtn">编辑发票号</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== 对账单模态框 ===== -->
-<div class="modal-overlay" id="statementModal">
-  <div class="modal statement-modal">
-    <div class="modal-header">
-      <div class="modal-title">客户对账单</div>
-      <button class="modal-close" data-close="statementModal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body" id="statementBody">
-    </div>
-    <div class="settlement-footer">
-      <button class="btn btn-secondary" data-close="statementModal">关闭</button>
-      <button class="btn btn-primary" id="printStatementBtn">打印对账单</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== 打印区域 ===== -->
-<div class="print-area" id="printArea"></div>
-
 </body>
 </html>
