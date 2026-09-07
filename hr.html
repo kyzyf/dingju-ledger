@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>鼎炬 · 人事管理</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root {
+  --primary: #1a2b4a;
+  --accent: #c8860c;
+  --accent-light: #e0a030;
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --border: #e2e5ea;
+  --text: #1a2b4a;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --success: #2d7d46;
+  --danger: #c0392b;
+  --info: #2980b9;
+  --sidebar-width: 220px;
+  --header-height: 58px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg); color: var(--text);
+  font-size: 15px; line-height: 1.5; overflow-x: hidden;
+}
+.app-layout { display: flex; min-height: 100vh; position: relative; }
+/* 侧边栏 */
+.sidebar {
+  width: var(--sidebar-width); background: var(--primary); color: #fff;
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  transition: transform 0.25s ease;
+}
+.sidebar-logo {
+  padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+.sidebar-logo-icon {
+  width: 38px; height: 38px; background: var(--accent); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 18px; color: #fff; flex-shrink: 0;
+}
+.sidebar-logo-text { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+.sidebar-logo-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+  cursor: pointer; color: rgba(255,255,255,0.7);
+  transition: all 0.15s; border-left: 4px solid transparent;
+  -webkit-tap-highlight-color: transparent; font-size: 15px;
+}
+.nav-item:active { background: rgba(255,255,255,0.1); }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,0.08); color: #fff; border-left-color: var(--accent); }
+.nav-item svg { width: 22px; height: 22px; flex-shrink: 0; }
+.sidebar-footer {
+  padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+.sidebar-avatar {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--accent-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 600; color: #fff; flex-shrink: 0;
+}
+.sidebar-user-name { font-size: 14px; font-weight: 500; }
+.sidebar-user-role { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+.sidebar-close {
+  display: none; position: absolute; top: 16px; right: 16px;
+  width: 36px; height: 36px; border: none; background: rgba(255,255,255,0.1);
+  border-radius: 8px; color: #fff; cursor: pointer;
+  align-items: center; justify-content: center; z-index: 10;
+}
+.sidebar-close svg { width: 18px; height: 18px; }
+.sidebar-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 99; opacity: 0; transition: opacity 0.25s ease;
+}
+.sidebar-overlay.show { display: block; opacity: 1; }
+/* 主内容 */
+.main-content { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-width: 0; }
+.topbar {
+  height: var(--header-height); background: var(--card); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 24px;
+  position: sticky; top: 0; z-index: 50; gap: 12px;
+}
+.hamburger-btn {
+  display: none; width: 42px; height: 42px; border: none; background: transparent;
+  border-radius: 8px; cursor: pointer; align-items: center; justify-content: center;
+  color: var(--text); flex-shrink: 0;
+}
+.hamburger-btn:active { background: var(--bg); }
+.hamburger-btn svg { width: 22px; height: 22px; }
+.topbar-title { font-size: 18px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.topbar-icon-btn {
+  width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--card); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-secondary); transition: all 0.15s; position: relative;
+}
+.topbar-icon-btn:active { background: var(--bg); }
+.topbar-icon-btn svg { width: 18px; height: 18px; }
+.sync-dot {
+  position: absolute; top: 8px; right: 8px; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--success); border: 2px solid #fff;
+}
+.content-area { flex: 1; padding: 20px 24px; }
+.view { display: none; }
+.view.active { display: block; }
+/* 统计卡片 */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 20px; display: flex; align-items: center; gap: 16px;
+}
+.stat-icon {
+  width: 52px; height: 52px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.stat-icon svg { width: 26px; height: 26px; }
+.stat-icon.blue { background: rgba(41,128,185,0.1); color: var(--info); }
+.stat-icon.green { background: rgba(45,125,70,0.1); color: var(--success); }
+.stat-icon.amber { background: rgba(200,134,12,0.1); color: var(--accent); }
+.stat-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.stat-label { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+/* 卡片 */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+.card-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.card-title { font-size: 17px; font-weight: 700; color: var(--text); }
+.card-subtitle { font-size: 13px; color: var(--text-muted); }
+.card-header-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* 按钮 */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 44px; padding: 0 20px; border-radius: 8px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  border: 1px solid transparent; transition: all 0.15s;
+  white-space: nowrap; font-family: inherit; -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: scale(0.97); }
+.btn svg { width: 18px; height: 18px; }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-light); border-color: var(--accent-light); }
+.btn-secondary { background: var(--card); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: var(--card); color: var(--danger); border-color: var(--border); }
+.btn-danger:hover { border-color: var(--danger); background: rgba(192,57,43,0.05); }
+.btn-sm { height: 36px; padding: 0 14px; font-size: 14px; }
+.btn-sm svg { width: 16px; height: 16px; }
+.btn-block { width: 100%; }
+/* 表格 */
+.table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.data-table thead th {
+  background: #f8f9fb; padding: 14px 16px; text-align: left; font-weight: 600;
+  color: var(--text-secondary); font-size: 13.5px; border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+table.data-table tbody td {
+  padding: 14px 16px; border-bottom: 1px solid #f0f1f4; color: var(--text); vertical-align: middle; font-size: 14px;
+}
+table.data-table tbody tr:hover { background: #fafbfc; }
+table.data-table tbody tr:last-child td { border-bottom: none; }
+.employee-cell { display: flex; align-items: center; gap: 12px; }
+.employee-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 600; color: #fff; flex-shrink: 0;
+}
+.employee-name { font-weight: 600; color: var(--text); font-size: 15px; }
+.employee-id { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.tag {
+  display: inline-flex; align-items: center; height: 26px; padding: 0 10px;
+  border-radius: 5px; font-size: 12.5px; font-weight: 500; white-space: nowrap;
+}
+.tag-green { background: rgba(45,125,70,0.1); color: var(--success); }
+.tag-amber { background: rgba(200,134,12,0.1); color: var(--accent); }
+.tag-red { background: rgba(192,57,43,0.1); color: var(--danger); }
+.tag-blue { background: rgba(41,128,185,0.1); color: var(--info); }
+.tag-gray { background: #f0f1f4; color: var(--text-secondary); }
+.action-btns { display: flex; gap: 6px; }
+.action-btn {
+  width: 36px; height: 36px; border: none; background: transparent; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+}
+.action-btn:active { background: var(--bg); }
+.action-btn:hover { background: var(--bg); color: var(--accent); }
+.action-btn svg { width: 17px; height: 17px; }
+.action-btn.danger:hover { color: var(--danger); }
+/* 分页 */
+.pagination {
+  padding: 14px 20px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.pagination-info { font-size: 13.5px; color: var(--text-secondary); }
+.pagination-btns { display: flex; gap: 6px; }
+.page-btn {
+  min-width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--card); color: var(--text-secondary); font-size: 13.5px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; padding: 0 10px; font-family: inherit;
+}
+.page-btn:active { background: var(--bg); }
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* 模态框 */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(26,43,74,0.5); z-index: 1000;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--card); border-radius: 12px; width: 600px; max-width: 100%;
+  max-height: 88vh; display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.modal-header {
+  padding: 18px 22px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.modal-title { font-size: 18px; font-weight: 700; }
+.modal-close {
+  width: 36px; height: 36px; border: none; background: transparent; border-radius: 6px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); flex-shrink: 0;
+}
+.modal-close:active { background: var(--bg); }
+.modal-close svg { width: 18px; height: 18px; }
+.modal-body { padding: 22px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+.modal-footer {
+  padding: 16px 22px; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 12px; flex-shrink: 0;
+}
+/* 表单 */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.form-group { margin-bottom: 18px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-label { display: block; font-size: 14.5px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.form-label .required { color: var(--danger); margin-left: 3px; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; height: 46px; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 0 14px; font-size: 15px; color: var(--text); background: var(--card);
+  outline: none; transition: border-color 0.15s; font-family: inherit;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+.form-input.error, .form-select.error, .form-textarea.error { border-color: var(--danger); background: #fef2f2; }
+.form-textarea { height: auto; min-height: 90px; padding: 12px 14px; resize: vertical; line-height: 1.6; }
+.form-hint { font-size: 12.5px; color: var(--text-muted); margin-top: 6px; }
+/* 员工详情 */
+.detail-header {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 22px; margin-bottom: 20px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+.detail-avatar {
+  width: 68px; height: 68px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.detail-name { font-size: 24px; font-weight: 700; }
+.detail-position { font-size: 15px; color: var(--text-secondary); margin-top: 4px; }
+.detail-meta { display: flex; gap: 20px; font-size: 13.5px; color: var(--text-secondary); margin-top: 8px; flex-wrap: wrap; }
+.edit-section-title {
+  font-size: 16px; font-weight: 700; color: var(--text);
+  margin: 24px 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.edit-section-title:first-child { margin-top: 0; }
+.edit-section-title svg { width: 18px; height: 18px; color: var(--accent); }
+/* 日历 */
+.calendar-container { padding: 18px 20px; }
+.calendar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; gap: 10px; flex-wrap: wrap;
+}
+.calendar-title { font-size: 17px; font-weight: 700; }
+.calendar-nav { display: flex; gap: 8px; }
+.calendar-scroll-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.calendar-grid {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px;
+  background: var(--border); border-radius: 8px; overflow: hidden; width: 100%; box-sizing: border-box;
+  min-width: 640px;
+}
+.calendar-day-header {
+  background: #f8f9fb; padding: 10px; text-align: center;
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+}
+.calendar-day { background: var(--card); min-height: 82px; padding: 6px 8px; position: relative; cursor: pointer; transition: background 0.15s; min-width: 0; overflow: hidden; }
+.calendar-day.other-month { cursor: default; opacity: 0.4; }
+.calendar-day.other-month:hover { background: var(--card); }
+.calendar-day:hover { background: rgba(200,134,12,0.04); }
+.calendar-day.other-month { background: #fafbfc; color: var(--text-muted); }
+.calendar-day.other-month:hover { background: #f0f1f2; }
+.calendar-day.today { background: rgba(200,134,12,0.06); }
+.calendar-day.today:hover { background: rgba(200,134,12,0.1); }
+.calendar-day-number { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.calendar-day.today .calendar-day-number { color: var(--accent); font-weight: 700; }
+.calendar-event {
+  font-size: 10.5px; padding: 3px 6px; border-radius: 4px; margin-bottom: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  cursor: pointer; line-height: 1.4; font-weight: 500;
+}
+.calendar-event.leave { background: rgba(200,134,12,0.12); color: var(--accent); }
+.calendar-event.sick { background: rgba(192,57,43,0.1); color: var(--danger); }
+.calendar-event.out { background: rgba(41,128,185,0.1); color: var(--info); }
+/* 工资汇总 */
+.salary-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.salary-summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+.salary-summary-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+.salary-summary-value { font-size: 22px; font-weight: 700; color: var(--text); }
+.salary-summary-value.accent { color: var(--accent); }
+/* 设置 */
+.cloud-status {
+  display: flex; align-items: center; gap: 10px; padding: 16px 18px;
+  background: rgba(45,125,70,0.06); border: 1px solid rgba(45,125,70,0.2);
+  border-radius: 8px; margin-bottom: 18px; flex-wrap: wrap;
+}
+.cloud-status svg { width: 22px; height: 22px; color: var(--success); flex-shrink: 0; }
+.cloud-status-text { font-size: 14.5px; color: var(--success); font-weight: 600; }
+.cloud-status-time { font-size: 12.5px; color: var(--text-muted); margin-left: auto; }
+.setting-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0; border-bottom: 1px solid #f0f1f4; gap: 14px;
+}
+.setting-item:last-child { border-bottom: none; }
+.setting-info { flex: 1; min-width: 0; }
+.setting-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.setting-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.switch { position: relative; width: 50px; height: 28px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch-slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background: #d1d5db; border-radius: 28px; transition: 0.2s;
+}
+.switch-slider:before {
+  content: ""; position: absolute; height: 22px; width: 22px; left: 3px; bottom: 3px;
+  background: #fff; border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.switch input:checked + .switch-slider { background: var(--accent); }
+.switch input:checked + .switch-slider:before { transform: translateX(22px); }
+/* Toast */
+.toast {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-20px);
+  background: var(--text); color: #fff; padding: 14px 24px; border-radius: 8px;
+  font-size: 14.5px; font-weight: 500; z-index: 2000; opacity: 0;
+  transition: all 0.3s; pointer-events: none; max-width: 90vw; text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+/* 平板 */
+@media (max-width: 1024px) {
+  :root { --sidebar-width: 200px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .salary-summary { grid-template-columns: repeat(2, 1fr); }
+  .topbar { padding: 0 18px; }
+  .content-area { padding: 16px 18px; }
+}
+/* 手机 */
+@media (max-width: 767px) {
+  :root { --header-height: 56px; }
+  body { font-size: 14px; }
+  .sidebar { transform: translateX(-100%); width: 270px; z-index: 200; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-close { display: flex; }
+  .sidebar-overlay.show { display: block; }
+  .main-content { margin-left: 0; }
+  .topbar { padding: 0 14px; gap: 10px; }
+  .hamburger-btn { display: flex; }
+  .topbar-title { font-size: 17px; }
+  .topbar-icon-btn { width: 40px; height: 40px; }
+  .content-area { padding: 14px; }
+  .stats-row { grid-template-columns: 1fr; gap: 12px; margin-bottom: 14px; }
+  .stat-card { padding: 16px 18px; }
+  .stat-icon { width: 46px; height: 46px; }
+  .stat-icon svg { width: 22px; height: 22px; }
+  .stat-value { font-size: 24px; }
+  .stat-label { font-size: 13px; }
+  .card { margin-bottom: 14px; }
+  .card-header { padding: 14px 16px; gap: 10px; }
+  .card-title { font-size: 16px; }
+  .card-header-actions { width: 100%; margin-left: 0; }
+  .card-header-actions .btn { flex: 1; }
+  .table-wrapper { overflow: visible; }
+  table.data-table thead { display: none; }
+  table.data-table, table.data-table tbody, table.data-table tr, table.data-table td { display: block; width: 100%; }
+  table.data-table tbody tr {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 12px; padding: 14px 16px; overflow: hidden;
+  }
+  table.data-table tbody tr:hover { background: var(--card); }
+  table.data-table tbody td {
+    padding: 7px 0; border-bottom: none; display: flex;
+    justify-content: space-between; align-items: center; gap: 12px; font-size: 14px;
+  }
+  table.data-table tbody td::before {
+    content: attr(data-label); font-size: 13px; color: var(--text-muted);
+    font-weight: 600; flex-shrink: 0; min-width: 70px;
+  }
+  table.data-table tbody td:first-child { padding-bottom: 12px; margin-bottom: 6px; border-bottom: 1px solid #f0f1f4; }
+  table.data-table tbody td:first-child::before { display: none; }
+  table.data-table tbody td:first-child .employee-cell { width: 100%; }
+  table.data-table tbody td:last-child { padding-top: 12px; margin-top: 6px; border-top: 1px solid #f0f1f4; justify-content: flex-end; }
+  table.data-table tbody td:last-child::before { display: none; }
+  .action-btns { gap: 10px; }
+  .action-btn { width: 40px; height: 40px; }
+  .action-btn svg { width: 18px; height: 18px; }
+  .pagination { padding: 12px 16px; flex-direction: column; gap: 10px; }
+  .pagination-info { text-align: center; }
+  .pagination-btns { justify-content: center; }
+  .page-btn { min-width: 38px; height: 38px; font-size: 14px; }
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal { width: 100%; max-width: 100%; max-height: 92vh; border-radius: 14px 14px 0 0; }
+  .modal-header { padding: 16px 18px; }
+  .modal-title { font-size: 17px; }
+  .modal-body { padding: 18px; }
+  .modal-footer { padding: 14px 18px; gap: 10px; }
+  .modal-footer .btn { flex: 1; height: 48px; font-size: 16px; }
+  .form-row { grid-template-columns: 1fr; gap: 0; margin-bottom: 0; }
+  .form-group { margin-bottom: 16px; }
+  .form-input, .form-select, .form-textarea { height: 48px; font-size: 15px; }
+  .form-textarea { height: auto; min-height: 100px; }
+  .form-label { font-size: 14px; }
+  .detail-header { padding: 18px; gap: 16px; }
+  .detail-avatar { width: 60px; height: 60px; font-size: 22px; }
+  .detail-name { font-size: 21px; }
+  .detail-meta { gap: 12px; font-size: 13px; }
+  .detail-header > div:last-child { width: 100%; display: flex; gap: 10px; }
+  .detail-header > div:last-child .btn { flex: 1; }
+  .edit-section-title { font-size: 15px; margin: 20px 0 12px; }
+  .calendar-container { padding: 14px 16px; }
+  .calendar-day { min-height: 58px; padding: 4px 5px; }
+  .calendar-day-header { padding: 8px 2px; font-size: 12px; }
+  .calendar-day-number { font-size: 12px; }
+  .calendar-event { font-size: 9.5px; padding: 2px 4px; }
+  .calendar-nav .btn { padding: 0 10px; font-size: 12.5px; height: 34px; }
+  .salary-summary { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+  .salary-summary-card { padding: 14px 16px; }
+  .salary-summary-label { font-size: 12px; }
+  .salary-summary-value { font-size: 18px; }
+  .setting-item { padding: 14px 0; }
+  .setting-name { font-size: 14px; }
+  .setting-desc { font-size: 12.5px; }
+  .cloud-status-time { width: 100%; margin-left: 0; }
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 36px; }
+}
+/* 小屏手机 */
+@media (max-width: 379px) {
+  .salary-summary { grid-template-columns: 1fr; }
+  .calendar-day { min-height: 56px; padding: 3px 4px; }
+  .calendar-day-number { font-size: 11px; margin-bottom: 2px; }
+  .calendar-event { font-size: 9px; padding: 1px 3px; margin-bottom: 2px; line-height: 1.2; }
+  .calendar-day.has-event::after { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar-close" onclick="closeSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">鼎</div>
+      <div><div class="sidebar-logo-text">鼎炬</div><div class="sidebar-logo-sub">人事管理</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-view="employees">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>员工档案</span>
+      </div>
+      <div class="nav-item" data-view="attendance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>考勤请假</span>
+      </div>
+      <div class="nav-item" data-view="salary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>工资核算</span>
+      </div>
+      <div class="nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>系统设置</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-avatar">老</div>
+      <div><div class="sidebar-user-name">老板</div><div class="sidebar-user-role">管理员</div></div>
+    </div>
+  </aside>
+  <main class="main-content">
+    <header class="topbar">
+      <button class="hamburger-btn" onclick="openSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-title" id="topbarTitle">员工档案</div>
+      <div class="topbar-actions">
+        <button class="topbar-icon-btn" title="云端已同步">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+          <span class="sync-dot"></span>
+        </button>
+      </div>
+    </header>
+    <div class="content-area">
+      <!-- 员工档案 -->
+      <section class="view active" id="view-employees">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div><div class="stat-value" id="statActiveCount">10</div><div class="stat-label">在职工人</div></div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="switchView('attendance')">
+            <div class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div><div class="stat-value" id="statLeaveCount">5</div><div class="stat-label">本月请假/外出 →</div></div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="switchView('salary')">
+            <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div><div class="stat-value" id="statTotalSalary">¥55,800</div><div class="stat-label">上月工资总额 →</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">工人列表</div>
+            <div class="card-subtitle">共 10 人</div>
+            <div class="card-header-actions">
+              <button class="btn btn-primary" onclick="openModal('employeeModal')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                添加工人
+              </button>
+            </div>
+          </div>
+          <div style="padding:0 22px 14px;">
+            <input type="text" class="form-input" id="employeeSearch" placeholder="搜索工人姓名、工号、岗位、电话..." style="height:40px;font-size:14px;" oninput="renderEmployeeTable()">
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>工人</th><th>岗位</th><th>入职日期</th><th>月工资</th><th>电话</th><th>操作</th></tr></thead>
+              <tbody id="employeeTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="employeePagination">
+            <div class="pagination-info">显示 1-10 条，共 10 条</div>
+            <div class="pagination-btns">
+              <button class="page-btn">上一页</button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <button class="page-btn">下一页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- 工人详情（直接编辑） -->
+      <section class="view" id="view-employee-detail">
+        <button class="btn btn-secondary btn-sm" style="margin-bottom:16px;" onclick="switchView('employees')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          返回列表
+        </button>
+        <div class="detail-header">
+          <div class="detail-avatar" id="detailAvatar" style="background:#2980b9;">张</div>
+          <div style="flex:1;min-width:0;">
+            <div class="detail-name" id="detailName">张建国</div>
+            <div class="detail-position" id="detailPosition">热处理师傅</div>
+            <div class="detail-meta">
+              <span id="detailEmpId">工号：DJ003</span>
+              <span id="detailEntry">入职：2021-03-15</span>
+              <span id="detailSalary">月薪：¥8,500</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-danger btn-sm" id="toggleStatusBtn" onclick="toggleEmployeeStatus()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span id="toggleStatusText">标记离职</span>
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:20px 22px;">
+            <div class="edit-section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              基本信息（直接修改后点保存）
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">姓名</label><input type="text" class="form-input" id="editName" value="张建国"></div>
+              <div class="form-group"><label class="form-label">工号</label><input type="text" class="form-input" id="editEmpId" value="DJ003"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">性别</label><select class="form-select" id="editGender"><option>男</option><option>女</option></select></div>
+              <div class="form-group"><label class="form-label">出生日期</label><input type="date" class="form-input" id="editBirthday" value="1985-06-20"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">联系电话</label><input type="tel" class="form-input" id="editPhone" value="138****5678"></div>
+              <div class="form-group"><label class="form-label">身份证号</label><input type="text" class="form-input" id="editIdCard" value="3303**********1234"></div>
+            </div>
+            <div class="form-group"><label class="form-label">家庭住址</label><input type="text" class="form-input" id="editAddress" value="浙江省温州市平阳县鳌江镇"></div>
+            <div class="form-group"><label class="form-label">紧急联系人（姓名+关系+电话）</label><input type="text" class="form-input" id="editEmergency" value="李秀英（妻子）139****1234"></div>
+            <div class="edit-section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              工作信息
+            </div>
+            <div class="form-group"><label class="form-label">工作岗位</label><select class="form-select" id="editPosition"><option>上料</option><option>开车</option><option selected>热处理师傅</option><option>收料</option><option>隔料</option><option>质检</option></select></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">入职日期</label><input type="date" class="form-input" id="editEntryDate" value="2021-03-15"></div>
+              <div class="form-group"><label class="form-label">月工资（元）</label><input type="number" class="form-input" id="editSalary" value="8500"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">员工状态</label><select class="form-select" id="editStatus"><option>在职</option><option>试用期</option><option>已离职</option></select></div>
+              <div class="form-group"><label class="form-label">银行卡号（发工资用）</label><input type="text" class="form-input" id="editBankCard" value="6228 **** **** 5678"></div>
+            </div>
+            <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="editRemark" placeholder="其他需要记录的信息...">技术骨干，负责车间全面管理</textarea></div>
+            <div style="margin-top:24px;display:flex;gap:12px;">
+              <button class="btn btn-secondary" style="flex:1;" onclick="switchView('employees')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                取消返回
+              </button>
+              <button class="btn btn-primary" style="flex:1;" onclick="saveEmployeeDetail()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                保存修改
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- 考勤请假 -->
+      <section class="view" id="view-attendance">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div><div class="stat-value">2026年9月</div><div class="stat-label">当前月份</div></div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="scrollToLeaveRecords()">
+            <div class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+            <div><div class="stat-value" id="statAttendanceCount">5人次</div><div class="stat-label">本月请假/外出 ↓</div></div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="scrollToLeaveRecords()">
+            <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div><div class="stat-value" id="statAttendanceDays">7.5天</div><div class="stat-label">本月请假总天数 ↓</div></div>
+          </div>
+        </div>
+        <!-- 考勤日历（日期模块） -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">考勤日历</div>
+            <div class="card-subtitle">橙色=事假 红色=病假 蓝色=外出</div>
+            <div class="card-header-actions">
+              <button class="btn btn-primary" onclick="openModal('leaveModal')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                登记请假/外出
+              </button>
+            </div>
+          </div>
+          <div class="calendar-container">
+            <div class="calendar-header">
+              <div class="calendar-title">2026年9月</div>
+              <div class="calendar-nav">
+                <button class="btn btn-secondary btn-sm" onclick="prevMonth()">上个月</button>
+                <button class="btn btn-secondary btn-sm" onclick="goToday()">今天</button>
+                <button class="btn btn-secondary btn-sm" onclick="nextMonth()">下个月</button>
+              </div>
+            </div>
+            <div class="calendar-scroll-wrapper">
+              <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+          </div>
+        </div>
+        <!-- 员工请假分析（移到日期/日历正下方） -->
+        <div class="card" id="leaveAnalysisCard">
+          <div class="card-header">
+            <div class="card-title">员工请假分析</div>
+            <div class="card-subtitle">近12个月请假统计 · 自动考核判定</div>
+          </div>
+          <div class="card-body" style="padding:18px 22px;">
+            <div id="leaveAnalysisChart"></div>
+            <div id="leaveAssessmentList" style="margin-top:16px;"></div>
+          </div>
+        </div>
+        <!-- 请假/外出记录 -->
+        <div class="card" id="leaveRecordsCard">
+          <div class="card-header">
+            <div class="card-title">请假 / 外出记录</div>
+            <div class="card-subtitle" id="leaveRecordCount">本月共 5 条</div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>工人</th><th>类型</th><th>开始日期</th><th>结束日期</th><th>天数</th><th>事由</th><th>操作</th></tr></thead>
+              <tbody id="leaveTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- 打卡系统（预留） -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">每日打卡</div>
+            <div class="card-subtitle">功能开发中，即将上线</div>
+            <div class="card-header-actions">
+              <span class="tag tag-blue">即将上线</span>
+            </div>
+          </div>
+          <div class="card-body" style="padding:30px 22px;text-align:center;color:var(--text-secondary);">
+            <div style="font-size:40px;margin-bottom:10px;">⏰</div>
+            <div style="font-size:15px;margin-bottom:6px;">每日打卡系统</div>
+            <div style="font-size:13px;">支持上班/下班打卡、迟到早退统计、打卡数据自动同步考勤</div>
+            <div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+              <span class="tag tag-amber">上班打卡</span>
+              <span class="tag tag-amber">下班打卡</span>
+              <span class="tag tag-red">迟到统计</span>
+              <span class="tag tag-blue">早退统计</span>
+              <span class="tag tag-green">全勤奖励</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="view" id="view-salary">
+        <div class="salary-summary">
+          <div class="salary-summary-card"><div class="salary-summary-label">核算月份</div><div class="salary-summary-value">2026年9月</div></div>
+          <div class="salary-summary-card"><div class="salary-summary-label">应发工资合计</div><div class="salary-summary-value accent">¥65,800</div></div>
+          <div class="salary-summary-card"><div class="salary-summary-label">扣款合计</div><div class="salary-summary-value" style="color:var(--danger);">¥6,130</div></div>
+          <div class="salary-summary-card"><div class="salary-summary-label">实发工资合计</div><div class="salary-summary-value" style="color:var(--success);">¥59,670</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">工资明细表</div>
+            <div class="card-subtitle" id="salaryMonthTitle">2026年8月 · 共 10 人</div>
+            <div class="card-header-actions">
+              <select class="form-select" id="salaryMonthSelect" style="width:140px;height:40px;font-size:14px;" onchange="switchSalaryMonth(this.value)"><option value="2026-09">2026年9月</option><option value="2026-08" selected>2026年8月</option><option value="2026-07">2026年7月</option></select>
+              <button class="btn btn-secondary btn-sm" onclick="exportSalary()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                导出
+              </button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>工人</th><th>岗位</th><th>基本工资</th><th>出勤天数</th><th>请假扣款</th><th>社保扣除</th><th>实发工资</th></tr></thead>
+              <tbody id="salaryTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="salaryPagination">
+            <div class="pagination-info">显示 1-10 条，共 10 条</div>
+            <div class="pagination-btns">
+              <button class="page-btn">上一页</button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <button class="page-btn">下一页</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">近12个月工资趋势</div>
+            <div class="card-subtitle">每月实发工资合计</div>
+          </div>
+          <div class="card-body" style="padding:20px 22px;">
+            <div id="salaryTrendChart" style="display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:180px;padding-top:10px;"></div>
+          </div>
+        </div>
+      </section>
+      <!-- 系统设置 -->
+      <section class="view" id="view-settings">
+        <div class="card">
+          <div class="card-header"><div class="card-title">云端同步</div></div>
+          <div class="card-body" style="padding:18px 22px;">
+            <div class="cloud-status">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span class="cloud-status-text">云端同步已开启，数据自动备份</span>
+              <span class="cloud-status-time">上次同步：2026-09-05 15:20</span>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info"><div class="setting-name">自动云端备份</div><div class="setting-desc">添加工人、登记请假后自动上传到云端，换手机也不丢</div></div>
+              <label class="switch"><input type="checkbox" id="settingCloudBackup" checked><span class="switch-slider"></span></label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info"><div class="setting-name">多设备同步</div><div class="setting-desc">手机、平板、电脑登录同一个账号，数据自动同步</div></div>
+              <label class="switch"><input type="checkbox" id="settingMultiDevice" checked><span class="switch-slider"></span></label>
+            </div>
+            <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="showToast('正在同步到云端...')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                立即同步
+              </button>
+              <button class="btn btn-secondary" onclick="showToast('正在从云端恢复数据...')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                从云端恢复
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">工资计算设置</div></div>
+          <div class="card-body" style="padding:18px 22px;">
+            <div class="setting-item">
+              <div class="setting-info"><div class="setting-name">每月几号发工资</div><div class="setting-desc">固定日期发放上月工资</div></div>
+              <select class="form-select" id="settingPayday" style="width:140px;height:42px;"><option value="15">每月15日</option><option value="10">每月10日</option><option value="20">每月20日</option><option value="99">每月月底</option></select>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info"><div class="setting-name">月计薪天数</div><div class="setting-desc">固定按30天算日工资，请假一天扣一天</div></div>
+              <select class="form-select" style="width:140px;height:42px;" disabled><option selected>30天</option></select>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info"><div class="setting-name">工作日加班倍率</div><div class="setting-desc">工作日加班工资是日工资的几倍</div></div>
+              <select class="form-select" id="settingOvertimeWeekday" style="width:140px;height:42px;"><option value="1.5">1.5倍</option><option value="1.0">1.0倍</option><option value="2.0">2.0倍</option></select>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info"><div class="setting-name">周末加班倍率</div><div class="setting-desc">周末/休息日加班工资是日工资的几倍</div></div>
+              <select class="form-select" id="settingOvertimeWeekend" style="width:140px;height:42px;"><option value="2.0">2.0倍</option><option value="1.5">1.5倍</option><option value="3.0">3.0倍</option></select>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<!-- 添加工人 -->
+<div class="modal-overlay" id="employeeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">添加工人</div>
+      <button class="modal-close" onclick="closeModal('employeeModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">姓名<span class="required">*</span></label><input type="text" class="form-input" id="newEmpName" placeholder="工人姓名"></div>
+        <div class="form-group"><label class="form-label">联系电话</label><input type="tel" class="form-input" id="newEmpPhone" placeholder="手机号码"></div>
+      </div>
+      <div class="form-group"><label class="form-label">工作岗位<span class="required">*</span></label><select class="form-select" id="newEmpPosition"><option value="">请选择岗位</option><option>上料</option><option>开车</option><option>热处理师傅</option><option>收料</option><option>隔料</option><option>质检</option></select></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">入职日期<span class="required">*</span></label><input type="date" class="form-input" id="newEmpEntry" value="2026-09-06"></div>
+        <div class="form-group"><label class="form-label">月工资（元）<span class="required">*</span></label><input type="number" class="form-input" id="newEmpSalary" placeholder="例如：5000" value="5000"></div>
+      </div>
+      <div class="form-group"><label class="form-label">身份证号</label><input type="text" class="form-input" id="newEmpIdCard" placeholder="选填，方便以后核对"></div>
+      <div class="form-group"><label class="form-label">家庭住址</label><input type="text" class="form-input" id="newEmpAddress" placeholder="选填"></div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="newEmpRemark" placeholder="其他需要记录的信息..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('employeeModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">保存工人</button>
+    </div>
+  </div>
+</div>
+<!-- 登记请假/外出 -->
+<div class="modal-overlay" id="leaveModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">登记请假 / 外出</div>
+      <button class="modal-close" onclick="closeModal('leaveModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">选择工人<span class="required">*</span></label><select class="form-select" id="leaveEmployee"><option value="">请选择工人</option></select></div>
+      <div class="form-group"><label class="form-label">类型<span class="required">*</span></label>
+        <select class="form-select" id="leaveType">
+          <option value="事假">事假（休息，扣当天工资）</option>
+          <option value="病假">病假（休息，扣当天工资）</option>
+          <option value="外出">因公外出（算出勤，不扣）</option>
+          <option value="年假">年假（带薪，不扣）</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">开始日期<span class="required">*</span></label><input type="date" class="form-input" id="leaveStart" value="2026-09-08"></div>
+        <div class="form-group"><label class="form-label">结束日期<span class="required">*</span></label><input type="date" class="form-input" id="leaveEnd" value="2026-09-09"></div>
+      </div>
+      <div class="form-group"><label class="form-label">共计天数</label><input type="text" class="form-input" id="leaveDays" value="2 天" readonly style="background:var(--bg);"><div class="form-hint">系统根据开始和结束日期自动算出天数</div></div>
+      <div class="form-group"><label class="form-label">事由 / 去干什么<span class="required">*</span></label><textarea class="form-textarea" id="leaveReason" placeholder="例如：家里收麦子 / 去温州送货 / 感冒发烧休息 / 孩子开学报名..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('leaveModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveLeave()">保存记录</button>
+    </div>
+  </div>
+</div>
+<!-- 日期详情弹窗 -->
+<div class="modal-overlay" id="dayDetailModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title" id="dayDetailTitle">考勤详情</div>
+      <button class="modal-close" onclick="closeModal('dayDetailModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" id="dayDetailBody"></div>
+    <div class="modal-footer" id="dayDetailFooter"></div>
+  </div>
+</div>
+<!-- 确认弹窗 -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-body" style="padding:24px;">
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:600;font-size:16px;margin-bottom:6px;" id="confirmTitle">确认操作</div>
+          <div style="font-size:14px;color:var(--text-secondary);line-height:1.6;" id="confirmMessage">确定要执行此操作吗？</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:flex-end;gap:10px;">
+      <button class="btn btn-secondary" onclick="closeModal('confirmModal')">取消</button>
+      <button class="btn btn-danger" id="confirmOkBtn">确定删除</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+let employees = [
+  { id:1, name:'张建国', empId:'DJ003', dept:'生产车间', position:'热处理师傅', entryDate:'2021-03-15', salary:8500, phone:'138****5678', status:'在职', avatarColor:'#2980b9', gender:'男', birthday:'1985-06-20', idCard:'3303**********1234', address:'浙江省温州市平阳县鳌江镇', emergency:'李秀英（妻子）139****1234', bankCard:'6228 **** **** 5678', remark:'技术骨干，负责车间全面管理' },
+  { id:2, name:'李明华', empId:'DJ005', dept:'生产车间', position:'上料', entryDate:'2022-06-01', salary:5500, phone:'139****2345', status:'在职', avatarColor:'#27ae60', gender:'男', birthday:'1990-03-15', idCard:'3303**********5678', address:'浙江省温州市平阳县昆阳镇', emergency:'李大明（父亲）137****5678', bankCard:'6228 **** **** 2345', remark:'家里务农，农忙时会请假' },
+  { id:3, name:'王秀兰', empId:'DJ007', dept:'生产车间', position:'隔料', entryDate:'2020-11-20', salary:5200, phone:'137****8901', status:'在职', avatarColor:'#8e44ad', gender:'女', birthday:'1988-09-10', idCard:'3303**********9012', address:'浙江省温州市瑞安市', emergency:'王建国（丈夫）135****8901', bankCard:'6228 **** **** 8901', remark:'工作认真，出勤率高' },
+  { id:4, name:'陈志强', empId:'DJ008', dept:'生产车间', position:'收料', entryDate:'2019-08-10', salary:6000, phone:'136****3456', status:'在职', avatarColor:'#d35400', gender:'男', birthday:'1987-12-05', idCard:'3303**********3456', address:'浙江省温州市龙港市', emergency:'陈丽华（妻子）138****3456', bankCard:'6228 **** **** 3456', remark:'经常外出提货' },
+  { id:5, name:'朱子衿', empId:'DJ010', dept:'生产车间', position:'质检', entryDate:'2023-02-14', salary:6500, phone:'135****7890', status:'在职', avatarColor:'#c0392b', gender:'女', birthday:'1995-05-31', idCard:'3303**********7890', address:'浙江省温州市鹿城区', emergency:'朱父 139****7890', bankCard:'6228 **** **** 7890', remark:'质检员，工作细致' },
+  { id:6, name:'刘桂芳', empId:'DJ012', dept:'生产车间', position:'上料', entryDate:'2021-05-01', salary:4800, phone:'134****1234', status:'在职', avatarColor:'#16a085', gender:'女', birthday:'1992-07-22', idCard:'3303**********1234', address:'浙江省温州市平阳县水头镇', emergency:'刘根生（丈夫）136****1234', bankCard:'6228 **** **** 1234', remark:'' },
+  { id:7, name:'赵大勇', empId:'DJ015', dept:'生产车间', position:'开车', entryDate:'2023-09-01', salary:5200, phone:'133****5678', status:'在职', avatarColor:'#f39c12', gender:'男', birthday:'1991-11-30', idCard:'3303**********5678', address:'浙江省温州市苍南县', emergency:'赵小燕（妹妹）137****5678', bankCard:'6228 **** **** 5678', remark:'司机，负责运输' },
+  { id:8, name:'孙丽娟', empId:'DJ018', dept:'生产车间', position:'隔料', entryDate:'2024-03-15', salary:4500, phone:'132****9012', status:'试用期', avatarColor:'#2c3e50', gender:'女', birthday:'1996-04-18', idCard:'3303**********9012', address:'浙江省温州市平阳县', emergency:'孙建国（父亲）135****9012', bankCard:'6228 **** **** 9012', remark:'试用期，孩子刚开学' },
+  { id:9, name:'周建华', empId:'DJ020', dept:'生产车间', position:'收料', entryDate:'2022-12-01', salary:4800, phone:'131****3456', status:'在职', avatarColor:'#7f8c8d', gender:'男', birthday:'1989-02-14', idCard:'3303**********3456', address:'浙江省温州市文成县', emergency:'周美华（妻子）138****3456', bankCard:'6228 **** **** 3456', remark:'' },
+  { id:10, name:'吴雪梅', empId:'DJ022', dept:'生产车间', position:'质检', entryDate:'2024-06-01', salary:4800, phone:'130****7890', status:'试用期', avatarColor:'#e74c3c', gender:'女', birthday:'1998-08-09', idCard:'3303**********7890', address:'浙江省温州市泰顺县', emergency:'吴父 139****7890', bankCard:'6228 **** **** 7890', remark:'试用期，新入职质检员' },
+];
+let leaveRecords = [
+  { id:1, empId:2, name:'李明华', type:'事假', startDate:'2026-09-08', endDate:'2026-09-09', days:2, reason:'家里农忙，回家收稻谷', createTime:'2026-09-03 10:23' },
+  { id:2, empId:7, name:'赵大勇', type:'病假', startDate:'2026-09-05', endDate:'2026-09-05', days:1, reason:'感冒发烧，需休息一天', createTime:'2026-09-05 08:15' },
+  { id:3, empId:4, name:'陈志强', type:'外出', startDate:'2026-09-06', endDate:'2026-09-06', days:1, reason:'去温州物流中心提货', createTime:'2026-09-04 14:30' },
+  { id:4, empId:8, name:'孙丽娟', type:'事假', startDate:'2026-09-10', endDate:'2026-09-12', days:3, reason:'孩子开学，需陪同办理入学', createTime:'2026-09-05 09:45' },
+  { id:5, empId:1, name:'张建国', type:'外出', startDate:'2026-09-03', endDate:'2026-09-03', days:0.5, reason:'去供应商处验货（下午）', createTime:'2026-09-02 16:20' },
+];
+// ===== 打卡系统（预留框架，后续接入） =====
+// 数据结构：{ id, empId, name, date, checkInTime, checkOutTime, status, location }
+// status: 正常 / 迟到 / 早退 / 缺勤 / 外出
+let checkInRecords = [];
+// 上班打卡（预留）
+function checkIn(empId) {
+  showToast('打卡系统开发中，即将上线');
+  // 后续接入：记录打卡时间、判断是否迟到、写入checkInRecords、同步考勤
+}
+// 下班打卡（预留）
+function checkOut(empId) {
+  showToast('打卡系统开发中，即将上线');
+  // 后续接入：记录下班时间、判断是否早退、更新当日记录
+}
+// 获取某月打卡统计（预留）
+function getCheckInStats(empId, month) {
+  // 后续接入：统计迟到次数、早退次数、缺勤天数、全勤天数
+  return { late: 0, early: 0, absent: 0, fullAttend: 0 };
+}
+let salaryData = [
+  { id:1, name:'张建国', empId:'DJ003', dept:'生产车间', position:'热处理师傅', base:8500, attend:23, leaveDeduct:0, overtime:1200, bonus:1500, social:680, actual:10520 },
+  { id:2, name:'李明华', empId:'DJ005', dept:'生产车间', position:'上料', base:5500, attend:21, leaveDeduct:367, overtime:800, bonus:300, social:520, actual:5713 },
+  { id:3, name:'王秀兰', empId:'DJ007', dept:'生产车间', position:'隔料', base:5200, attend:23, leaveDeduct:0, overtime:600, bonus:500, social:490, actual:5810 },
+  { id:4, name:'陈志强', empId:'DJ008', dept:'生产车间', position:'收料', base:6000, attend:22, leaveDeduct:0, overtime:400, bonus:800, social:550, actual:6650 },
+  { id:5, name:'朱子衿', empId:'DJ010', dept:'生产车间', position:'质检', base:6500, attend:23, leaveDeduct:0, overtime:0, bonus:1000, social:600, actual:6900 },
+  { id:6, name:'刘桂芳', empId:'DJ012', dept:'生产车间', position:'上料', base:4800, attend:23, leaveDeduct:0, overtime:300, bonus:200, social:450, actual:4850 },
+  { id:7, name:'赵大勇', empId:'DJ015', dept:'生产车间', position:'开车', base:5200, attend:22, leaveDeduct:173, overtime:700, bonus:300, social:500, actual:5527 },
+  { id:8, name:'孙丽娟', empId:'DJ018', dept:'生产车间', position:'隔料', base:4500, attend:20, leaveDeduct:450, overtime:400, bonus:0, social:430, actual:4020 },
+  { id:9, name:'周建华', empId:'DJ020', dept:'生产车间', position:'收料', base:4800, attend:23, leaveDeduct:0, overtime:500, bonus:200, social:460, actual:5040 },
+  { id:10, name:'吴雪梅', empId:'DJ022', dept:'生产车间', position:'质检', base:4800, attend:23, leaveDeduct:0, overtime:0, bonus:300, social:460, actual:4640 },
+];
+// ===== 系统设置 =====
+let settings = {
+  payday: 15,
+  workDays: 30,
+  overtimeWeekday: 1.5,
+  overtimeWeekend: 2.0,
+  cloudBackup: true,
+  multiDevice: true,
+  salaryMonth: '2026-08'
+};
+// ===== 数据本地保存 =====
+function saveData() {
+  try {
+    localStorage.setItem('dingju_employees', JSON.stringify(employees));
+    localStorage.setItem('dingju_leaveRecords', JSON.stringify(leaveRecords));
+    localStorage.setItem('dingju_salaryData', JSON.stringify(salaryData));
+    localStorage.setItem('dingju_settings', JSON.stringify(settings));
+    localStorage.setItem('dingju_checkInRecords', JSON.stringify(checkInRecords));
+  } catch(e) { console.warn('保存失败', e); }
+}
+function loadData() {
+  try {
+    const e = localStorage.getItem('dingju_employees');
+    const l = localStorage.getItem('dingju_leaveRecords');
+    const s = localStorage.getItem('dingju_salaryData');
+    const st = localStorage.getItem('dingju_settings');
+    const c = localStorage.getItem('dingju_checkInRecords');
+    if (e) {
+      const parsed = JSON.parse(e);
+      // 校验数据有效性：必须是数组且每个元素有id、name、salary
+      if (Array.isArray(parsed) && parsed.every(emp => emp.id && emp.name && typeof emp.salary === 'number')) {
+        employees = parsed;
+      }
+    }
+    if (l) { const parsed = JSON.parse(l); if (Array.isArray(parsed)) leaveRecords = parsed; }
+    if (s) { const parsed = JSON.parse(s); if (Array.isArray(parsed)) salaryData = parsed; }
+    if (st) settings = Object.assign(settings, JSON.parse(st));
+    if (c) { const parsed = JSON.parse(c); if (Array.isArray(parsed)) checkInRecords = parsed; }
+  } catch(e) { console.warn('加载失败，使用默认数据', e); }
+}
+function renderEmployeeTable() {
+  const tbody = document.getElementById('employeeTableBody');
+  const keyword = (document.getElementById('employeeSearch')?.value || '').trim().toLowerCase();
+  let activeEmps = employees.filter(e => e.status !== '已离职');
+  if (keyword) {
+    activeEmps = activeEmps.filter(e =>
+      e.name.toLowerCase().includes(keyword) ||
+      e.empId.toLowerCase().includes(keyword) ||
+      e.position.toLowerCase().includes(keyword) ||
+      (e.phone || '').toLowerCase().includes(keyword)
+    );
+  }
+  // 更新人数显示
+  const countEl = document.querySelector('#view-employees .card-subtitle');
+  if (countEl) countEl.textContent = keyword ? `搜索到 ${activeEmps.length} 人` : `共 ${employees.filter(e=>e.status!=='已离职').length} 人`;
+  if (activeEmps.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px 20px;color:var(--text-secondary);">
+      <div style="font-size:40px;margin-bottom:10px;">👷</div>
+      <div style="font-size:15px;margin-bottom:6px;">${keyword ? '没有找到匹配的工人' : '还没有添加工人'}</div>
+      <div style="font-size:13px;">${keyword ? '换个关键词试试' : '点击右上角"添加工人"开始录入'}</div>
+    </td></tr>`;
+    updateEmployeeStats();
+    return;
+  }
+  tbody.innerHTML = activeEmps.map(emp => {
+    const name = emp.name || '未命名';
+    const empId = emp.empId || '';
+    const position = emp.position || '';
+    const entryDate = emp.entryDate || '';
+    const salary = typeof emp.salary === 'number' ? emp.salary : 0;
+    const phone = emp.phone || '';
+    const avatarColor = emp.avatarColor || '#999';
+    return `
+    <tr>
+      <td data-label="工人"><div class="employee-cell"><div class="employee-avatar" style="background:${avatarColor}">${name.charAt(0)}</div><div><div class="employee-name">${name}</div><div class="employee-id">${empId}</div></div></div></td>
+      <td data-label="岗位">${position}</td>
+      <td data-label="入职日期">${entryDate}</td>
+      <td data-label="月工资" class="num" style="font-weight:600;">¥${salary.toLocaleString()}</td>
+      <td data-label="电话">${phone}</td>
+      <td data-label="操作"><div class="action-btns">
+        <button class="action-btn" title="查看/编辑" onclick="viewEmployeeDetail(${emp.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn danger" title="删除" onclick="deleteEmployee(${emp.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  updateEmployeeStats();
+}
+function deleteEmployee(id) {
+  const emp = employees.find(e => e.id === id);
+  if (!emp) return;
+  showConfirm('删除工人', '确定要删除工人「' + emp.name + '」吗？相关请假记录和工资数据也会一并删除。', () => {
+    const idx = employees.findIndex(e => e.id === id);
+    if (idx > -1) employees.splice(idx, 1);
+    for (let i = leaveRecords.length - 1; i >= 0; i--) {
+      if (leaveRecords[i].empId === id) leaveRecords.splice(i, 1);
+    }
+    const sIdx = salaryData.findIndex(s => s.id === id);
+    if (sIdx > -1) salaryData.splice(sIdx, 1);
+    renderEmployeeTable();
+    renderLeaveTable();
+    renderSalaryTable();
+    renderCalendar();
+    populateLeaveEmployees();
+    updatePagination('employeePagination', employees.filter(e => e.status !== '已离职').length);
+    updatePagination('salaryPagination', salaryData.length);
+    saveData();
+    showToast('已删除工人：' + emp.name);
+  });
+}
+function updateEmployeeStats() {
+  const activeCount = employees.filter(e => e.status !== '已离职').length;
+  const totalSalary = employees.reduce((sum, e) => sum + e.salary, 0);
+  const el1 = document.getElementById('statActiveCount');
+  const el2 = document.getElementById('statTotalSalary');
+  if (el1) el1.textContent = activeCount;
+  if (el2) el2.textContent = '¥' + totalSalary.toLocaleString();
+  const subtitle = document.querySelector('#view-employees .card-subtitle');
+  const keyword = (document.getElementById('employeeSearch')?.value || '').trim();
+  if (subtitle) {
+    if (keyword) {
+      const matched = employees.filter(e => e.status !== '已离职' &&
+        (e.name.toLowerCase().includes(keyword.toLowerCase()) ||
+         e.empId.toLowerCase().includes(keyword.toLowerCase()) ||
+         e.position.toLowerCase().includes(keyword.toLowerCase()) ||
+         (e.phone || '').toLowerCase().includes(keyword.toLowerCase()))
+      ).length;
+      subtitle.textContent = '搜索到 ' + matched + ' 人';
+    } else {
+      subtitle.textContent = '共 ' + activeCount + ' 人';
+    }
+  }
+}
+function renderLeaveTable() {
+  const tbody = document.getElementById('leaveTableBody');
+  const typeTag = { '事假':'tag-amber', '病假':'tag-red', '外出':'tag-blue', '年假':'tag-green' };
+  const monthPrefix = calYear + '-' + String(calMonth).padStart(2, '0');
+  const monthRecords = leaveRecords.filter(r => {
+    const startMonth = r.startDate.substring(0, 7);
+    const endMonth = r.endDate.substring(0, 7);
+    return startMonth <= monthPrefix && endMonth >= monthPrefix;
+  });
+  if (monthRecords.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px 20px;color:var(--text-secondary);">
+      <div style="font-size:36px;margin-bottom:8px;">📅</div>
+      <div style="font-size:14px;">本月暂无请假/外出记录</div>
+    </td></tr>`;
+    updateAttendanceStats();
+    return;
+  }
+  tbody.innerHTML = monthRecords.map(rec => `
+    <tr>
+      <td data-label="工人"><div class="employee-cell"><div class="employee-avatar" style="background:${employees.find(e=>e.id===rec.empId)?.avatarColor || '#999'}">${rec.name.charAt(0)}</div><div><div class="employee-name">${rec.name}</div><div class="employee-id">${employees.find(e=>e.id===rec.empId)?.empId || ''}</div></div></div></td>
+      <td data-label="类型"><span class="tag ${typeTag[rec.type]}">${rec.type}</span></td>
+      <td data-label="开始日期">${rec.startDate}</td>
+      <td data-label="结束日期">${rec.endDate}</td>
+      <td data-label="天数">${rec.days} 天</td>
+      <td data-label="事由" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${rec.reason}">${rec.reason}</td>
+      <td data-label="操作"><div class="action-btns">
+        <button class="action-btn" title="编辑" onclick="editLeave(${rec.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn danger" title="删除" onclick="deleteLeave(${rec.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+      </div></td>
+    </tr>`).join('');
+  updateAttendanceStats();
+}
+function deleteLeave(id) {
+  const rec = leaveRecords.find(r => r.id === id);
+  if (!rec) return;
+  showConfirm('删除请假记录', '确定要删除这条请假记录吗？', () => {
+    const idx = leaveRecords.findIndex(r => r.id === id);
+    if (idx > -1) leaveRecords.splice(idx, 1);
+    recalcAllSalary();
+    renderLeaveTable();
+    renderSalaryTable();
+    renderCalendar();
+    saveData();
+    showToast('已删除请假记录');
+  });
+}
+function updateAttendanceStats() {
+  const monthPrefix = calYear + '-' + String(calMonth).padStart(2, '0');
+  const monthRecords = leaveRecords.filter(r => {
+    const startMonth = r.startDate.substring(0, 7);
+    const endMonth = r.endDate.substring(0, 7);
+    return startMonth <= monthPrefix && endMonth >= monthPrefix;
+  });
+  const count = monthRecords.length;
+  const totalDays = monthRecords.reduce((sum, r) => sum + r.days, 0);
+  const el1 = document.getElementById('statLeaveCount');
+  const el2 = document.getElementById('statAttendanceCount');
+  const el3 = document.getElementById('statAttendanceDays');
+  const el4 = document.getElementById('leaveRecordCount');
+  if (el1) el1.textContent = count;
+  if (el2) el2.textContent = count + '人次';
+  if (el3) el3.textContent = totalDays + '天';
+  if (el4) el4.textContent = '本月共 ' + count + ' 条';
+  renderLeaveAnalysis();
+}
+// 员工请假分析 + 自动考核
+function renderLeaveAnalysis() {
+  const chartEl = document.getElementById('leaveAnalysisChart');
+  const assessEl = document.getElementById('leaveAssessmentList');
+  if (!chartEl || !assessEl) return;
+  // 近12个月范围
+  const now = new Date();
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'));
+  }
+  const startMonth = months[0], endMonth = months[11];
+  // 统计每个员工近12个月请假天数（事假+病假，外出/年假不计入考核）
+  const empStats = {};
+  employees.filter(e => e.status !== '已离职').forEach(e => {
+    empStats[e.id] = { name: e.name, empId: e.empId, color: e.avatarColor, total: 0, monthly: {}, records: 0 };
+    months.forEach(m => empStats[e.id].monthly[m] = 0);
+  });
+  leaveRecords.forEach(r => {
+    if (!empStats[r.empId]) return;
+    if (r.type !== '事假' && r.type !== '病假') return; // 外出/年假不计入考核
+    const recStart = r.startDate.substring(0, 7);
+    const recEnd = r.endDate.substring(0, 7);
+    months.forEach(m => {
+      if (recStart <= m && recEnd >= m) {
+        empStats[r.empId].monthly[m] += r.days;
+        empStats[r.empId].total += r.days;
+      }
+    });
+    empStats[r.empId].records++;
+  });
+  // 按请假天数排序
+  const sorted = Object.values(empStats).sort((a, b) => b.total - a.total);
+  const maxDays = Math.max(...sorted.map(s => s.total), 1);
+  // 渲染横向柱状图
+  chartEl.innerHTML = sorted.map(s => {
+    const width = Math.max(2, (s.total / maxDays) * 100);
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:70px;flex-shrink:0;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;">
+        <span style="width:20px;height:20px;border-radius:50%;background:${s.color};color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;">${s.name.charAt(0)}</span>
+        ${s.name}
+      </div>
+      <div style="flex:1;height:22px;background:var(--bg);border-radius:4px;overflow:hidden;position:relative;">
+        <div style="width:${width}%;height:100%;background:${s.total > 5 ? 'var(--danger)' : s.total > 2 ? 'var(--accent)' : 'var(--success)'};border-radius:4px;transition:width 0.3s;"></div>
+        <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text-secondary);">${s.total}天</span>
+      </div>
+    </div>`;
+  }).join('');
+  // 自动考核判定
+  const assessments = sorted.map(s => {
+    let level, color, advice;
+    if (s.total === 0) { level = '全勤标兵'; color = 'tag-green'; advice = '近一年零请假，表现优秀，建议给予全勤奖励'; }
+    else if (s.total <= 2) { level = '出勤良好'; color = 'tag-green'; advice = '请假较少，出勤正常'; }
+    else if (s.total <= 5) { level = '出勤一般'; color = 'tag-amber'; advice = '请假偏多，建议关注其工作状态'; }
+    else if (s.total <= 8) { level = '需关注'; color = 'tag-red'; advice = '请假较多，建议沟通了解原因'; }
+    else { level = '重点关注'; color = 'tag-red'; advice = '请假频繁，严重影响工作，建议面谈'; }
+    return { ...s, level, color, advice };
+  });
+  assessEl.innerHTML = `<div style="font-size:14px;font-weight:600;margin-bottom:10px;">考核判定结果</div>` +
+    assessments.map(a => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="width:36px;height:36px;border-radius:50%;background:${a.color === 'tag-green' ? 'var(--success)' : a.color === 'tag-amber' ? 'var(--accent)' : 'var(--danger)'};color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${a.name.charAt(0)}</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+            <span style="font-weight:600;font-size:14px;">${a.name}</span>
+            <span class="tag ${a.color}">${a.level}</span>
+            <span style="font-size:12px;color:var(--text-secondary);">近12个月请假${a.total}天 · ${a.records}次</span>
+          </div>
+          <div style="font-size:12.5px;color:var(--text-secondary);">${a.advice}</div>
+        </div>
+      </div>
+    `).join('');
+}
+function renderSalaryTable() {
+  recalcAllSalary();
+  const tbody = document.getElementById('salaryTableBody');
+  const monthData = salaryData.filter(s => s.month === settings.salaryMonth);
+  // 更新标题
+  const titleEl = document.getElementById('salaryMonthTitle');
+  if (titleEl) titleEl.textContent = settings.salaryMonth + ' · 共 ' + monthData.length + ' 人';
+  if (monthData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px 20px;color:var(--text-secondary);">
+      <div style="font-size:40px;margin-bottom:10px;">📋</div>
+      <div style="font-size:15px;margin-bottom:8px;">${settings.salaryMonth} 暂无工资数据</div>
+      <div style="font-size:13px;">点击下方按钮，从上月复制生成</div>
+      <button class="btn btn-primary btn-sm" style="margin-top:14px;" onclick="copySalaryFromPrevMonth()">复制上月工资表</button>
+    </td></tr>`;
+    updateSalarySummary();
+    return;
+  }
+  tbody.innerHTML = monthData.map(s => `
+    <tr>
+      <td data-label="工人"><div class="employee-cell"><div class="employee-avatar" style="background:${employees.find(e=>e.id===s.id)?.avatarColor || '#999'}">${s.name.charAt(0)}</div><div><div class="employee-name">${s.name}</div><div class="employee-id">${s.empId}</div></div></div></td>
+      <td data-label="岗位">${s.position}</td>
+      <td data-label="基本工资" class="num">¥${s.base.toLocaleString()}</td>
+      <td data-label="出勤天数" class="num">${s.attend} 天</td>
+      <td data-label="请假扣款" class="num" style="color:var(--danger);">-¥${s.leaveDeduct.toLocaleString()}</td>
+      <td data-label="社保扣除" class="num" style="color:var(--danger);">-¥${s.social.toLocaleString()}</td>
+      <td data-label="实发工资" class="num" style="font-weight:700;font-size:15px;">¥${s.actual.toLocaleString()}</td>
+    </tr>`).join('');
+  updateSalarySummary();
+}
+function switchSalaryMonth(month) {
+  settings.salaryMonth = month;
+  saveData();
+  renderSalaryTable();
+  updatePagination('salaryPagination', salaryData.filter(s => s.month === month).length);
+  showToast('已切换到 ' + month);
+}
+function copySalaryFromPrevMonth() {
+  const [y, m] = settings.salaryMonth.split('-').map(Number);
+  const prevMonth = m === 1 ? (y-1) + '-12' : y + '-' + String(m-1).padStart(2,'0');
+  const prevData = salaryData.filter(s => s.month === prevMonth);
+  if (prevData.length === 0) { showToast('上月也没有工资数据'); return; }
+  prevData.forEach(s => {
+    salaryData.push({ ...s, month: settings.salaryMonth, leaveDeduct: 0, attend: 23 });
+  });
+  saveData();
+  renderSalaryTable();
+  renderSalaryTrendChart();
+  updatePagination('salaryPagination', salaryData.filter(s => s.month === settings.salaryMonth).length);
+  showToast('已复制上月工资表到 ' + settings.salaryMonth);
+}
+function renderSalaryTrendChart() {
+  const container = document.getElementById('salaryTrendChart');
+  if (!container) return;
+  // 生成近12个月
+  const now = new Date();
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'));
+  }
+  // 计算每月实发工资合计
+  const data = months.map(m => ({
+    month: m,
+    total: salaryData.filter(s => s.month === m).reduce((sum, s) => sum + s.actual, 0)
+  }));
+  const maxVal = Math.max(...data.map(d => d.total), 1);
+  container.innerHTML = data.map(d => {
+    const height = d.total > 0 ? Math.max(4, (d.total / maxVal) * 150) : 2;
+    const isCurrent = d.month === settings.salaryMonth;
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div style="font-size:10px;color:var(--text-secondary);font-weight:600;">${d.total > 0 ? '¥' + (d.total/10000).toFixed(1) + '万' : ''}</div>
+      <div style="width:100%;height:${height}px;background:${isCurrent ? 'var(--accent)' : 'rgba(200,134,12,0.25)'};border-radius:4px 4px 0 0;min-height:2px;transition:height 0.3s;"></div>
+      <div style="font-size:10px;color:var(--text-muted);">${d.month.substring(5)}</div>
+    </div>`;
+  }).join('');
+}
+function recalcSalaryForEmp(empId) {
+  const emp = employees.find(e => e.id === empId);
+  if (!emp) return;
+  // 更新该员工所有月份的工资数据
+  salaryData.filter(s => s.id === empId).forEach(s => {
+    s.base = emp.salary;
+    s.name = emp.name;
+    s.position = emp.position;
+    s.empId = emp.empId;
+    // 计算该月份内的请假天数（事假+病假扣钱，外出/年假不扣）
+    const monthPrefix = s.month;
+    const leaveDays = leaveRecords
+      .filter(r => r.empId === empId && (r.type === '事假' || r.type === '病假'))
+      .filter(r => {
+        const startMonth = r.startDate.substring(0, 7);
+        const endMonth = r.endDate.substring(0, 7);
+        return startMonth <= monthPrefix && endMonth >= monthPrefix;
+      })
+      .reduce((sum, r) => sum + r.days, 0);
+    const dailyWage = emp.salary / 30;
+    s.leaveDeduct = Math.round(dailyWage * leaveDays);
+    // 出勤天数 = 应出勤23天 - 请假天数（最低0）
+    s.attend = Math.max(0, 23 - leaveDays);
+    s.actual = s.base - s.leaveDeduct - s.social;
+  });
+}
+function recalcAllSalary() {
+  employees.forEach(e => recalcSalaryForEmp(e.id));
+  saveData();
+}
+function updateSalarySummary() {
+  const monthData = salaryData.filter(s => s.month === settings.salaryMonth);
+  const totalPayable = monthData.reduce((s, r) => s + r.base, 0);
+  const totalDeduct = monthData.reduce((s, r) => s + r.leaveDeduct + r.social, 0);
+  const totalActual = monthData.reduce((s, r) => s + r.actual, 0);
+  const cards = document.querySelectorAll('#view-salary .salary-summary-value');
+  if (cards[0]) cards[0].textContent = monthData.length + ' 人';
+  if (cards[1]) cards[1].textContent = '¥' + totalPayable.toLocaleString();
+  if (cards[2]) cards[2].textContent = '¥' + totalDeduct.toLocaleString();
+  if (cards[3]) cards[3].textContent = '¥' + totalActual.toLocaleString();
+}
+let calYear = 2026, calMonth = 9;
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  const titleEl = document.querySelector('.calendar-title');
+  if (titleEl) titleEl.textContent = calYear + '年' + calMonth + '月';
+  const days = ['日','一','二','三','四','五','六'];
+  let html = days.map(d => `<div class="calendar-day-header">${d}</div>`).join('');
+  const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+  const prevMonthDays = new Date(calYear, calMonth - 1, 0).getDate();
+  const now = new Date();
+  const isCurrentMonth = (now.getFullYear() === calYear && now.getMonth() + 1 === calMonth);
+  const today = isCurrentMonth ? now.getDate() : -1;
+  // 筛选当月请假记录
+  const monthPrefix = calYear + '-' + String(calMonth).padStart(2, '0');
+  const monthRecords = leaveRecords.filter(r => r.startDate.startsWith(monthPrefix) || r.endDate.startsWith(monthPrefix));
+  for (let i = 0; i < firstDay; i++) html += `<div class="calendar-day other-month"><div class="calendar-day-number">${prevMonthDays - firstDay + i + 1}</div></div>`;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = monthPrefix + '-' + String(day).padStart(2, '0');
+    const isToday = day === today;
+    let events = '', hasEvent = false;
+    monthRecords.forEach(rec => {
+      if (dateStr >= rec.startDate && dateStr <= rec.endDate) {
+        const cls = rec.type === '事假' ? 'leave' : rec.type === '病假' ? 'sick' : rec.type === '外出' ? 'out' : 'leave';
+        events += `<div class="calendar-event ${cls}">${rec.name}</div>`;
+        hasEvent = true;
+      }
+    });
+    if (day === 15) { events += '<div class="calendar-event" style="background:rgba(45,125,70,0.1);color:var(--success);">发工资</div>'; hasEvent = true; }
+    html += `<div class="calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}" onclick="showDayDetail('${dateStr}')"><div class="calendar-day-number">${day}</div>${events}</div>`;
+  }
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  const remaining = totalCells - (firstDay + daysInMonth);
+  for (let i = 1; i <= remaining; i++) html += `<div class="calendar-day other-month"><div class="calendar-day-number">${i}</div></div>`;
+  grid.innerHTML = html;
+}
+function prevMonth() {
+  calMonth--;
+  if (calMonth < 1) { calMonth = 12; calYear--; }
+  renderCalendar();
+}
+function nextMonth() {
+  calMonth++;
+  if (calMonth > 12) { calMonth = 1; calYear++; }
+  renderCalendar();
+}
+function goToday() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth() + 1;
+  renderCalendar();
+}
+// ===== 日历日期点击：查看当天详情 =====
+function scrollToLeaveRecords() {
+  const el = document.getElementById('leaveRecordsCard');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function showDayDetail(dateStr) {
+  const dayRecords = leaveRecords.filter(r => dateStr >= r.startDate && dateStr <= r.endDate);
+  const titleEl = document.getElementById('dayDetailTitle');
+  const bodyEl = document.getElementById('dayDetailBody');
+  titleEl.textContent = dateStr + ' 考勤详情';
+  if (dayRecords.length === 0) {
+    bodyEl.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--text-secondary);">当天无请假/外出记录</div>';
+  } else {
+    const typeTag = { '事假':'tag-amber', '病假':'tag-red', '外出':'tag-blue', '年假':'tag-green' };
+    bodyEl.innerHTML = dayRecords.map(r => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="employee-avatar" style="background:${employees.find(e=>e.id===r.empId)?.avatarColor || '#999'};width:36px;height:36px;font-size:14px;">${r.name.charAt(0)}</div>
+          <div>
+            <div style="font-weight:600;">${r.name} <span class="tag ${typeTag[r.type]}">${r.type}</span></div>
+            <div style="font-size:12px;color:var(--text-secondary);">${r.startDate} ~ ${r.endDate}（${r.days}天）</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${r.reason}</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="editLeave(${r.id})">编辑</button>
+      </div>
+    `).join('');
+  }
+  // 底部按钮：登记当天请假
+  const footerEl = document.getElementById('dayDetailFooter');
+  footerEl.innerHTML = `<button class="btn btn-primary" onclick="openLeaveModalForDate('${dateStr}')">登记当天请假/外出</button>`;
+  openModal('dayDetailModal');
+}
+// ===== 请假记录编辑 =====
+let editingLeaveId = null;
+function editLeave(id) {
+  const rec = leaveRecords.find(r => r.id === id);
+  if (!rec) return;
+  editingLeaveId = id;
+  closeModal('dayDetailModal');
+  document.getElementById('leaveEmployee').value = rec.empId;
+  document.getElementById('leaveType').value = rec.type;
+  document.getElementById('leaveStart').value = rec.startDate;
+  document.getElementById('leaveEnd').value = rec.endDate;
+  document.getElementById('leaveReason').value = rec.reason;
+  calcLeaveDays();
+  document.querySelector('#leaveModal .modal-title').textContent = '编辑请假/外出';
+  openModal('leaveModal');
+}
+function openLeaveModalForDate(dateStr) {
+  editingLeaveId = null;
+  closeModal('dayDetailModal');
+  document.getElementById('leaveEmployee').value = '';
+  document.getElementById('leaveType').value = '事假';
+  document.getElementById('leaveStart').value = dateStr;
+  document.getElementById('leaveEnd').value = dateStr;
+  document.getElementById('leaveReason').value = '';
+  calcLeaveDays();
+  document.querySelector('#leaveModal .modal-title').textContent = '登记请假 / 外出';
+  openModal('leaveModal');
+}
+function populateLeaveEmployees() {
+  const sel = document.getElementById('leaveEmployee');
+  sel.innerHTML = '<option value="">请选择工人</option>' + employees.map(e => `<option value="${e.id}">${e.name}（${e.empId}）- ${e.position}</option>`).join('');
+}
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+function switchView(viewName) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + viewName).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navMap = { 'employees':'employees', 'employee-detail':'employees', 'attendance':'attendance', 'salary':'salary', 'settings':'settings' };
+  const navKey = navMap[viewName] || viewName;
+  const navItem = document.querySelector(`.nav-item[data-view="${navKey}"]`);
+  if (navItem) navItem.classList.add('active');
+  const titleMap = { 'employees':'员工档案', 'employee-detail':'工人信息', 'attendance':'考勤请假', 'salary':'工资核算', 'settings':'系统设置' };
+  document.getElementById('topbarTitle').textContent = titleMap[viewName] || '';
+  if (window.innerWidth < 768) closeSidebar();
+  window.scrollTo(0, 0);
+}
+let currentEmployeeId = null;
+function viewEmployeeDetail(id) {
+  const emp = employees.find(e => e.id === id);
+  if (emp) {
+    currentEmployeeId = id;
+    document.getElementById('detailName').textContent = emp.name;
+    document.getElementById('detailAvatar').textContent = emp.name.charAt(0);
+    document.getElementById('detailAvatar').style.background = emp.avatarColor;
+    document.getElementById('detailPosition').textContent = emp.position;
+    document.getElementById('detailEmpId').textContent = '工号：' + emp.empId;
+    document.getElementById('detailEntry').textContent = '入职：' + emp.entryDate;
+    document.getElementById('detailSalary').textContent = '月薪：¥' + Number(emp.salary).toLocaleString();
+    document.getElementById('editName').value = emp.name;
+    document.getElementById('editEmpId').value = emp.empId;
+    document.getElementById('editPhone').value = emp.phone;
+    document.getElementById('editPosition').value = emp.position;
+    document.getElementById('editEntryDate').value = emp.entryDate;
+    document.getElementById('editSalary').value = emp.salary;
+    document.getElementById('editStatus').value = emp.status;
+    // 更新离职按钮状态
+    const toggleBtn = document.getElementById('toggleStatusBtn');
+    const toggleTxt = document.getElementById('toggleStatusText');
+    if (emp.status === '已离职') {
+      if (toggleTxt) toggleTxt.textContent = '恢复在职';
+      if (toggleBtn) toggleBtn.className = 'btn btn-primary btn-sm';
+    } else {
+      if (toggleTxt) toggleTxt.textContent = '标记离职';
+      if (toggleBtn) toggleBtn.className = 'btn btn-danger btn-sm';
+    }
+    document.getElementById('editGender').value = emp.gender || '男';
+    document.getElementById('editBirthday').value = emp.birthday || '';
+    document.getElementById('editIdCard').value = emp.idCard || '';
+    document.getElementById('editAddress').value = emp.address || '';
+    document.getElementById('editEmergency').value = emp.emergency || '';
+    document.getElementById('editBankCard').value = emp.bankCard || '';
+    document.getElementById('editRemark').value = emp.remark || '';
+  }
+  switchView('employee-detail');
+}
+function saveEmployeeDetail() {
+  const emp = employees.find(e => e.id === currentEmployeeId);
+  if (emp) {
+    emp.name = document.getElementById('editName').value;
+    emp.empId = document.getElementById('editEmpId').value;
+    emp.phone = document.getElementById('editPhone').value;
+    emp.position = document.getElementById('editPosition').value;
+    emp.entryDate = document.getElementById('editEntryDate').value;
+    emp.salary = Number(document.getElementById('editSalary').value);
+    emp.status = document.getElementById('editStatus').value;
+    emp.gender = document.getElementById('editGender').value;
+    emp.birthday = document.getElementById('editBirthday').value;
+    emp.idCard = document.getElementById('editIdCard').value;
+    emp.address = document.getElementById('editAddress').value;
+    emp.emergency = document.getElementById('editEmergency').value;
+    emp.bankCard = document.getElementById('editBankCard').value;
+    emp.remark = document.getElementById('editRemark').value;
+    document.getElementById('detailName').textContent = emp.name;
+    document.getElementById('detailAvatar').textContent = emp.name.charAt(0);
+    document.getElementById('detailPosition').textContent = emp.position;
+    document.getElementById('detailEmpId').textContent = '工号：' + emp.empId;
+    document.getElementById('detailEntry').textContent = '入职：' + emp.entryDate;
+    document.getElementById('detailSalary').textContent = '月薪：¥' + Number(emp.salary).toLocaleString();
+    recalcSalaryForEmp(emp.id);
+    renderEmployeeTable();
+    renderSalaryTable();
+    saveData();
+    showToast('工人信息已保存，并同步到云端');
+  }
+}
+function toggleEmployeeStatus() {
+  const emp = employees.find(e => e.id === currentEmployeeId);
+  if (!emp) return;
+  const btn = document.getElementById('toggleStatusBtn');
+  const txt = document.getElementById('toggleStatusText');
+  if (emp.status === '已离职') {
+    emp.status = '在职';
+    if (txt) txt.textContent = '标记离职';
+    if (btn) btn.className = 'btn btn-danger btn-sm';
+    showToast('已恢复在职：' + emp.name);
+  } else {
+    emp.status = '已离职';
+    if (txt) txt.textContent = '恢复在职';
+    if (btn) btn.className = 'btn btn-primary btn-sm';
+    showToast('已标记离职：' + emp.name);
+  }
+  document.getElementById('editStatus').value = emp.status;
+  renderEmployeeTable();
+  saveData();
+}
+function openModal(id) {
+  if (id === 'leaveModal' && editingLeaveId === null) {
+    document.querySelector('#leaveModal .modal-title').textContent = '登记请假 / 外出';
+  }
+  document.getElementById(id).classList.add('show');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  if (id === 'leaveModal') editingLeaveId = null;
+}
+// 自定义确认弹窗
+let confirmCallback = null;
+function showConfirm(title, message, callback) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMessage').textContent = message;
+  confirmCallback = callback;
+  openModal('confirmModal');
+}
+document.getElementById('confirmOkBtn').addEventListener('click', () => {
+  closeModal('confirmModal');
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+});
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
+});
+const avatarColors = ['#2980b9','#27ae60','#8e44ad','#d35400','#c0392b','#16a085','#f39c12','#2c3e50','#7f8c8d','#e74c3c','#1abc9c','#34495e'];
+function saveEmployee() {
+  const nameEl = document.getElementById('newEmpName');
+  const posEl = document.getElementById('newEmpPosition');
+  const entryEl = document.getElementById('newEmpEntry');
+  const salaryEl = document.getElementById('newEmpSalary');
+  // 清除之前的错误样式
+  [nameEl, posEl, entryEl, salaryEl].forEach(el => el.classList.remove('error'));
+  const name = nameEl.value.trim();
+  const phone = document.getElementById('newEmpPhone').value.trim();
+  const position = posEl.value;
+  const entryDate = entryEl.value;
+  const salary = Number(salaryEl.value);
+  let hasError = false;
+  if (!name) { nameEl.classList.add('error'); hasError = true; }
+  if (!position) { posEl.classList.add('error'); hasError = true; }
+  if (!entryDate) { entryEl.classList.add('error'); hasError = true; }
+  if (!salary) { salaryEl.classList.add('error'); hasError = true; }
+  if (hasError) { showToast('请填写标红的必填项'); return; }
+  const newId = Math.max(...employees.map(e => e.id), 0) + 1;
+  const newEmpIdNum = Math.max(...employees.map(e => parseInt(e.empId.replace('DJ',''))), 0) + 1;
+  const colorIdx = employees.length % avatarColors.length;
+  const newEmp = {
+    id: newId, name: name, empId: 'DJ' + String(newEmpIdNum).padStart(3, '0'),
+    dept: '生产车间', position: position, entryDate: entryDate, salary: salary,
+    phone: phone || '未填写', status: '在职', avatarColor: avatarColors[colorIdx],
+    gender: '男', birthday: '', idCard: document.getElementById('newEmpIdCard').value || '',
+    address: document.getElementById('newEmpAddress').value || '',
+    emergency: '', bankCard: '', remark: document.getElementById('newEmpRemark').value || ''
+  };
+  employees.push(newEmp);
+  // 同步加工资数据
+  salaryData.push({
+    id: newId, name: name, empId: newEmp.empId, dept: '生产车间', position: position,
+    base: salary, attend: 23, leaveDeduct: 0, overtime: 0, bonus: 0, social: 400, actual: salary - 400
+  });
+  // 清空表单
+  document.getElementById('newEmpName').value = '';
+  document.getElementById('newEmpPhone').value = '';
+  document.getElementById('newEmpPosition').value = '';
+  document.getElementById('newEmpSalary').value = '5000';
+  document.getElementById('newEmpIdCard').value = '';
+  document.getElementById('newEmpAddress').value = '';
+  document.getElementById('newEmpRemark').value = '';
+  closeModal('employeeModal');
+  renderEmployeeTable();
+  renderSalaryTable();
+  populateLeaveEmployees();
+  updatePagination('employeePagination', employees.filter(e => e.status !== '已离职').length);
+  updatePagination('salaryPagination', salaryData.length);
+  saveData();
+  showToast('工人已添加：' + name);
+}
+function calcLeaveDays() {
+  const start = document.getElementById('leaveStart').value;
+  const end = document.getElementById('leaveEnd').value;
+  const el = document.getElementById('leaveDays');
+  if (start && end) {
+    const diff = Math.floor((new Date(end) - new Date(start)) / 86400000) + 1;
+    if (diff > 0) { el.value = diff + ' 天'; return; }
+  }
+  el.value = '请选择日期';
+}
+function saveLeave() {
+  const empId = Number(document.getElementById('leaveEmployee').value);
+  const type = document.getElementById('leaveType').value;
+  const startDate = document.getElementById('leaveStart').value;
+  const endDate = document.getElementById('leaveEnd').value;
+  const reason = document.getElementById('leaveReason').value.trim();
+  if (!empId || !startDate || !endDate || !reason) {
+    showToast('请填写完整（工人、日期、事由）');
+    return;
+  }
+  const days = Math.floor((new Date(endDate) - new Date(startDate)) / 86400000) + 1;
+  if (days < 1) { showToast('结束日期不能早于开始日期'); return; }
+  const emp = employees.find(e => e.id === empId);
+  if (editingLeaveId !== null) {
+    // 编辑模式：更新现有记录
+    const rec = leaveRecords.find(r => r.id === editingLeaveId);
+    if (rec) {
+      rec.empId = empId;
+      rec.name = emp.name;
+      rec.type = type;
+      rec.startDate = startDate;
+      rec.endDate = endDate;
+      rec.days = days;
+      rec.reason = reason;
+    }
+    editingLeaveId = null;
+    showToast('请假记录已更新');
+  } else {
+    // 新增模式
+    const newId = Math.max(...leaveRecords.map(r => r.id), 0) + 1;
+    const now = new Date();
+    const ts = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    leaveRecords.push({ id: newId, empId: empId, name: emp.name, type: type, startDate: startDate, endDate: endDate, days: days, reason: reason, createTime: ts });
+    showToast('请假记录已保存');
+  }
+  closeModal('leaveModal');
+  recalcAllSalary();
+  renderLeaveTable();
+  renderSalaryTable();
+  renderCalendar();
+}
+function exportSalary() {
+  const headers = ['工号','姓名','岗位','基本工资','出勤天数','请假扣款','社保扣除','实发工资'];
+  const rows = salaryData.map(s => [s.empId, s.name, s.position, s.base, s.attend, s.leaveDeduct, s.social, s.actual]);
+  let csv = '\uFEFF' + headers.join(',') + '\n';
+  rows.forEach(r => { csv += r.join(',') + '\n'; });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = '工资表_' + calYear + '年' + calMonth + '月.csv';
+  link.click();
+  showToast('工资表已导出');
+}
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', function() {
+    const view = this.getAttribute('data-view');
+    if (view) switchView(view);
+  });
+});
+window.addEventListener('resize', function() {
+  if (window.innerWidth >= 768) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+});
+function updatePagination(containerId, total) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const pages = Math.ceil(total / 10);
+  let html = '<div class="pagination-info">显示 1-' + Math.min(total, 10) + ' 条，共 ' + total + ' 条</div>';
+  html += '<div class="pagination-btns">';
+  html += '<button class="page-btn" disabled>上一页</button>';
+  for (let i = 1; i <= pages; i++) {
+    html += '<button class="page-btn' + (i === 1 ? ' active' : '') + '"' + (i === 1 ? '' : '') + '>' + i + '</button>';
+  }
+  html += '<button class="page-btn" disabled>下一页</button>';
+  html += '</div>';
+  container.innerHTML = html;
+}
+// 加载本地保存的数据
+loadData();
+// 初始化系统设置
+function initSettings() {
+  document.getElementById('settingCloudBackup').checked = settings.cloudBackup;
+  document.getElementById('settingMultiDevice').checked = settings.multiDevice;
+  document.getElementById('settingPayday').value = settings.payday;
+  document.getElementById('settingOvertimeWeekday').value = settings.overtimeWeekday;
+  document.getElementById('settingOvertimeWeekend').value = settings.overtimeWeekend;
+  document.getElementById('settingCloudBackup').addEventListener('change', e => { settings.cloudBackup = e.target.checked; saveData(); showToast(settings.cloudBackup ? '云端备份已开启' : '云端备份已关闭'); });
+  document.getElementById('settingMultiDevice').addEventListener('change', e => { settings.multiDevice = e.target.checked; saveData(); showToast(settings.multiDevice ? '多设备同步已开启' : '多设备同步已关闭'); });
+  document.getElementById('settingPayday').addEventListener('change', e => { settings.payday = Number(e.target.value); saveData(); showToast('发薪日已更新'); });
+  document.getElementById('settingOvertimeWeekday').addEventListener('change', e => { settings.overtimeWeekday = Number(e.target.value); saveData(); showToast('工作日加班倍率已更新'); });
+  document.getElementById('settingOvertimeWeekend').addEventListener('change', e => { settings.overtimeWeekend = Number(e.target.value); saveData(); showToast('周末加班倍率已更新'); });
+}
+initSettings();
+// 给旧工资数据补月份字段
+salaryData.forEach(s => { if (!s.month) s.month = '2026-08'; });
+// 设置工资月份下拉
+document.getElementById('salaryMonthSelect').value = settings.salaryMonth;
+renderEmployeeTable();
+renderLeaveTable();
+renderSalaryTable();
+renderSalaryTrendChart();
+renderLeaveAnalysis();
+renderCalendar();
+populateLeaveEmployees();
+updatePagination('employeePagination', employees.filter(e => e.status !== '已离职').length);
+updatePagination('salaryPagination', salaryData.length);
+// 请假日期变化时自动算天数
+document.getElementById('leaveStart').addEventListener('change', calcLeaveDays);
+document.getElementById('leaveEnd').addEventListener('change', calcLeaveDays);
+calcLeaveDays();
+// 输入时自动清除错误样式
+document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => {
+  el.addEventListener('input', () => el.classList.remove('error'));
+  el.addEventListener('change', () => el.classList.remove('error'));
+});
+</script>
+</body>
+</html>
