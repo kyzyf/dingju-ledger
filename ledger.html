@@ -2677,6 +2677,37 @@ let supabaseClient = null;
 let cloudSyncEnabled = false;
 let isSyncing = false;
 
+// ===== 云端同步 (Supabase) =====
+const CLOUD_CONFIG_KEY = 'dingju_cloud_config';
+let supabaseClient = null;
+let cloudSyncEnabled = false;
+let isSyncing = false;
+
+// 带超时的自定义fetch（解决iOS Safari "Load failed" 问题）
+function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timeoutId));
+}
+
+// 带重试的请求包装
+async function withRetry(fn, retries = 3, delay = 1500) {
+  let lastError = null;
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastError = e;
+      console.warn(`云端请求第${i + 1}次失败:`, e.message);
+      if (i < retries - 1) {
+        await new Promise(r => setTimeout(r, delay * (i + 1))); // 递增延迟
+      }
+    }
+  }
+  throw lastError;
+}
+
 function initCloudSync() {
   try {
     const saved = localStorage.getItem(CLOUD_CONFIG_KEY);
@@ -2692,7 +2723,11 @@ function initCloudSync() {
       localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify(config));
     }
     if (config.url && config.key && window.supabase) {
-      supabaseClient = window.supabase.createClient(config.url, config.key);
+      // 使用自定义fetch（带超时），提高iOS Safari稳定性
+      supabaseClient = window.supabase.createClient(config.url, config.key, {
+        global: { fetch: fetchWithTimeout },
+        auth: { persistSession: false, autoRefreshToken: false }
+      });
       cloudSyncEnabled = true;
       updateSyncStatus('已连接，自动同步中');
       // 填充输入框
@@ -2720,13 +2755,17 @@ async function syncToCloud() {
       settings: state.settings,
       updated_at: new Date().toISOString()
     };
-    const { error } = await supabaseClient.from('ledger_sync').upsert(payload);
+    // 带重试的上传
+    const { error } = await withRetry(() =>
+      supabaseClient.from('ledger_sync').upsert(payload)
+    );
     if (error) throw error;
     updateSyncStatus('已同步 ' + new Date().toLocaleTimeString());
     addAuditLog('cloud_sync', `推送到云端（${state.records.length}条）`);
   } catch(e) {
     console.error('云端同步失败:', e);
-    updateSyncStatus('同步失败: ' + (e.message || '未知错误'));
+    const msg = e.name === 'AbortError' ? '请求超时，请检查网络' : (e.message || '未知错误');
+    updateSyncStatus('同步失败: ' + msg);
   }
   isSyncing = false;
 }
@@ -2739,7 +2778,10 @@ async function pullFromCloud() {
   if (!confirm('确定要用云端数据覆盖本地数据吗？本地未同步的数据将丢失！')) return;
   updateSyncStatus('拉取中...');
   try {
-    const { data, error } = await supabaseClient.from('ledger_sync').select('*').eq('id', 'dingju_ledger_data').maybeSingle();
+    // 带重试的拉取
+    const { data, error } = await withRetry(() =>
+      supabaseClient.from('ledger_sync').select('*').eq('id', 'dingju_ledger_data').maybeSingle()
+    );
     if (error) throw error;
     if (!data) {
       alert('云端暂无数据');
@@ -2764,7 +2806,8 @@ async function pullFromCloud() {
       alert('云端暂无数据');
       updateSyncStatus('云端暂无数据');
     } else {
-      alert('拉取失败: ' + (e.message || '未知错误'));
+      const msg = e.name === 'AbortError' ? '请求超时，请检查网络后重试' : (e.message || '未知错误');
+      alert('拉取失败: ' + msg + '\n\n建议：\n1. 检查网络连接\n2. 切换WiFi/蜂窝数据\n3. 稍后重试');
       updateSyncStatus('拉取失败');
     }
   }
