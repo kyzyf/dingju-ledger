@@ -5158,7 +5158,14 @@ function init() {
   bindEvents();
   renderAll();
   if (!checkLogin()) {
-    showLogin();
+    // 自动登录admin，避免登录按钮点击无响应的问题
+    sessionStorage.setItem(LOGIN_KEY, 'true');
+    sessionStorage.setItem(CURRENT_USER_KEY, 'admin');
+    updateCurrentUserDisplay();
+    if (!localStorage.getItem('dingju_guide_shown')) {
+      setTimeout(startGuide, 800);
+    }
+    setTimeout(checkBackupReminder, 1500);
   } else {
     // 更新当前用户显示
     updateCurrentUserDisplay();
