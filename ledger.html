@@ -5008,12 +5008,12 @@ if (window.self !== window.top) {
 }
 const LOGIN_KEY = 'dingju_ledger_logged_in';
 const CURRENT_USER_KEY = 'dingju_ledger_current_user';
-const USERS_KEY = 'dingju_ledger_users';
+const USERS_KEY = 'dingju_ledger_users_v2';
 
 // 默认3个账号（密码为SHA-256哈希，不可反推）
 const DEFAULT_USERS = {
   'admin':    { passwordHash: 'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7', role: '管理员', name: '管理员' },
-  'zhangsan': { passwordHash: 'adb41ff67176d14d928d3a0c75df74d12b7714c15399819cd6d60b9744490218', role: '操作员', name: '张三' },
+  'zhangsan': { passwordHash: 'a9e0748146fdaf65f3af3bf1ddecdcb5db04eba2d9dc3bd85c89684fa3d43744', role: '操作员', name: '张三' },
   'lisi':     { passwordHash: '4bb996b61af055fb027435e1059850a965e72fa90fa3e072984aac983be41fed', role: '操作员', name: '李四' }
 };
 
