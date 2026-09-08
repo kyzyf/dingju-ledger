@@ -2186,7 +2186,7 @@ body::before {
     <div class="login-input-wrap">
       <input type="password" class="login-input" id="loginPassword" placeholder="请输入密码" autocomplete="off">
     </div>
-    <button type="button" class="login-btn" id="loginSubmitBtn" onclick="doLogin();">登 录</button>
+    <button type="button" class="login-btn" id="loginSubmitBtn">登 录</button>
   </form>
   <div class="login-error" id="loginError"></div>
   <div class="login-version">DINGJU LEDGER v4.0 &nbsp;|&nbsp; 默认账号 admin / zhangsan / lisi</div>
@@ -5094,27 +5094,39 @@ function hideLogin() {
   document.getElementById('loginOverlay').classList.add('hidden');
 }
 
+let isLoggingIn = false;
 function doLogin() {
-  const username = document.getElementById('loginUsername').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  const errorEl = document.getElementById('loginError');
-  const users = getUsers();
-  const user = users[username];
-  if (user && user.passwordHash === sha256(password)) {
-    sessionStorage.setItem(LOGIN_KEY, 'true');
-    sessionStorage.setItem(CURRENT_USER_KEY, username);
-    errorEl.textContent = '';
-    hideLogin();
-    addAuditLog('login', '用户登录', username);
-    // 登录成功后触发新手引导（仅首次）
-    if (!localStorage.getItem('dingju_guide_shown')) {
-      setTimeout(startGuide, 600);
+  if (isLoggingIn) return;
+  isLoggingIn = true;
+  try {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    if (!username || !password) {
+      errorEl.textContent = '请输入账号和密码';
+      isLoggingIn = false;
+      return;
     }
-    // 检查是否需要备份提醒
-    setTimeout(checkBackupReminder, 1000);
-  } else {
-    errorEl.textContent = '账号或密码错误，请重试';
+    const users = getUsers();
+    const user = users[username];
+    if (user && user.passwordHash === sha256(password)) {
+      sessionStorage.setItem(LOGIN_KEY, 'true');
+      sessionStorage.setItem(CURRENT_USER_KEY, username);
+      errorEl.textContent = '';
+      hideLogin();
+      try { addAuditLog('login', '用户登录', username); } catch(e) {}
+      if (!localStorage.getItem('dingju_guide_shown')) {
+        try { setTimeout(startGuide, 600); } catch(e) {}
+      }
+      try { setTimeout(checkBackupReminder, 1000); } catch(e) {}
+    } else {
+      errorEl.textContent = '账号或密码错误，请重试';
+    }
+  } catch(e) {
+    console.error('登录出错:', e);
+    alert('登录出错: ' + e.message);
   }
+  isLoggingIn = false;
 }
 
 function doLogout() {
