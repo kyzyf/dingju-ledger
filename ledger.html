@@ -2444,12 +2444,19 @@ body::before {
         </div>
         <div class="settings-item" id="importExcelBtn">
           <div>
-            <div class="settings-item-label">导入Excel数据</div>
-            <div class="settings-item-desc">从Excel文件导入单据（支持WPS导出的表格）</div>
+            <div class="settings-item-label">导入Excel数据（支持批量）</div>
+            <div class="settings-item-desc">从Excel文件导入单据，支持流水账格式和对账单格式，可一次选多个文件</div>
           </div>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-muted)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </div>
-        <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none;">
+        <input type="file" id="excelFileInput" accept=".xlsx,.xls" multiple style="display:none;">
+        <div class="settings-item" id="exportStatementBtn">
+          <div>
+            <div class="settings-item-label">按客户导出对账单</div>
+            <div class="settings-item-desc">按客户分组导出为对账单格式（与1-17格式一致），每个客户一个文件</div>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-muted)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
         <div class="settings-item" id="clearDataBtn" style="border-color: var(--danger);">
           <div>
             <div class="settings-item-label" style="color: var(--danger);">清空所有数据</div>
@@ -4019,95 +4026,456 @@ function exportAllExcel() {
   addAuditLog('export', `导出全部数据（${records.length}条）`);
 }
 
+// 解析style字段，提取商品全名、材质、工艺、备注
+function parseStyleField(style) {
+  const result = { product: '', material: '', process: '', remark: '' };
+  if (!style) return result;
+  
+  const parts = style.split('|').map(s => s.trim());
+  for (const part of parts) {
+    if (part.startsWith('材质:')) {
+      result.material = part.substring(3).trim();
+    } else if (part.startsWith('工艺:')) {
+      result.process = part.substring(3).trim();
+    } else if (part.startsWith('备注:')) {
+      result.remark = part.substring(3).trim();
+    } else if (part) {
+      result.product = result.product ? result.product + ' ' + part : part;
+    }
+  }
+  return result;
+}
+
+// 按客户导出对账单（1-17格式）
+function exportStatementsByCustomer() {
+  if (state.records.length === 0) {
+    showToast('没有可导出的数据', 'warning');
+    return;
+  }
+
+  // 按客户分组
+  const customerGroups = {};
+  for (const r of state.records) {
+    const customer = r.customerName || '未知客户';
+    if (!customerGroups[customer]) {
+      customerGroups[customer] = [];
+    }
+    customerGroups[customer].push(r);
+  }
+
+  const customers = Object.keys(customerGroups).sort();
+  
+  if (!confirm(`将为 ${customers.length} 个客户分别导出对账单文件。\n是否继续？`)) {
+    return;
+  }
+
+  let exportCount = 0;
+  
+  for (const customer of customers) {
+    const records = customerGroups[customer].sort((a, b) => a.date.localeCompare(b.date));
+    
+    // 计算日期范围
+    const dates = records.map(r => r.date).sort();
+    const startDate = dates[0];
+    const endDate = dates[dates.length - 1];
+    const periodStr = `${startDate}~${endDate}`;
+    
+    // 构建对账单数据（21列，对应A-U）
+    const aoa = [];
+    
+    // 第0行：公司名称
+    const row0 = new Array(21).fill('');
+    row0[0] = '温州鼎炬金属科技有限公司';
+    aoa.push(row0);
+    
+    // 第1行：对账单
+    const row1 = new Array(21).fill('');
+    row1[0] = '对账单';
+    aoa.push(row1);
+    
+    // 第2行：对账单位、对账期间
+    const row2 = new Array(21).fill('');
+    row2[0] = '对账单位：';
+    row2[4] = customer;
+    row2[10] = '对账期间：';
+    row2[13] = periodStr;
+    aoa.push(row2);
+    
+    // 第3行：表头
+    const row3 = new Array(21).fill('');
+    row3[0] = '行号';
+    row3[1] = '单据日期';
+    row3[2] = '单据类型';
+    row3[5] = '商品全名';
+    row3[8] = '材质';
+    row3[9] = '加工工艺';
+    row3[14] = '数量';
+    row3[16] = '单价';
+    row3[18] = '金额';
+    row3[20] = '备注';
+    aoa.push(row3);
+    
+    // 数据行
+    let totalQty = 0;
+    let totalAmount = 0;
+    let totalPaid = 0;
+    
+    records.forEach((r, idx) => {
+      const row = new Array(21).fill('');
+      const parsed = parseStyleField(r.style);
+      const totalWeight = (parseFloat(r.quantity) || 0) * (parseFloat(r.weightPerPiece) || 0);
+      const amount = parseFloat(r.totalAmount) || 0;
+      const paid = parseFloat(r.paidAmount) || 0;
+      
+      row[0] = idx + 1;
+      row[1] = r.date;
+      row[2] = '销售单';
+      row[5] = parsed.product;
+      row[8] = parsed.material || 'A3';
+      row[9] = parsed.process || '渗碳';
+      row[14] = totalWeight;
+      row[16] = parseFloat(r.unitPrice) || 0;
+      row[18] = amount;
+      row[20] = parsed.remark;
+      
+      aoa.push(row);
+      totalQty += totalWeight;
+      totalAmount += amount;
+      totalPaid += paid;
+    });
+    
+    // 合计行
+    const totalRow = new Array(21).fill('');
+    totalRow[0] = '合计：';
+    totalRow[14] = Math.round(totalQty * 100) / 100;
+    totalRow[18] = Math.round(totalAmount * 100) / 100;
+    aoa.push(totalRow);
+    
+    // 空行
+    aoa.push(new Array(21).fill(''));
+    
+    // 余额行
+    const balanceRow = new Array(21).fill('');
+    balanceRow[0] = '上期余额：';
+    balanceRow[6] = '本期销售：';
+    balanceRow[7] = Math.round(totalAmount * 100) / 100;
+    balanceRow[11] = '本期回款：';
+    balanceRow[12] = Math.round(totalPaid * 100) / 100;
+    balanceRow[17] = '本期余额：';
+    balanceRow[19] = Math.round((totalAmount - totalPaid) * 100) / 100;
+    aoa.push(balanceRow);
+    
+    // 客户确认签字行
+    const signRow = new Array(21).fill('');
+    signRow[15] = '客户确认签字:';
+    aoa.push(signRow);
+    
+    // 创建工作簿
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    
+    // 设置列宽
+    ws['!cols'] = [
+      { wch: 8 }, { wch: 12 }, { wch: 8 }, { wch: 4 }, { wch: 10 },
+      { wch: 25 }, { wch: 4 }, { wch: 4 }, { wch: 6 }, { wch: 8 },
+      { wch: 4 }, { wch: 4 }, { wch: 8 }, { wch: 20 }, { wch: 8 },
+      { wch: 4 }, { wch: 8 }, { wch: 4 }, { wch: 10 }, { wch: 4 },
+      { wch: 20 }
+    ];
+    
+    // 合并单元格
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 20 } }, // 公司名称
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 20 } }, // 对账单
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, '对账单');
+    
+    // 下载文件
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const dlUrl = URL.createObjectURL(blob);
+    const dlLink = document.createElement('a');
+    dlLink.href = dlUrl;
+    dlLink.download = `对账单_${customer}.xlsx`;
+    document.body.appendChild(dlLink);
+    dlLink.click();
+    document.body.removeChild(dlLink);
+    setTimeout(() => URL.revokeObjectURL(dlUrl), 1500);
+    
+    exportCount++;
+  }
+  
+  markBackupDone();
+  addAuditLog('export', `按客户导出对账单（${exportCount}个客户）`);
+  showToast(`已为 ${exportCount} 个客户导出对账单`, 'success');
+}
+
 function importFromExcel(file) {
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        
+        // 先以数组形式读取，判断文件格式
+        const aoaData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+        
+        if (aoaData.length === 0) {
+          showToast('Excel文件中没有数据', 'warning');
+          resolve([]);
+          return;
+        }
 
-      if (jsonData.length === 0) {
-        showToast('Excel文件中没有数据', 'warning');
-        return;
-      }
-
-      // 转换为应用格式
-      const importedRecords = jsonData.map((row, index) => {
-        const dateVal = row['日期'];
-        let dateStr = formatDate(new Date());
-        if (dateVal) {
-          if (typeof dateVal === 'number') {
-            // Excel日期序列号
-            const excelDate = new Date((dateVal - 25569) * 86400 * 1000);
-            dateStr = formatDate(excelDate);
-          } else {
-            const parsed = new Date(dateVal);
-            if (!isNaN(parsed.getTime())) {
-              dateStr = formatDate(parsed);
+        // 判断格式类型：检查是否包含"对账单"或"单据日期"表头（对账单格式）
+        let isStatementFormat = false;
+        let headerRowIndex = 0;
+        let customerNameFromFile = '';
+        let statementPeriod = '';
+        
+        // 扫描前5行，寻找对账单特征
+        for (let i = 0; i < Math.min(5, aoaData.length); i++) {
+          const row = aoaData[i];
+          const rowStr = row.join('').toString();
+          if (rowStr.includes('对账单')) {
+            isStatementFormat = true;
+          }
+          // 寻找对账单位
+          if (rowStr.includes('对账单位')) {
+            for (let j = 0; j < row.length; j++) {
+              const cell = String(row[j] || '').trim();
+              if (cell && !cell.includes('对账单位') && !cell.includes('对账期间') && !cell.includes('：') && !cell.includes(':')) {
+                customerNameFromFile = cell;
+                break;
+              }
             }
+          }
+          // 寻找对账期间
+          if (rowStr.includes('对账期间')) {
+            for (let j = 0; j < row.length; j++) {
+              const cell = String(row[j] || '').trim();
+              if (cell.includes('~') || cell.includes('-') && cell.length > 8) {
+                statementPeriod = cell;
+                break;
+              }
+            }
+          }
+          // 寻找表头行（包含"单据日期"或"行号"）
+          if (rowStr.includes('单据日期') || (rowStr.includes('行号') && rowStr.includes('商品'))) {
+            headerRowIndex = i;
+            isStatementFormat = true;
           }
         }
 
-        const quantity = parseFloat(row['件数']) || 0;
-        const weightPerPiece = parseFloat(row['每件重量(斤)']) || parseFloat(row['每件重量']) || 0;
-        const unitPrice = parseFloat(row['单价(元/斤)']) || parseFloat(row['单价']) || 0;
-        const totalAmountRaw = parseFloat(row['总价']);
-        const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : quantity * weightPerPiece * unitPrice;
-        const paidAmount = parseFloat(row['已收款']) || 0;
+        let importedRecords = [];
 
-        return {
-          id: 'imp_' + Date.now().toString(36) + '_' + index,
-          date: dateStr,
-          customerName: String(row['客户名称'] || '').trim(),
-          doorNo: String(row['门牌号'] || '').trim(),
-          invoiceNo: String(row['发票单号'] || '').trim(),
-          style: String(row['产品款式'] || '').trim(),
-          quantity: quantity,
-          weightPerPiece: weightPerPiece,
-          unitPrice: unitPrice,
-          totalAmount: totalAmount,
-          paidAmount: paidAmount,
-          createdAt: new Date().toISOString()
-        };
-      }).filter(r => r.customerName); // 过滤掉没有客户名称的行
+        if (isStatementFormat) {
+          // ===== 对账单格式（1-17格式）=====
+          const headers = aoaData[headerRowIndex].map(h => String(h || '').trim());
+          
+          // 找到各列的索引
+          const colIndex = {};
+          headers.forEach((h, idx) => {
+            if (h.includes('单据日期') || h.includes('日期')) colIndex.date = idx;
+            if (h.includes('单据类型')) colIndex.type = idx;
+            if (h.includes('商品全名') || h.includes('商品') || h.includes('产品')) colIndex.product = idx;
+            if (h.includes('材质')) colIndex.material = idx;
+            if (h.includes('加工工艺') || h.includes('工艺')) colIndex.process = idx;
+            if (h === '数量' || h.includes('数量')) colIndex.quantity = idx;
+            if (h === '单价' || h.includes('单价')) colIndex.unitPrice = idx;
+            if (h === '金额' || h.includes('金额')) colIndex.amount = idx;
+            if (h.includes('备注')) colIndex.remark = idx;
+          });
 
-      if (importedRecords.length === 0) {
-        showToast('未找到有效的单据数据', 'warning');
-        return;
-      }
+          // 从表头下一行开始读取数据
+          for (let i = headerRowIndex + 1; i < aoaData.length; i++) {
+            const row = aoaData[i];
+            // 跳过合计行、空行
+            const firstCell = String(row[0] || '').trim();
+            if (!firstCell || firstCell.includes('合计') || firstCell.includes('上期余额') || 
+                firstCell.includes('本期') || firstCell.includes('客户确认') || firstCell.includes('余额')) {
+              continue;
+            }
 
-      // 询问是追加还是替换
-      if (state.records.length > 0) {
-        if (!confirm(`将导入 ${importedRecords.length} 条记录。\n点击"确定"追加到现有数据，点击"取消"替换现有数据。`)) {
-          // 替换
-          state.records = importedRecords;
-          addAuditLog('import', `导入数据（替换为${importedRecords.length}条）`);
-          showToast(`已替换为 ${importedRecords.length} 条记录`, 'success');
+            const dateVal = row[colIndex.date];
+            let dateStr = formatDate(new Date());
+            if (dateVal) {
+              if (typeof dateVal === 'number') {
+                const excelDate = new Date((dateVal - 25569) * 86400 * 1000);
+                dateStr = formatDate(excelDate);
+              } else {
+                const parsed = new Date(dateVal);
+                if (!isNaN(parsed.getTime())) {
+                  dateStr = formatDate(parsed);
+                } else {
+                  // 尝试解析字符串日期
+                  const strDate = String(dateVal).trim();
+                  const m = strDate.match(/(\d{4})[-\/年](\d{1,2})[-\/月](\d{1,2})/);
+                  if (m) {
+                    dateStr = `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+                  }
+                }
+              }
+            }
+
+            // 对账单中的"数量"是总斤数
+            const totalWeight = parseFloat(row[colIndex.quantity]) || 0;
+            const unitPrice = parseFloat(row[colIndex.unitPrice]) || 0;
+            const totalAmountRaw = parseFloat(row[colIndex.amount]);
+            const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : totalWeight * unitPrice;
+            
+            // 组装产品款式信息：商品全名 + 材质 + 加工工艺 + 备注
+            let styleParts = [];
+            if (colIndex.product !== undefined && row[colIndex.product]) {
+              styleParts.push(String(row[colIndex.product]).trim());
+            }
+            if (colIndex.material !== undefined && row[colIndex.material]) {
+              styleParts.push('材质:' + String(row[colIndex.material]).trim());
+            }
+            if (colIndex.process !== undefined && row[colIndex.process]) {
+              styleParts.push('工艺:' + String(row[colIndex.process]).trim());
+            }
+            if (colIndex.remark !== undefined && row[colIndex.remark]) {
+              styleParts.push('备注:' + String(row[colIndex.remark]).trim());
+            }
+            const style = styleParts.join(' | ');
+
+            if (totalWeight > 0 || style) {
+              importedRecords.push({
+                id: 'imp_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6),
+                date: dateStr,
+                customerName: customerNameFromFile || '未知客户',
+                doorNo: '',
+                invoiceNo: '',
+                style: style,
+                quantity: 1,
+                weightPerPiece: totalWeight,
+                unitPrice: unitPrice,
+                totalAmount: totalAmount,
+                paidAmount: 0,
+                createdAt: new Date().toISOString()
+              });
+            }
+          }
         } else {
-          // 追加
-          state.records = [...state.records, ...importedRecords];
-          addAuditLog('import', `导入数据（追加${importedRecords.length}条）`);
-          showToast(`已追加 ${importedRecords.length} 条记录`, 'success');
-        }
-      } else {
-        state.records = importedRecords;
-        addAuditLog('import', `导入数据（${importedRecords.length}条）`);
-        showToast(`已导入 ${importedRecords.length} 条记录`, 'success');
-      }
+          // ===== 流水账格式（原鼎炬账本格式）=====
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+          
+          if (jsonData.length === 0) {
+            showToast('Excel文件中没有数据', 'warning');
+            resolve([]);
+            return;
+          }
 
-      saveData();
-      renderAll();
+          importedRecords = jsonData.map((row, index) => {
+            const dateVal = row['日期'];
+            let dateStr = formatDate(new Date());
+            if (dateVal) {
+              if (typeof dateVal === 'number') {
+                const excelDate = new Date((dateVal - 25569) * 86400 * 1000);
+                dateStr = formatDate(excelDate);
+              } else {
+                const parsed = new Date(dateVal);
+                if (!isNaN(parsed.getTime())) {
+                  dateStr = formatDate(parsed);
+                }
+              }
+            }
+
+            const quantity = parseFloat(row['件数']) || 0;
+            const weightPerPiece = parseFloat(row['每件重量(斤)']) || parseFloat(row['每件重量']) || 0;
+            const unitPrice = parseFloat(row['单价(元/斤)']) || parseFloat(row['单价']) || 0;
+            const totalAmountRaw = parseFloat(row['总价']);
+            const totalAmount = !isNaN(totalAmountRaw) ? totalAmountRaw : quantity * weightPerPiece * unitPrice;
+            const paidAmount = parseFloat(row['已收款']) || 0;
+
+            return {
+              id: 'imp_' + Date.now().toString(36) + '_' + index,
+              date: dateStr,
+              customerName: String(row['客户名称'] || '').trim(),
+              doorNo: String(row['门牌号'] || '').trim(),
+              invoiceNo: String(row['发票单号'] || '').trim(),
+              style: String(row['产品款式'] || '').trim(),
+              quantity: quantity,
+              weightPerPiece: weightPerPiece,
+              unitPrice: unitPrice,
+              totalAmount: totalAmount,
+              paidAmount: paidAmount,
+              createdAt: new Date().toISOString()
+            };
+          }).filter(r => r.customerName);
+        }
+
+        if (importedRecords.length === 0) {
+          showToast(`文件"${file.name}"中未找到有效的单据数据`, 'warning');
+          resolve([]);
+          return;
+        }
+
+        resolve(importedRecords);
+      } catch (e) {
+        console.error('Excel导入失败', e);
+        showToast(`文件"${file.name}"导入失败：` + e.message, 'error');
+        reject(e);
+      }
+    };
+    reader.onerror = function() {
+      showToast('文件读取失败', 'error');
+      reject(new Error('文件读取失败'));
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+// 批量导入Excel文件
+async function importMultipleExcel(files) {
+  if (!files || files.length === 0) return;
+  
+  let allRecords = [];
+  let successCount = 0;
+  let failCount = 0;
+  
+  showToast(`正在导入 ${files.length} 个文件...`, 'info', 2000);
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    try {
+      const records = await importFromExcel(file);
+      if (records.length > 0) {
+        allRecords = allRecords.concat(records);
+        successCount++;
+      }
     } catch (e) {
-      console.error('Excel导入失败', e);
-      showToast('导入失败：' + e.message, 'error');
+      failCount++;
     }
-  };
-  reader.onerror = function() {
-    showToast('文件读取失败', 'error');
-  };
-  reader.readAsArrayBuffer(file);
+  }
+  
+  if (allRecords.length === 0) {
+    showToast('未找到有效的单据数据', 'warning');
+    return;
+  }
+
+  // 询问是追加还是替换
+  if (state.records.length > 0) {
+    if (!confirm(`共从 ${successCount} 个文件中导入 ${allRecords.length} 条记录。\n点击"确定"追加到现有数据，点击"取消"替换现有数据。`)) {
+      state.records = allRecords;
+      addAuditLog('import', `批量导入数据（替换为${allRecords.length}条，来自${successCount}个文件）`);
+      showToast(`已替换为 ${allRecords.length} 条记录`, 'success');
+    } else {
+      state.records = [...state.records, ...allRecords];
+      addAuditLog('import', `批量导入数据（追加${allRecords.length}条，来自${successCount}个文件）`);
+      showToast(`已追加 ${allRecords.length} 条记录`, 'success');
+    }
+  } else {
+    state.records = allRecords;
+    addAuditLog('import', `批量导入数据（${allRecords.length}条，来自${successCount}个文件）`);
+    showToast(`已导入 ${allRecords.length} 条记录`, 'success');
+  }
+
+  saveData();
+  renderAll();
 }
 
 // ===== Toast =====
@@ -4335,14 +4703,17 @@ function bindEvents() {
     document.getElementById('excelFileInput').click();
   });
 
-  // Excel文件选择
+  // Excel文件选择（支持批量）
   document.getElementById('excelFileInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      importFromExcel(file);
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      importMultipleExcel(files);
       e.target.value = '';
     }
   });
+
+  // 按客户导出对账单
+  document.getElementById('exportStatementBtn').addEventListener('click', exportStatementsByCustomer);
 
   // 设置 - 清空数据
   document.getElementById('clearDataBtn').addEventListener('click', () => {
@@ -4426,6 +4797,13 @@ function bindEvents() {
 
 
 // ===== 登录验证（多用户版） =====
+// iframe环境自动登录（必须在最前面执行）
+if (window.self !== window.top) {
+  try {
+    sessionStorage.setItem('dingju_ledger_logged_in', 'true');
+    sessionStorage.setItem('dingju_ledger_current_user', 'admin');
+  } catch(e) {}
+}
 const LOGIN_KEY = 'dingju_ledger_logged_in';
 const CURRENT_USER_KEY = 'dingju_ledger_current_user';
 const USERS_KEY = 'dingju_ledger_users';
@@ -4557,11 +4935,6 @@ function bindLoginEvents() {
 // ===== 初始化 =====
 function init() {
   bindLoginEvents();
-  // iframe环境自动登录（主入口已验证身份）
-  if (window.self !== window.top) {
-    sessionStorage.setItem(LOGIN_KEY, 'true');
-    sessionStorage.setItem(CURRENT_USER_KEY, 'admin');
-  }
   loadData();
     initCloudSync();
     bindCloudSyncEvents();
