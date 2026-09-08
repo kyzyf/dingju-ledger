@@ -2186,7 +2186,7 @@ body::before {
     <div class="login-input-wrap">
       <input type="password" class="login-input" id="loginPassword" placeholder="请输入密码" autocomplete="off">
     </div>
-    <button type="button" class="login-btn" id="loginSubmitBtn" onclick="if(window.doLogin) doLogin();">登 录</button>
+    <button type="button" class="login-btn" id="loginSubmitBtn" onclick="alert(typeof doLogin); if(typeof doLogin==='function') doLogin();">登 录</button>
   </form>
   <div class="login-error" id="loginError"></div>
   <div class="login-version">DINGJU LEDGER v4.0 &nbsp;|&nbsp; 默认账号 admin / zhangsan / lisi</div>
