@@ -4369,6 +4369,7 @@ function importFromExcel(file) {
             return;
           }
 
+          const importBatchId = Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 4);
           importedRecords = jsonData.map((row, index) => {
             const dateVal = row['日期'];
             let dateStr = formatDate(new Date());
@@ -4380,6 +4381,13 @@ function importFromExcel(file) {
                 const parsed = new Date(dateVal);
                 if (!isNaN(parsed.getTime())) {
                   dateStr = formatDate(parsed);
+                } else {
+                  // 尝试解析字符串日期
+                  const strDate = String(dateVal).trim();
+                  const m = strDate.match(/(\d{4})[-\/年](\d{1,2})[-\/月](\d{1,2})/);
+                  if (m) {
+                    dateStr = `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+                  }
                 }
               }
             }
@@ -4392,7 +4400,7 @@ function importFromExcel(file) {
             const paidAmount = parseFloat(row['已收款']) || 0;
 
             return {
-              id: 'imp_' + Date.now().toString(36) + '_' + index,
+              id: 'imp_' + importBatchId + '_' + index,
               date: dateStr,
               customerName: String(row['客户名称'] || '').trim(),
               doorNo: String(row['门牌号'] || '').trim(),
@@ -4436,6 +4444,7 @@ async function importMultipleExcel(files) {
   let allRecords = [];
   let successCount = 0;
   let failCount = 0;
+  let failDetails = [];
   
   showToast(`正在导入 ${files.length} 个文件...`, 'info', 2000);
   
@@ -4446,9 +4455,12 @@ async function importMultipleExcel(files) {
       if (records.length > 0) {
         allRecords = allRecords.concat(records);
         successCount++;
+      } else {
+        failDetails.push(`${file.name}（无有效数据）`);
       }
     } catch (e) {
       failCount++;
+      failDetails.push(`${file.name}（${e.message}）`);
     }
   }
   
@@ -4457,25 +4469,54 @@ async function importMultipleExcel(files) {
     return;
   }
 
+  // 计算导入数据的日期范围
+  const dates = allRecords.map(r => r.date).filter(d => d);
+  const minDate = dates.length > 0 ? dates.reduce((a, b) => a < b ? a : b) : '';
+  const maxDate = dates.length > 0 ? dates.reduce((a, b) => a > b ? a : b) : '';
+  const dateRangeText = minDate && maxDate && minDate !== maxDate ? `${minDate} 至 ${maxDate}` : (minDate || '');
+
   // 询问是追加还是替换
+  let action = 'import';
   if (state.records.length > 0) {
-    if (!confirm(`共从 ${successCount} 个文件中导入 ${allRecords.length} 条记录。\n点击"确定"追加到现有数据，点击"取消"替换现有数据。`)) {
+    const msg = `共从 ${successCount} 个文件中导入 ${allRecords.length} 条记录` +
+      (dateRangeText ? `\n日期范围：${dateRangeText}` : '') +
+      (failDetails.length > 0 ? `\n${failDetails.length} 个文件未成功：\n${failDetails.slice(0,3).join('\n')}${failDetails.length > 3 ? '\n...' : ''}` : '') +
+      `\n\n点击"确定"追加到现有数据，点击"取消"替换现有数据。`;
+    if (!confirm(msg)) {
       state.records = allRecords;
-      addAuditLog('import', `批量导入数据（替换为${allRecords.length}条，来自${successCount}个文件）`);
-      showToast(`已替换为 ${allRecords.length} 条记录`, 'success');
+      action = 'replace';
+      addAuditLog('import', `批量导入数据（替换为${allRecords.length}条，来自${successCount}个文件，日期${dateRangeText}）`);
     } else {
       state.records = [...state.records, ...allRecords];
-      addAuditLog('import', `批量导入数据（追加${allRecords.length}条，来自${successCount}个文件）`);
-      showToast(`已追加 ${allRecords.length} 条记录`, 'success');
+      action = 'append';
+      addAuditLog('import', `批量导入数据（追加${allRecords.length}条，来自${successCount}个文件，日期${dateRangeText}）`);
     }
   } else {
     state.records = allRecords;
-    addAuditLog('import', `批量导入数据（${allRecords.length}条，来自${successCount}个文件）`);
-    showToast(`已导入 ${allRecords.length} 条记录`, 'success');
+    addAuditLog('import', `批量导入数据（${allRecords.length}条，来自${successCount}个文件，日期${dateRangeText}）`);
   }
 
   saveData();
+
+  // 关键修复：导入后自动跳转到导入数据的最早日期，确保用户能看到数据
+  if (minDate) {
+    state.currentDate = new Date(minDate + 'T00:00:00');
+  }
+
   renderAll();
+
+  // 显示详细的导入结果
+  const actionText = action === 'replace' ? '已替换为' : (action === 'append' ? '已追加' : '已导入');
+  const successMsg = `${actionText} ${allRecords.length} 条记录` +
+    (dateRangeText ? `（${dateRangeText}）` : '') +
+    `，页面已自动跳转至 ${minDate ? formatDateCN(new Date(minDate + 'T00:00:00')) : '当天'}`;
+  showToast(successMsg, 'success', 4000);
+
+  if (failDetails.length > 0) {
+    setTimeout(() => {
+      showToast(`${failDetails.length} 个文件未成功导入`, 'warning', 3000);
+    }, 4200);
+  }
 }
 
 // ===== Toast =====
