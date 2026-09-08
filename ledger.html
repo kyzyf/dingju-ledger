@@ -2179,14 +2179,14 @@ body::before {
   </div>
   <div class="login-title">鼎炬账本</div>
   <div class="login-subtitle">金属加工记账系统</div>
-  <form id="loginForm" onsubmit="doLogin();return false;">
+  <form id="loginForm" onsubmit="return false;">
     <div class="login-input-wrap">
       <input type="text" class="login-input" id="loginUsername" placeholder="请输入账号" autocomplete="off">
     </div>
     <div class="login-input-wrap">
       <input type="password" class="login-input" id="loginPassword" placeholder="请输入密码" autocomplete="off">
     </div>
-    <button type="submit" class="login-btn" id="loginSubmitBtn" onclick="doLogin();return false;">登 录</button>
+    <button type="button" class="login-btn" id="loginSubmitBtn" onclick="doLogin();">登 录</button>
   </form>
   <div class="login-error" id="loginError"></div>
   <div class="login-version">DINGJU LEDGER v4.0 &nbsp;|&nbsp; 默认账号 admin / zhangsan / lisi</div>
