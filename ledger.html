@@ -404,6 +404,63 @@ body::before {
   color: var(--text-muted);
 }
 
+/* ===== 批量导入查看全部提示条 ===== */
+.import-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: linear-gradient(90deg, var(--accent-dim), transparent);
+  border-bottom: 1px solid var(--accent);
+  gap: 12px;
+}
+
+.import-banner-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--accent);
+  font-weight: 500;
+  min-width: 0;
+}
+
+.import-banner-info svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.import-banner-info span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.import-banner-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.import-banner-close:hover {
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.import-banner-close svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* ===== 统计摘要 ===== */
 .summary-bar {
   padding: 10px 12px;
@@ -2203,6 +2260,17 @@ body::before {
       </div>
     </div>
 
+    <!-- 批量导入查看全部提示条 -->
+    <div class="import-banner" id="importBanner" style="display:none;">
+      <div class="import-banner-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span id="importBannerText">正在查看全部导入数据</span>
+      </div>
+      <button class="import-banner-close" id="importBannerClose" title="返回单日视图">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
     <!-- 统计摘要 -->
     <div class="summary-bar" id="summaryBar">
       <div class="summary-item">
@@ -2869,7 +2937,9 @@ let state = {
   calendarViewDate: new Date(),
   pendingDeleteId: null,
   pendingDeleteTimer: null,
-  modalStack: []  // 逐级导航栈：记录弹窗打开顺序，支持逐级返回
+  modalStack: [],  // 逐级导航栈：记录弹窗打开顺序，支持逐级返回
+  importViewAll: false,  // 批量导入后查看全部导入数据模式
+  importViewInfo: null   // 导入信息提示：{count, fileCount, dateRange}
 };
 
 // 加载数据
@@ -3010,6 +3080,9 @@ function getFilteredRecords() {
       (r.invoiceNo && r.invoiceNo.toLowerCase().includes(q)) ||
       (r.doorNo && r.doorNo.toLowerCase().includes(q))
     );
+  } else if (state.importViewAll) {
+    // 批量导入后查看全部模式：显示所有导入的数据（不限日期）
+    records = state.records;
   } else {
     records = getRecordsByDate(state.currentDate);
   }
@@ -3155,6 +3228,31 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// 渲染批量导入查看全部提示条
+function renderImportBanner() {
+  const banner = document.getElementById('importBanner');
+  const textEl = document.getElementById('importBannerText');
+  if (!banner || !textEl) return;
+
+  if (state.importViewAll && state.importViewInfo) {
+    const info = state.importViewInfo;
+    const actionText = info.action === 'replace' ? '已替换' : (info.action === 'append' ? '已追加' : '已导入');
+    textEl.textContent = `${actionText} ${info.count} 条记录（来自 ${info.fileCount} 个文件${info.dateRange ? '，' + info.dateRange : ''}），当前显示全部导入数据`;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// 退出批量导入查看全部模式，返回单日视图
+function exitImportViewAll() {
+  if (state.importViewAll) {
+    state.importViewAll = false;
+    state.importViewInfo = null;
+    renderImportBanner();
+  }
 }
 
 function renderAll() {
@@ -3844,6 +3942,7 @@ function renderCalendar() {
   document.querySelectorAll('.calendar-day').forEach(day => {
     day.addEventListener('click', () => {
       state.currentDate = new Date(day.dataset.date);
+      exitImportViewAll();
       closeModal('datePickerModal');
       renderAll();
     });
@@ -4498,18 +4597,24 @@ async function importMultipleExcel(files) {
 
   saveData();
 
-  // 关键修复：导入后自动跳转到导入数据的最早日期，确保用户能看到数据
-  if (minDate) {
-    state.currentDate = new Date(minDate + 'T00:00:00');
-  }
+  // 修复：批量导入后进入"查看全部导入数据"模式，显示所有文件的所有日期数据
+  // 而不是只跳转到最早日期（之前会导致只看到第一个文件的数据）
+  state.importViewAll = true;
+  state.importViewInfo = {
+    count: allRecords.length,
+    fileCount: successCount,
+    dateRange: dateRangeText,
+    action: action
+  };
 
   renderAll();
+  renderImportBanner();
 
   // 显示详细的导入结果
   const actionText = action === 'replace' ? '已替换为' : (action === 'append' ? '已追加' : '已导入');
   const successMsg = `${actionText} ${allRecords.length} 条记录` +
     (dateRangeText ? `（${dateRangeText}）` : '') +
-    `，页面已自动跳转至 ${minDate ? formatDateCN(new Date(minDate + 'T00:00:00')) : '当天'}`;
+    `，来自 ${successCount} 个文件，当前显示全部导入数据`;
   showToast(successMsg, 'success', 4000);
 
   if (failDetails.length > 0) {
@@ -4596,13 +4701,25 @@ function switchView(view) {
 
 // ===== 事件绑定 =====
 function bindEvents() {
+  // 批量导入提示条关闭按钮：返回单日视图
+  const importBannerClose = document.getElementById('importBannerClose');
+  if (importBannerClose) {
+    importBannerClose.addEventListener('click', () => {
+      exitImportViewAll();
+      renderAll();
+      showToast('已返回单日视图', 'info', 1500);
+    });
+  }
+
   // 日期导航
   document.getElementById('prevDayBtn').addEventListener('click', () => {
     state.currentDate = addDays(state.currentDate, -1);
+    exitImportViewAll();
     renderAll();
   });
   document.getElementById('nextDayBtn').addEventListener('click', () => {
     state.currentDate = addDays(state.currentDate, 1);
+    exitImportViewAll();
     renderAll();
   });
   document.getElementById('dateDisplay').addEventListener('click', openDatePicker);
@@ -4818,6 +4935,7 @@ function bindEvents() {
         // 向左滑，后一天
         state.currentDate = addDays(state.currentDate, 1);
       }
+      exitImportViewAll();
       renderAll();
     }
   }, { passive: true });
