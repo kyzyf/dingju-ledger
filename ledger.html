@@ -2677,12 +2677,6 @@ let supabaseClient = null;
 let cloudSyncEnabled = false;
 let isSyncing = false;
 
-// ===== 云端同步 (Supabase) =====
-const CLOUD_CONFIG_KEY = 'dingju_cloud_config';
-let supabaseClient = null;
-let cloudSyncEnabled = false;
-let isSyncing = false;
-
 // 带超时的自定义fetch（解决iOS Safari "Load failed" 问题）
 function fetchWithTimeout(url, options = {}) {
   const controller = new AbortController();
