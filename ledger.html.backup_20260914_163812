@@ -1990,10 +1990,6 @@ body::before {
     padding: 10px 12px;
     padding-bottom: calc(var(--bottom-nav-height) + 80px);
   }
-  .receipt-list {
-    padding: 10px 12px;
-    padding-bottom: calc(var(--bottom-nav-height) + 80px);
-  }
   .form-row-3 {
     grid-template-columns: 1fr 1fr;
   }
@@ -2029,24 +2025,11 @@ body::before {
   .record-list {
     padding-bottom: 80px;
   }
-  .receipt-list {
-    padding-bottom: 80px;
-  }
 }
 
 /* 大屏优化 */
 @media (min-width: 1024px) {
   .record-list {
-    max-width: 800px;
-    margin: 0 auto;
-    width: 100%;
-  }
-  .receipt-list {
-    max-width: 800px;
-    margin: 0 auto;
-    width: 100%;
-  }
-  .receipt-filter-tabs {
     max-width: 800px;
     margin: 0 auto;
     width: 100%;
@@ -2060,8 +2043,7 @@ body::before {
 
 /* 隐藏滚动条但保留功能 */
 .modal-body::-webkit-scrollbar,
-.record-list::-webkit-scrollbar,
-.receipt-list::-webkit-scrollbar {
+.record-list::-webkit-scrollbar {
   width: 4px;
 }
 
@@ -2169,179 +2151,6 @@ body::before {
   border-bottom: 10px solid rgba(30,30,30,0.92);
 }
 
-/* ===== 收货单模块样式 ===== */
-.receipt-view { display: none; }
-.receipt-view.active { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
-.records-view { display: block; }
-.records-view.hidden { display: none; }
-
-.receipt-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px 16px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.receipt-filter-tabs {
-  display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.receipt-filter-tab {
-  padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
-  background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6);
-  border: 1px solid rgba(255,255,255,0.08); cursor: pointer; white-space: nowrap;
-  transition: all 0.2s;
-}
-.receipt-filter-tab.active {
-  background: linear-gradient(135deg, #dc2626, #ef4444); color: #fff;
-  border-color: transparent; box-shadow: 0 2px 8px rgba(220,38,38,0.3);
-}
-.receipt-filter-tab .count { font-size: 11px; opacity: 0.8; margin-left: 4px; }
-
-.receipt-card {
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px; padding: 14px 16px; margin: 8px 16px; cursor: pointer;
-  transition: all 0.2s;
-}
-.receipt-card:active { transform: scale(0.98); background: rgba(255,255,255,0.07); }
-.receipt-card-header {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
-}
-.receipt-card-customer { font-size: 16px; font-weight: 600; color: #fff; }
-.receipt-card-batch { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
-.receipt-status {
-  font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 10px; white-space: nowrap;
-}
-.receipt-status.pending { background: rgba(251,191,36,0.15); color: #fbbf24; }
-.receipt-status.processing { background: rgba(59,130,246,0.15); color: #60a5fa; }
-.receipt-status.partial { background: rgba(168,85,247,0.15); color: #c084fc; }
-.receipt-status.done { background: rgba(34,197,94,0.15); color: #4ade80; }
-
-.receipt-card-product { font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 6px; }
-.receipt-card-meta { font-size: 12px; color: rgba(255,255,255,0.45); margin-bottom: 10px; }
-.receipt-card-weights {
-  display: flex; gap: 12px; padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-.receipt-weight-item { flex: 1; text-align: center; }
-.receipt-weight-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 3px; }
-.receipt-weight-value { font-size: 15px; font-weight: 600; color: #fff; }
-.receipt-weight-value.receive { color: #60a5fa; }
-.receipt-weight-value.shipped { color: #4ade80; }
-.receipt-weight-value.remaining { color: #fbbf24; }
-.receipt-weight-value.over { color: #f87171; }
-
-.receipt-empty {
-  text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.35);
-}
-.receipt-empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
-.receipt-empty-text { font-size: 14px; }
-
-/* 重量录入模式切换 */
-.weight-mode-tabs {
-  display: flex; gap: 6px; margin-bottom: 12px;
-  background: rgba(255,255,255,0.05); border-radius: 8px; padding: 3px;
-}
-.weight-mode-tab {
-  flex: 1; padding: 8px 4px; text-align: center; font-size: 12px;
-  border-radius: 6px; cursor: pointer; color: rgba(255,255,255,0.5);
-  transition: all 0.2s;
-}
-.weight-mode-tab.active {
-  background: rgba(255,255,255,0.1); color: #fff; font-weight: 600;
-}
-.weight-calc-result {
-  background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.2);
-  border-radius: 8px; padding: 10px 14px; margin-top: 10px;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.weight-calc-label { font-size: 13px; color: rgba(255,255,255,0.6); }
-.weight-calc-value { font-size: 18px; font-weight: 700; color: #ef4444; }
-
-/* 拍照上传 */
-.photo-upload-area {
-  border: 2px dashed rgba(255,255,255,0.15); border-radius: 10px;
-  padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s;
-  margin-bottom: 12px;
-}
-.photo-upload-area:active { border-color: #dc2626; background: rgba(220,38,38,0.05); }
-.photo-upload-icon { font-size: 32px; margin-bottom: 6px; }
-.photo-upload-text { font-size: 13px; color: rgba(255,255,255,0.5); }
-.photo-preview-wrap { position: relative; margin-bottom: 12px; }
-.photo-preview {
-  width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px;
-  background: #000;
-}
-.photo-remove-btn {
-  position: absolute; top: 8px; right: 8px; width: 28px; height: 28px;
-  background: rgba(0,0,0,0.6); border: none; border-radius: 50%; color: #fff;
-  font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-
-/* 收货单详情 */
-.receipt-detail-section { margin-bottom: 18px; }
-.receipt-detail-title {
-  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5);
-  margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
-}
-.receipt-detail-row {
-  display: flex; justify-content: space-between; padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;
-}
-.receipt-detail-label { color: rgba(255,255,255,0.5); }
-.receipt-detail-value { color: #fff; font-weight: 500; text-align: right; max-width: 60%; }
-.receipt-detail-photo {
-  width: 100%; border-radius: 8px; margin-top: 8px; cursor: pointer;
-}
-.receipt-shipment-item {
-  background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 12px;
-  margin-bottom: 8px; font-size: 13px;
-}
-.receipt-shipment-date { color: rgba(255,255,255,0.5); font-size: 12px; }
-.receipt-shipment-weight { color: #4ade80; font-weight: 600; }
-.receipt-shipment-amount { color: #fbbf24; }
-
-/* 选择收货单弹窗 */
-.select-receipt-item {
-  padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.06);
-  cursor: pointer; transition: background 0.2s;
-}
-.select-receipt-item:active { background: rgba(255,255,255,0.05); }
-.select-receipt-item.selected { background: rgba(220,38,38,0.1); border-left: 3px solid #dc2626; }
-.select-receipt-customer { font-size: 14px; font-weight: 600; color: #fff; }
-.select-receipt-info { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
-.select-receipt-remaining { font-size: 12px; color: #fbbf24; margin-top: 4px; }
-
-/* 关联收货单提示条 */
-.linked-receipt-bar {
-  background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
-  border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.linked-receipt-info { font-size: 13px; color: #4ade80; }
-.linked-receipt-clear { font-size: 12px; color: rgba(255,255,255,0.5); cursor: pointer; }
-
-/* 重量异常警告 */
-.weight-warning {
-  background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3);
-  border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 13px;
-  color: #f87171; display: none;
-}
-.weight-warning.show { display: block; }
-
-/* 打印样式 */
-@media print {
-  body * { visibility: hidden; }
-  .print-area, .print-area * { visibility: visible; }
-  .print-area { position: absolute; left: 0; top: 0; width: 100%; background: #fff; color: #000; padding: 20px; }
-  .print-area .receipt-print-title { font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 10px; }
-  .print-area .receipt-print-sub { font-size: 14px; text-align: center; margin-bottom: 20px; color: #333; }
-  .print-area table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-  .print-area th, .print-area td { border: 1px solid #333; padding: 8px; text-align: left; font-size: 13px; }
-  .print-area th { background: #f0f0f0; }
-  .print-area .signature-row { display: flex; justify-content: space-between; margin-top: 40px; font-size: 14px; }
-}
-
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2393,10 +2202,6 @@ body::before {
       </div>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-item" data-view="receipts">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 2v4a2 2 0 0 0 2 2h4"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        收货记录
-      </div>
       <div class="nav-item active" data-view="records">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11H5a2 2 0 0 0-2 2v7h18v-7a2 2 0 0 0-2-2h-4"/><path d="M9 11V7a3 3 0 0 1 6 0v4"/></svg>
         单据记录
@@ -2466,8 +2271,6 @@ body::before {
       </button>
     </div>
 
-    <!-- 单据视图 -->
-    <div class="records-view" id="recordsView">
     <!-- 统计摘要 -->
     <div class="summary-bar" id="summaryBar">
       <div class="summary-item">
@@ -2492,35 +2295,14 @@ body::before {
     <div class="record-list" id="recordList">
       <!-- 动态渲染 -->
     </div>
-    </div><!-- /records-view -->
-
-    <!-- 收货视图 -->
-    <div class="receipt-view" id="receiptsView">
-      <!-- 收货筛选标签 -->
-      <div class="receipt-filter-tabs" id="receiptFilterTabs">
-        <div class="receipt-filter-tab active" data-status="all">全部<span class="count" id="receiptCountAll">0</span></div>
-        <div class="receipt-filter-tab" data-status="pending">待加工<span class="count" id="receiptCountPending">0</span></div>
-        <div class="receipt-filter-tab" data-status="processing">加工中<span class="count" id="receiptCountProcessing">0</span></div>
-        <div class="receipt-filter-tab" data-status="partial">部分出货<span class="count" id="receiptCountPartial">0</span></div>
-        <div class="receipt-filter-tab" data-status="done">已完成<span class="count" id="receiptCountDone">0</span></div>
-      </div>
-      <!-- 收货单列表 -->
-      <div class="receipt-list" id="receiptList">
-        <!-- 动态渲染 -->
-      </div>
-    </div><!-- /receipts-view -->
 
     <!-- 浮动添加按钮 -->
-    <button class="fab" id="addBtn" title="新增">
+    <button class="fab" id="addBtn" title="新增单据">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
 
     <!-- 底部导航（手机） -->
     <nav class="bottom-nav">
-      <div class="bottom-nav-item" data-view="receipts">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 2v4a2 2 0 0 0 2 2h4"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        收货
-      </div>
       <div class="bottom-nav-item active" data-view="records">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11H5a2 2 0 0 0-2 2v7h18v-7a2 2 0 0 0-2-2h-4"/><path d="M9 11V7a3 3 0 0 1 6 0v4"/></svg>
         单据
@@ -2559,22 +2341,6 @@ body::before {
             <input type="text" class="form-input" id="customerName" placeholder="输入客户名称" autocomplete="off" required>
             <div class="autocomplete-dropdown" id="customerAutocomplete"></div>
           </div>
-        </div>
-        <!-- 关联收货单 -->
-        <div class="form-group">
-          <button type="button" class="btn btn-secondary" id="linkReceiptBtn" style="width:100%;justify-content:center;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            关联收货单（可选）
-          </button>
-        </div>
-        <!-- 已关联收货单提示 -->
-        <div class="linked-receipt-bar" id="linkedReceiptBar" style="display:none;">
-          <div class="linked-receipt-info" id="linkedReceiptInfo">已关联收货单</div>
-          <span class="linked-receipt-clear" id="clearLinkedReceipt">取消关联</span>
-        </div>
-        <!-- 重量异常警告 -->
-        <div class="weight-warning" id="weightWarning">
-          ⚠️ 出货重量超过收货单剩余重量，请确认是否继续
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -2646,172 +2412,6 @@ body::before {
       <button class="btn btn-danger" id="deleteRecordBtn">删除</button>
       <button class="btn btn-secondary" id="viewCustomerBtn">客户档案</button>
       <button class="btn btn-primary" id="editRecordBtn">编辑</button>
-    </div>
-  </div>
-</div>
-
-<!-- 收货单新增/编辑弹窗 -->
-<div class="modal-overlay" id="receiptModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="receiptModalTitle">新增收货单</div>
-      <button class="modal-close" data-close="receiptModal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <form id="receiptForm">
-        <input type="hidden" id="receiptId">
-        <div class="form-group">
-          <label class="form-label">客户名称<span class="required">*</span></label>
-          <div class="autocomplete-wrap">
-            <input type="text" class="form-input" id="receiptCustomerName" placeholder="输入或选择客户" autocomplete="off" required>
-            <div class="autocomplete-dropdown" id="receiptCustomerAutocomplete"></div>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">发票号/批次号<span class="required">*</span></label>
-            <input type="text" class="form-input" id="receiptBatchNo" placeholder="如 FP26032001" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">收货日期</label>
-            <input type="date" class="form-input" id="receiptDate">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">商品全名<span class="required">*</span></label>
-            <input type="text" class="form-input" id="receiptProduct" placeholder="如 梅花3*13" autocomplete="off">
-          </div>
-          <div class="form-group">
-            <label class="form-label">材质</label>
-            <input type="text" class="form-input" id="receiptMaterial" placeholder="如 22A" autocomplete="off">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">加工工艺</label>
-          <input type="text" class="form-input" id="receiptProcess" placeholder="如 调质 / 发黑调质" autocomplete="off">
-        </div>
-
-        <!-- 重量录入模式切换 -->
-        <div class="form-group">
-          <label class="form-label">收货重量（斤）<span class="required">*</span></label>
-          <div class="weight-mode-tabs">
-            <div class="weight-mode-tab active" data-mode="direct">直接填总重</div>
-            <div class="weight-mode-tab" data-mode="piece">件数×130+零头</div>
-            <div class="weight-mode-tab" data-mode="custom">件数×每件重</div>
-          </div>
-          <!-- 模式A：直接填总重 -->
-          <div id="weightModeDirect">
-            <input type="number" class="form-input" id="receiptWeight" placeholder="输入总斤数" step="0.01" min="0">
-          </div>
-          <!-- 模式B：件数×130+零头 -->
-          <div id="weightModePiece" style="display:none;">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" style="font-size:12px;">件数</label>
-                <input type="number" class="form-input" id="receiptPieceCount" placeholder="0" step="1" min="0">
-              </div>
-              <div class="form-group">
-                <label class="form-label" style="font-size:12px;">零头(斤)</label>
-                <input type="number" class="form-input" id="receiptPieceRemainder" placeholder="0" step="0.01" min="0">
-              </div>
-            </div>
-            <div class="weight-calc-result">
-              <span class="weight-calc-label">件数×130+零头 =</span>
-              <span class="weight-calc-value" id="receiptPieceCalc">0 斤</span>
-            </div>
-          </div>
-          <!-- 模式C：件数×每件重量 -->
-          <div id="weightModeCustom" style="display:none;">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" style="font-size:12px;">件数</label>
-                <input type="number" class="form-input" id="receiptCustomCount" placeholder="0" step="1" min="0">
-              </div>
-              <div class="form-group">
-                <label class="form-label" style="font-size:12px;">每件斤数</label>
-                <input type="number" class="form-input" id="receiptCustomWeight" placeholder="0" step="0.01" min="0">
-              </div>
-            </div>
-            <div class="weight-calc-result">
-              <span class="weight-calc-label">件数×每件重 =</span>
-              <span class="weight-calc-value" id="receiptCustomCalc">0 斤</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 收货单照片 -->
-        <div class="form-group">
-          <label class="form-label">收货单照片<span class="required">*</span></label>
-          <div id="receiptPhotoUpload" class="photo-upload-area">
-            <div class="photo-upload-icon">📷</div>
-            <div class="photo-upload-text">点击拍照或上传收货单</div>
-            <input type="file" id="receiptPhotoInput" accept="image/*" capture="environment" style="display:none;">
-          </div>
-          <div id="receiptPhotoPreview" class="photo-preview-wrap" style="display:none;">
-            <img id="receiptPhotoImg" class="photo-preview" alt="收货单照片">
-            <button type="button" class="photo-remove-btn" id="receiptPhotoRemove">×</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">备注</label>
-          <textarea class="form-input" id="receiptRemark" rows="2" placeholder="特殊要求、件数计算式等" style="resize:vertical;"></textarea>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" data-close="receiptModal">取消</button>
-      <button class="btn btn-primary" id="saveReceiptBtn">保存</button>
-    </div>
-  </div>
-</div>
-
-<!-- 收货单详情弹窗 -->
-<div class="modal-overlay" id="receiptDetailModal">
-  <div class="modal">
-    <div class="modal-header">
-      <button class="modal-back-btn" style="display:none;width:32px;height:32px;border:none;background:transparent;color:var(--text-muted);border-radius:var(--radius-sm);cursor:pointer;align-items:center;justify-content:center;margin-right:8px;" onclick="popModal()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="modal-title">收货单详情</div>
-      <button class="modal-close" data-close="receiptDetailModal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body" id="receiptDetailBody">
-      <!-- 动态渲染 -->
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-danger" id="deleteReceiptBtn">删除</button>
-      <button class="btn btn-secondary" id="printReceiptBtn">打印</button>
-      <button class="btn btn-primary" id="editReceiptBtn">编辑</button>
-    </div>
-  </div>
-</div>
-
-<!-- 选择收货单弹窗 -->
-<div class="modal-overlay" id="selectReceiptModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">选择收货单</div>
-      <button class="modal-close" data-close="selectReceiptModal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group" style="margin-bottom:12px;">
-        <input type="text" class="form-input" id="selectReceiptSearch" placeholder="搜索客户名或批次号..." autocomplete="off">
-      </div>
-      <div id="selectReceiptList" style="max-height:400px;overflow-y:auto;">
-        <!-- 动态渲染 -->
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" data-close="selectReceiptModal">取消</button>
-      <button class="btn btn-primary" id="confirmSelectReceiptBtn" disabled>确定选择</button>
     </div>
   </div>
 </div>
@@ -3146,7 +2746,6 @@ async function syncToCloud() {
     const payload = {
       id: 'dingju_ledger_data',
       records: state.records,
-      receipts: receiptState.receipts,
       settings: state.settings,
       updated_at: new Date().toISOString()
     };
@@ -3156,7 +2755,7 @@ async function syncToCloud() {
     );
     if (error) throw error;
     updateSyncStatus('已同步 ' + new Date().toLocaleTimeString());
-    addAuditLog('cloud_sync', `推送到云端（${state.records.length}条单据，${receiptState.receipts.length}条收货单）`);
+    addAuditLog('cloud_sync', `推送到云端（${state.records.length}条）`);
   } catch(e) {
     console.error('云端同步失败:', e);
     const msg = e.name === 'AbortError' ? '请求超时，请检查网络' : (e.message || '未知错误');
@@ -3185,15 +2784,10 @@ async function pullFromCloud() {
     }
     if (data.records) {
       state.records = data.records;
-      if (data.receipts) receiptState.receipts = data.receipts;
       if (data.settings) state.settings = {...state.settings, ...data.settings};
-      addAuditLog('cloud_pull', `从云端拉取数据（${data.records.length}条单据，${(data.receipts||[]).length}条收货单）`);
+      addAuditLog('cloud_pull', `从云端拉取数据（${data.records.length}条）`);
       saveData();
-      saveReceipts();
-      // 数据修复：重新计算收货单已出重量
-      try { recalcAllReceipts(); } catch(e) {}
       renderAll();
-      renderReceiptList();
       updateSyncStatus('拉取成功 ' + new Date().toLocaleTimeString());
       alert('云端数据已拉取到本地');
     } else {
@@ -3836,11 +3430,6 @@ function openRecordModal(recordId = null) {
   const form = document.getElementById('recordForm');
   form.reset();
 
-  // 重置关联收货单状态
-  receiptState.linkedReceiptId = null;
-  document.getElementById('linkedReceiptBar').style.display = 'none';
-  document.getElementById('weightWarning').classList.remove('show');
-
   if (recordId) {
     const record = state.records.find(r => r.id === recordId);
     if (record) {
@@ -3855,17 +3444,6 @@ function openRecordModal(recordId = null) {
       document.getElementById('unitPrice').value = record.unitPrice || '';
       document.getElementById('paidAmount').value = record.paidAmount || '';
       document.getElementById('recordDate').value = record.date || formatDate(new Date());
-
-      // 回显关联收货单
-      if (record.receiptId) {
-        const r = receiptState.receipts.find(x => x.id === record.receiptId);
-        if (r) {
-          receiptState.linkedReceiptId = r.id;
-          const remaining = getReceiptRemaining(r);
-          document.getElementById('linkedReceiptBar').style.display = '';
-          document.getElementById('linkedReceiptInfo').textContent = `已关联：${r.customerName} · ${r.batchNo} · 剩余${remaining}斤`;
-        }
-      }
     }
   } else {
     document.getElementById('recordModalTitle').textContent = '新增单据';
@@ -3874,7 +3452,6 @@ function openRecordModal(recordId = null) {
   }
 
   updateCalcDisplay();
-  checkWeightWarning();
   openModal('recordModal');
   setTimeout(() => document.getElementById('customerName').focus(), 300);
 }
@@ -3905,9 +3482,6 @@ function saveRecord() {
   const paidAmount = parseFloat(document.getElementById('paidAmount').value) || 0;
   const date = document.getElementById('recordDate').value || formatDate(new Date());
 
-  // 解析style获取工艺（用于单价记忆）
-  const styleInfo = parseStyleField(document.getElementById('style').value.trim());
-
   const recordData = {
     customerName,
     doorNo: document.getElementById('doorNo').value.trim(),
@@ -3921,21 +3495,10 @@ function saveRecord() {
     date
   };
 
-  // 关联收货单
-  if (receiptState.linkedReceiptId) {
-    recordData.receiptId = receiptState.linkedReceiptId;
-  }
-
-  let affectedReceiptIds = [];
-
   if (state.editingRecordId) {
     const index = state.records.findIndex(r => r.id === state.editingRecordId);
     if (index !== -1) {
-      const oldReceiptId = state.records[index].receiptId;
       state.records[index] = { ...state.records[index], ...recordData, updatedAt: new Date().toISOString() };
-      // 如果关联关系变了，需要重新计算两个收货单
-      if (oldReceiptId) affectedReceiptIds.push(oldReceiptId);
-      if (receiptState.linkedReceiptId) affectedReceiptIds.push(receiptState.linkedReceiptId);
       showToast('单据已更新', 'success');
       addAuditLog('update', `修改单据：${customerName}，金额¥${totalAmount.toFixed(2)}`);
     }
@@ -3946,28 +3509,13 @@ function saveRecord() {
       createdAt: new Date().toISOString()
     };
     state.records.push(newRecord);
-    if (receiptState.linkedReceiptId) affectedReceiptIds.push(receiptState.linkedReceiptId);
     showToast('单据已保存', 'success');
     addAuditLog('create', `新增单据：${customerName}，金额¥${totalAmount.toFixed(2)}`);
   }
 
-  // 记忆单价（客户+工艺）
-  if (unitPrice > 0) {
-    memorizePrice(customerName, styleInfo.process, unitPrice);
-  }
-
-  // 更新受影响的收货单
-  affectedReceiptIds.forEach(id => recalcReceiptShippedWeight(id));
-  if (affectedReceiptIds.length > 0) saveReceipts();
-
   saveData();
   closeModal('recordModal');
-  // 重置关联状态
-  receiptState.linkedReceiptId = null;
-  document.getElementById('linkedReceiptBar').style.display = 'none';
-  document.getElementById('weightWarning').classList.remove('show');
   renderAll();
-  renderReceiptList();
 }
 
 // ===== 单据详情 =====
@@ -4065,14 +3613,6 @@ function deleteRecord(recordId) {
 
   const deletedRecord = state.records.splice(index, 1)[0];
   addAuditLog('delete', `删除单据：${deletedRecord.customerName}，金额¥${(deletedRecord.totalAmount||0).toFixed(2)}`);
-
-  // 更新关联收货单的已出重量
-  if (deletedRecord.receiptId) {
-    recalcReceiptShippedWeight(deletedRecord.receiptId);
-    saveReceipts();
-    renderReceiptList();
-  }
-
   saveData();
   renderAll();
   closeModal('detailModal');
@@ -4082,12 +3622,6 @@ function deleteRecord(recordId) {
     // 撤销操作
     state.records.push(deletedRecord);
     addAuditLog('create', `恢复已删除单据：${deletedRecord.customerName}`);
-    // 恢复后重新计算收货单
-    if (deletedRecord.receiptId) {
-      recalcReceiptShippedWeight(deletedRecord.receiptId);
-      saveReceipts();
-      renderReceiptList();
-    }
     saveData();
     renderAll();
     showToast('已恢复单据', 'success');
@@ -5191,9 +4725,7 @@ function switchView(view) {
 
   // 根据视图执行操作
   if (view === 'records') {
-    switchToRecordsView();
-  } else if (view === 'receipts') {
-    switchToReceiptsView();
+    // 已经在主页面
   } else if (view === 'monthly') {
     openMonthlyModal();
   } else if (view === 'customers') {
@@ -5260,13 +4792,7 @@ function bindEvents() {
   });
 
   // 添加按钮
-  document.getElementById('addBtn').addEventListener('click', () => {
-    if (state.currentView === 'receipts') {
-      openReceiptModal();
-    } else {
-      openRecordModal();
-    }
-  });
+  document.getElementById('addBtn').addEventListener('click', () => openRecordModal());
 
   // 表单计算
   ['quantity', 'weightPerPiece', 'unitPrice'].forEach(id => {
@@ -5620,16 +5146,11 @@ function bindLoginEvents() {
 function init() {
   bindLoginEvents();
   loadData();
-  loadReceipts();
-  // 数据修复：重新计算所有收货单的已出重量（防止数据不一致）
-  try { recalcAllReceipts(); } catch(e) { console.warn('收货单数据修复跳过', e); }
     initCloudSync();
     bindCloudSyncEvents();
   applySettings();
   bindEvents();
-  initReceiptModule();
   renderAll();
-  renderReceiptList();
   if (!checkLogin()) {
     // 自动登录admin，避免登录按钮点击无响应的问题
     sessionStorage.setItem(LOGIN_KEY, 'true');
@@ -5777,829 +5298,6 @@ window.addEventListener('resize', () => {
   }
 });
 
-
-// ============================================================
-// 收货单模块
-// ============================================================
-const RECEIPT_STORAGE_KEY = 'dingju_receipts';
-const PRICE_MEMORY_KEY = 'dingju_price_memory';
-
-// 收货单状态
-const RECEIPT_STATUS = {
-  PENDING: 'pending',
-  PROCESSING: 'processing',
-  PARTIAL: 'partial',
-  DONE: 'done'
-};
-const RECEIPT_STATUS_TEXT = {
-  pending: '待加工',
-  processing: '加工中',
-  partial: '部分出货',
-  done: '已完成'
-};
-
-// 收货单状态
-let receiptState = {
-  receipts: [],
-  currentFilter: 'all',
-  editingReceiptId: null,
-  selectedReceiptId: null,  // 发货单关联时选中的收货单
-  linkedReceiptId: null,    // 当前发货单已关联的收货单
-  weightMode: 'direct',     // 重量录入模式
-  receiptPhoto: null        // 临时存储照片base64
-};
-
-// 加载收货单
-function loadReceipts() {
-  try {
-    const saved = localStorage.getItem(RECEIPT_STORAGE_KEY);
-    if (saved) {
-      receiptState.receipts = JSON.parse(saved);
-    }
-  } catch (e) {
-    console.error('加载收货单失败', e);
-    receiptState.receipts = [];
-  }
-}
-
-// 保存收货单
-function saveReceipts() {
-  try {
-    localStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(receiptState.receipts));
-  } catch (e) {
-    console.error('保存收货单失败', e);
-    showToast('保存失败，请检查存储空间', 'error');
-  }
-  // 云同步
-  if (typeof cloudSyncEnabled !== 'undefined' && cloudSyncEnabled && !isSyncing) {
-    setTimeout(syncToCloud, 500);
-  }
-}
-
-// 生成收货单ID
-function generateReceiptId() {
-  return 'rcpt_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
-
-// 计算收货单状态
-function calcReceiptStatus(receipt) {
-  if (!receipt.shippedWeight || receipt.shippedWeight <= 0) {
-    return RECEIPT_STATUS.PENDING;
-  }
-  if (receipt.shippedWeight >= receipt.receiveWeight) {
-    return RECEIPT_STATUS.DONE;
-  }
-  return RECEIPT_STATUS.PARTIAL;
-}
-
-// 更新收货单状态（基于已出重量）
-function updateReceiptStatus(receiptId) {
-  const receipt = receiptState.receipts.find(r => r.id === receiptId);
-  if (!receipt) return;
-  receipt.status = calcReceiptStatus(receipt);
-  receipt.updatedAt = new Date().toISOString();
-}
-
-// 重新计算某张收货单的已出重量（遍历所有关联发货单）
-function recalcReceiptShippedWeight(receiptId) {
-  const receipt = receiptState.receipts.find(r => r.id === receiptId);
-  if (!receipt) return;
-  let total = 0;
-  state.records.forEach(r => {
-    if (r.receiptId === receiptId) {
-      const w = (r.quantity || 0) * (r.weightPerPiece || 0);
-      total += w;
-    }
-  });
-  receipt.shippedWeight = total;
-  receipt.status = calcReceiptStatus(receipt);
-}
-
-// 重新计算所有收货单的已出重量（数据修复用）
-function recalcAllReceipts() {
-  receiptState.receipts.forEach(r => recalcReceiptShippedWeight(r.id));
-  saveReceipts();
-}
-
-// 检查批次号是否重复（客户+发票号组合）
-function isBatchDuplicate(customerName, batchNo, excludeId = null) {
-  return receiptState.receipts.some(r =>
-    r.id !== excludeId &&
-    r.customerName === customerName &&
-    r.batchNo === batchNo
-  );
-}
-
-// 获取收货单剩余重量
-function getReceiptRemaining(receipt) {
-  return (receipt.receiveWeight || 0) - (receipt.shippedWeight || 0);
-}
-
-// ===== 视图切换 =====
-function switchToReceiptsView() {
-  document.getElementById('recordsView').classList.add('hidden');
-  document.getElementById('receiptsView').classList.add('active');
-  document.getElementById('addBtn').title = '新增收货单';
-  renderReceiptList();
-}
-
-function switchToRecordsView() {
-  document.getElementById('recordsView').classList.remove('hidden');
-  document.getElementById('receiptsView').classList.remove('active');
-  document.getElementById('addBtn').title = '新增单据';
-}
-
-// ===== 收货单列表渲染 =====
-function renderReceiptList() {
-  const container = document.getElementById('receiptList');
-  if (!container) return;
-
-  let filtered = receiptState.receipts;
-  if (receiptState.currentFilter !== 'all') {
-    filtered = filtered.filter(r => r.status === receiptState.currentFilter);
-  }
-
-  // 按日期倒序
-  filtered = filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
-  // 更新计数
-  const counts = { all: receiptState.receipts.length, pending: 0, processing: 0, partial: 0, done: 0 };
-  receiptState.receipts.forEach(r => { counts[r.status] = (counts[r.status] || 0) + 1; });
-  const elAll = document.getElementById('receiptCountAll');
-  const elPending = document.getElementById('receiptCountPending');
-  const elProcessing = document.getElementById('receiptCountProcessing');
-  const elPartial = document.getElementById('receiptCountPartial');
-  const elDone = document.getElementById('receiptCountDone');
-  if (elAll) elAll.textContent = counts.all;
-  if (elPending) elPending.textContent = counts.pending;
-  if (elProcessing) elProcessing.textContent = counts.processing;
-  if (elPartial) elPartial.textContent = counts.partial;
-  if (elDone) elDone.textContent = counts.done;
-
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="receipt-empty">
-        <div class="receipt-empty-icon">📦</div>
-        <div class="receipt-empty-text">暂无收货单，点击右下角 + 新增</div>
-      </div>`;
-    return;
-  }
-
-  container.innerHTML = filtered.map(r => {
-    const remaining = getReceiptRemaining(r);
-    const over = remaining < 0;
-    return `
-      <div class="receipt-card" data-id="${r.id}" onclick="openReceiptDetail('${r.id}')">
-        <div class="receipt-card-header">
-          <div>
-            <div class="receipt-card-customer">${escapeHtml(r.customerName || '')}</div>
-            <div class="receipt-card-batch">${escapeHtml(r.batchNo || '')} · ${r.date || ''}</div>
-          </div>
-          <span class="receipt-status ${r.status}">${RECEIPT_STATUS_TEXT[r.status] || r.status}</span>
-        </div>
-        <div class="receipt-card-product">${escapeHtml(r.product || '')} ${r.material ? '· ' + escapeHtml(r.material) : ''} ${r.process ? '· ' + escapeHtml(r.process) : ''}</div>
-        ${r.remark ? `<div class="receipt-card-meta">备注：${escapeHtml(r.remark)}</div>` : ''}
-        <div class="receipt-card-weights">
-          <div class="receipt-weight-item">
-            <div class="receipt-weight-label">收货</div>
-            <div class="receipt-weight-value receive">${r.receiveWeight || 0}斤</div>
-          </div>
-          <div class="receipt-weight-item">
-            <div class="receipt-weight-label">已出</div>
-            <div class="receipt-weight-value shipped">${r.shippedWeight || 0}斤</div>
-          </div>
-          <div class="receipt-weight-item">
-            <div class="receipt-weight-label">剩余</div>
-            <div class="receipt-weight-value ${over ? 'over' : 'remaining'}">${remaining}斤</div>
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-// ===== 收货单表单 =====
-function openReceiptModal(receiptId = null) {
-  receiptState.editingReceiptId = receiptId;
-  receiptState.receiptPhoto = null;
-  receiptState.weightMode = 'direct';
-
-  const title = document.getElementById('receiptModalTitle');
-  const form = document.getElementById('receiptForm');
-  form.reset();
-
-  // 重置重量模式
-  setWeightMode('direct');
-
-  // 重置照片
-  document.getElementById('receiptPhotoUpload').style.display = '';
-  document.getElementById('receiptPhotoPreview').style.display = 'none';
-  document.getElementById('receiptPhotoImg').src = '';
-
-  if (receiptId) {
-    const r = receiptState.receipts.find(x => x.id === receiptId);
-    if (r) {
-      title.textContent = '编辑收货单';
-      document.getElementById('receiptId').value = r.id;
-      document.getElementById('receiptCustomerName').value = r.customerName || '';
-      document.getElementById('receiptBatchNo').value = r.batchNo || '';
-      document.getElementById('receiptDate').value = r.date || formatDate(new Date());
-      document.getElementById('receiptProduct').value = r.product || '';
-      document.getElementById('receiptMaterial').value = r.material || '';
-      document.getElementById('receiptProcess').value = r.process || '';
-      document.getElementById('receiptWeight').value = r.receiveWeight || '';
-      document.getElementById('receiptRemark').value = r.remark || '';
-      if (r.photo) {
-        receiptState.receiptPhoto = r.photo;
-        document.getElementById('receiptPhotoUpload').style.display = 'none';
-        document.getElementById('receiptPhotoPreview').style.display = '';
-        document.getElementById('receiptPhotoImg').src = r.photo;
-      }
-    }
-  } else {
-    title.textContent = '新增收货单';
-    document.getElementById('receiptId').value = '';
-    document.getElementById('receiptDate').value = formatDate(new Date());
-  }
-
-  openModal('receiptModal');
-  setTimeout(() => document.getElementById('receiptCustomerName').focus(), 100);
-}
-
-function setWeightMode(mode) {
-  receiptState.weightMode = mode;
-  document.querySelectorAll('.weight-mode-tab').forEach(tab => {
-    tab.classList.toggle('active', tab.dataset.mode === mode);
-  });
-  document.getElementById('weightModeDirect').style.display = mode === 'direct' ? '' : 'none';
-  document.getElementById('weightModePiece').style.display = mode === 'piece' ? '' : 'none';
-  document.getElementById('weightModeCustom').style.display = mode === 'custom' ? '' : 'none';
-  updateWeightCalc();
-}
-
-function updateWeightCalc() {
-  if (receiptState.weightMode === 'piece') {
-    const count = parseFloat(document.getElementById('receiptPieceCount').value) || 0;
-    const rem = parseFloat(document.getElementById('receiptPieceRemainder').value) || 0;
-    const total = count * 130 + rem;
-    document.getElementById('receiptPieceCalc').textContent = total + ' 斤';
-  } else if (receiptState.weightMode === 'custom') {
-    const count = parseFloat(document.getElementById('receiptCustomCount').value) || 0;
-    const w = parseFloat(document.getElementById('receiptCustomWeight').value) || 0;
-    const total = count * w;
-    document.getElementById('receiptCustomCalc').textContent = total + ' 斤';
-  }
-}
-
-function getCurrentReceiptWeight() {
-  if (receiptState.weightMode === 'direct') {
-    return parseFloat(document.getElementById('receiptWeight').value) || 0;
-  } else if (receiptState.weightMode === 'piece') {
-    const count = parseFloat(document.getElementById('receiptPieceCount').value) || 0;
-    const rem = parseFloat(document.getElementById('receiptPieceRemainder').value) || 0;
-    return count * 130 + rem;
-  } else {
-    const count = parseFloat(document.getElementById('receiptCustomCount').value) || 0;
-    const w = parseFloat(document.getElementById('receiptCustomWeight').value) || 0;
-    return count * w;
-  }
-}
-
-function saveReceipt() {
-  const customerName = document.getElementById('receiptCustomerName').value.trim();
-  const batchNo = document.getElementById('receiptBatchNo').value.trim();
-  const date = document.getElementById('receiptDate').value || formatDate(new Date());
-  const product = document.getElementById('receiptProduct').value.trim();
-  const material = document.getElementById('receiptMaterial').value.trim();
-  const process = document.getElementById('receiptProcess').value.trim();
-  const remark = document.getElementById('receiptRemark').value.trim();
-  const weight = getCurrentReceiptWeight();
-  const editingId = document.getElementById('receiptId').value;
-
-  // 校验
-  if (!customerName) { showToast('请输入客户名称', 'warning'); return; }
-  if (!batchNo) { showToast('请输入发票号/批次号', 'warning'); return; }
-  if (!product) { showToast('请输入商品全名', 'warning'); return; }
-  if (weight <= 0) { showToast('请输入收货重量', 'warning'); return; }
-  if (!receiptState.receiptPhoto) { showToast('请拍摄收货单照片', 'warning'); return; }
-
-  // 批次号重复校验（客户+发票号）
-  if (isBatchDuplicate(customerName, batchNo, editingId || null)) {
-    showToast('该客户的发票号已存在，请检查', 'error');
-    return;
-  }
-
-  const currentUser = getCurrentUser() || 'admin';
-  const receiptData = {
-    customerName, batchNo, date, product, material, process,
-    receiveWeight: weight,
-    remark,
-    photo: receiptState.receiptPhoto,
-    operator: currentUser
-  };
-
-  if (editingId) {
-    const index = receiptState.receipts.findIndex(r => r.id === editingId);
-    if (index !== -1) {
-      // 保留已出重量和关联发货单
-      receiptState.receipts[index] = {
-        ...receiptState.receipts[index],
-        ...receiptData,
-        updatedAt: new Date().toISOString()
-      };
-      // 重新计算状态
-      updateReceiptStatus(editingId);
-      showToast('收货单已更新', 'success');
-      addAuditLog('update', `修改收货单：${customerName}，${batchNo}`);
-    }
-  } else {
-    const newReceipt = {
-      id: generateReceiptId(),
-      ...receiptData,
-      status: RECEIPT_STATUS.PENDING,
-      shippedWeight: 0,
-      relatedInvoiceIds: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    receiptState.receipts.push(newReceipt);
-    showToast('收货单已保存', 'success');
-    addAuditLog('create', `新增收货单：${customerName}，${batchNo}，${weight}斤`);
-  }
-
-  saveReceipts();
-  closeModal('receiptModal');
-  renderReceiptList();
-}
-
-// ===== 收货单详情 =====
-function openReceiptDetail(receiptId) {
-  const r = receiptState.receipts.find(x => x.id === receiptId);
-  if (!r) return;
-
-  const remaining = getReceiptRemaining(r);
-  const over = remaining < 0;
-
-  // 找关联的发货单
-  const relatedRecords = state.records.filter(rec => rec.receiptId === receiptId);
-
-  let shipmentsHtml = '';
-  if (relatedRecords.length > 0) {
-    shipmentsHtml = relatedRecords.sort((a, b) => (a.date || '').localeCompare(b.date || '')).map(rec => {
-      const w = (rec.quantity || 0) * (rec.weightPerPiece || 0);
-      const amount = w * (rec.unitPrice || 0);
-      return `
-        <div class="receipt-shipment-item">
-          <div class="receipt-shipment-date">${rec.date || ''}</div>
-          <div>出货 <span class="receipt-shipment-weight">${w}斤</span> · 单价${rec.unitPrice || 0}元/斤 · <span class="receipt-shipment-amount">¥${amount.toFixed(2)}</span></div>
-        </div>`;
-    }).join('');
-  } else {
-    shipmentsHtml = '<div style="color:rgba(255,255,255,0.35);font-size:13px;text-align:center;padding:10px;">暂无出货记录</div>';
-  }
-
-  document.getElementById('receiptDetailBody').innerHTML = `
-    <div class="receipt-detail-section">
-      <div class="receipt-detail-title">基本信息</div>
-      <div class="receipt-detail-row"><span class="receipt-detail-label">客户</span><span class="receipt-detail-value">${escapeHtml(r.customerName || '')}</span></div>
-      <div class="receipt-detail-row"><span class="receipt-detail-label">发票号/批次号</span><span class="receipt-detail-value">${escapeHtml(r.batchNo || '')}</span></div>
-      <div class="receipt-detail-row"><span class="receipt-detail-label">收货日期</span><span class="receipt-detail-value">${r.date || ''}</span></div>
-      <div class="receipt-detail-row"><span class="receipt-detail-label">状态</span><span class="receipt-detail-value"><span class="receipt-status ${r.status}">${RECEIPT_STATUS_TEXT[r.status] || r.status}</span></span></div>
-      ${r.operator ? `<div class="receipt-detail-row"><span class="receipt-detail-label">录入人</span><span class="receipt-detail-value">${escapeHtml(r.operator)}</span></div>` : ''}
-    </div>
-    <div class="receipt-detail-section">
-      <div class="receipt-detail-title">产品信息</div>
-      <div class="receipt-detail-row"><span class="receipt-detail-label">商品全名</span><span class="receipt-detail-value">${escapeHtml(r.product || '')}</span></div>
-      ${r.material ? `<div class="receipt-detail-row"><span class="receipt-detail-label">材质</span><span class="receipt-detail-value">${escapeHtml(r.material)}</span></div>` : ''}
-      ${r.process ? `<div class="receipt-detail-row"><span class="receipt-detail-label">加工工艺</span><span class="receipt-detail-value">${escapeHtml(r.process)}</span></div>` : ''}
-      ${r.remark ? `<div class="receipt-detail-row"><span class="receipt-detail-label">备注</span><span class="receipt-detail-value">${escapeHtml(r.remark)}</span></div>` : ''}
-    </div>
-    <div class="receipt-detail-section">
-      <div class="receipt-detail-title">重量核对</div>
-      <div class="receipt-detail-row"><span class="receipt-detail-label">收货重量</span><span class="receipt-detail-value" style="color:#60a5fa;">${r.receiveWeight || 0} 斤</span></div>
-      <div class="receipt-detail-row"><span class="receipt-detail-label">已出重量</span><span class="receipt-detail-value" style="color:#4ade80;">${r.shippedWeight || 0} 斤</span></div>
-      <div class="receipt-detail-row"><span class="receipt-detail-label">剩余重量</span><span class="receipt-detail-value" style="color:${over ? '#f87171' : '#fbbf24'};">${remaining} 斤${over ? '（超量）' : ''}</span></div>
-    </div>
-    <div class="receipt-detail-section">
-      <div class="receipt-detail-title">出货记录（${relatedRecords.length}次）</div>
-      ${shipmentsHtml}
-    </div>
-    ${r.photo ? `
-    <div class="receipt-detail-section">
-      <div class="receipt-detail-title">收货单照片</div>
-      <img src="${r.photo}" class="receipt-detail-photo" onclick="window.open(this.src)" alt="收货单照片">
-    </div>` : ''}
-  `;
-
-  document.getElementById('receiptDetailBody').dataset.receiptId = receiptId;
-  navigateTo('receiptDetailModal');
-}
-
-function deleteReceipt() {
-  const receiptId = document.getElementById('receiptDetailBody').dataset.receiptId;
-  if (!receiptId) return;
-  const r = receiptState.receipts.find(x => x.id === receiptId);
-  if (!r) return;
-
-  // 检查是否有关联发货单
-  const relatedCount = state.records.filter(rec => rec.receiptId === receiptId).length;
-  if (relatedCount > 0) {
-    if (!confirm(`该收货单已关联 ${relatedCount} 张发货单，删除后发货单将取消关联。确定删除吗？`)) return;
-    // 取消所有关联发货单的关联
-    state.records.forEach(rec => {
-      if (rec.receiptId === receiptId) {
-        delete rec.receiptId;
-        delete rec.batchNo;
-      }
-    });
-    saveData();
-  } else {
-    if (!confirm('确定删除这张收货单吗？')) return;
-  }
-
-  receiptState.receipts = receiptState.receipts.filter(x => x.id !== receiptId);
-  saveReceipts();
-  closeModal('receiptDetailModal');
-  renderReceiptList();
-  showToast('收货单已删除', 'success');
-  addAuditLog('delete', `删除收货单：${r.customerName}，${r.batchNo}`);
-}
-
-// ===== 发货单关联收货单 =====
-let selectReceiptSearchTimer;
-let selectReceiptSelectedId = null;
-
-function openSelectReceiptModal() {
-  selectReceiptSelectedId = null;
-  document.getElementById('selectReceiptSearch').value = '';
-  document.getElementById('confirmSelectReceiptBtn').disabled = true;
-  renderSelectReceiptList('');
-  openModal('selectReceiptModal');
-}
-
-function renderSelectReceiptList(keyword) {
-  const container = document.getElementById('selectReceiptList');
-  // 只显示未完成的收货单（待加工、加工中、部分出货）
-  let list = receiptState.receipts.filter(r =>
-    r.status === RECEIPT_STATUS.PENDING ||
-    r.status === RECEIPT_STATUS.PROCESSING ||
-    r.status === RECEIPT_STATUS.PARTIAL
-  );
-
-  // 如果发货单已经填了客户名，优先显示该客户的
-  const currentCustomer = document.getElementById('customerName').value.trim();
-  if (currentCustomer) {
-    const customerList = list.filter(r => r.customerName === currentCustomer);
-    const otherList = list.filter(r => r.customerName !== currentCustomer);
-    list = [...customerList, ...otherList];
-  }
-
-  if (keyword) {
-    const kw = keyword.toLowerCase();
-    list = list.filter(r =>
-      (r.customerName || '').toLowerCase().includes(kw) ||
-      (r.batchNo || '').toLowerCase().includes(kw) ||
-      (r.product || '').toLowerCase().includes(kw)
-    );
-  }
-
-  if (list.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.35);font-size:13px;">暂无可用收货单</div>';
-    return;
-  }
-
-  container.innerHTML = list.map(r => {
-    const remaining = getReceiptRemaining(r);
-    const selected = selectReceiptSelectedId === r.id;
-    return `
-      <div class="select-receipt-item ${selected ? 'selected' : ''}" data-id="${r.id}">
-        <div class="select-receipt-customer">${escapeHtml(r.customerName || '')} <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:normal;">${escapeHtml(r.batchNo || '')}</span></div>
-        <div class="select-receipt-info">${escapeHtml(r.product || '')} ${r.material ? '· ' + escapeHtml(r.material) : ''} · ${r.date || ''}</div>
-        <div class="select-receipt-remaining">收货 ${r.receiveWeight}斤 · 已出 ${r.shippedWeight || 0}斤 · 剩余 ${remaining}斤</div>
-      </div>`;
-  }).join('');
-
-  // 绑定点击
-  container.querySelectorAll('.select-receipt-item').forEach(item => {
-    item.addEventListener('click', () => {
-      selectReceiptSelectedId = item.dataset.id;
-      document.querySelectorAll('.select-receipt-item').forEach(i => i.classList.remove('selected'));
-      item.classList.add('selected');
-      document.getElementById('confirmSelectReceiptBtn').disabled = false;
-    });
-  });
-}
-
-function confirmSelectReceipt() {
-  if (!selectReceiptSelectedId) return;
-  const r = receiptState.receipts.find(x => x.id === selectReceiptSelectedId);
-  if (!r) return;
-
-  receiptState.linkedReceiptId = r.id;
-
-  // 自动带出信息
-  document.getElementById('customerName').value = r.customerName || '';
-  document.getElementById('invoiceNo').value = r.batchNo || '';
-  // 组装style字段：商品全名|材质:xxx|工艺:xxx
-  let styleParts = [r.product || ''];
-  if (r.material) styleParts.push('材质:' + r.material);
-  if (r.process) styleParts.push('工艺:' + r.process);
-  document.getElementById('style').value = styleParts.join('|');
-
-  // 自动带出单价（客户+工艺）
-  const price = getMemorizedPrice(r.customerName, r.process);
-  if (price) {
-    document.getElementById('unitPrice').value = price;
-  }
-
-  // 显示关联提示
-  const remaining = getReceiptRemaining(r);
-  document.getElementById('linkedReceiptBar').style.display = '';
-  document.getElementById('linkedReceiptInfo').textContent = `已关联：${r.customerName} · ${r.batchNo} · 剩余${remaining}斤`;
-
-  closeModal('selectReceiptModal');
-  updateCalc();
-  checkWeightWarning();
-}
-
-function clearLinkedReceipt() {
-  receiptState.linkedReceiptId = null;
-  document.getElementById('linkedReceiptBar').style.display = 'none';
-  document.getElementById('weightWarning').classList.remove('show');
-}
-
-// 检查出货重量是否超过收货单剩余
-function checkWeightWarning() {
-  const warning = document.getElementById('weightWarning');
-  if (!receiptState.linkedReceiptId) {
-    warning.classList.remove('show');
-    return;
-  }
-  const r = receiptState.receipts.find(x => x.id === receiptState.linkedReceiptId);
-  if (!r) { warning.classList.remove('show'); return; }
-
-  const qty = parseFloat(document.getElementById('quantity').value) || 0;
-  const wpp = parseFloat(document.getElementById('weightPerPiece').value) || 0;
-  const shipWeight = qty * wpp;
-  const remaining = getReceiptRemaining(r);
-
-  if (shipWeight > remaining && remaining >= 0) {
-    warning.textContent = `⚠️ 出货重量${shipWeight}斤超过收货单剩余${remaining}斤，请确认是否继续`;
-    warning.classList.add('show');
-  } else if (remaining < 0) {
-    warning.textContent = `⚠️ 该收货单已超量${Math.abs(remaining)}斤，请确认`;
-    warning.classList.add('show');
-  } else {
-    warning.classList.remove('show');
-  }
-}
-
-// ===== 单价记忆 =====
-function getPriceMemory() {
-  try {
-    return JSON.parse(localStorage.getItem(PRICE_MEMORY_KEY) || '{}');
-  } catch (e) { return {}; }
-}
-
-function memorizePrice(customerName, process, price) {
-  if (!customerName || !price) return;
-  const memory = getPriceMemory();
-  const key = customerName + '||' + (process || '');
-  memory[key] = price;
-  localStorage.setItem(PRICE_MEMORY_KEY, JSON.stringify(memory));
-}
-
-function getMemorizedPrice(customerName, process) {
-  const memory = getPriceMemory();
-  const key = customerName + '||' + (process || '');
-  return memory[key] || null;
-}
-
-// ===== 收货单打印 =====
-function printReceipt(receiptId) {
-  const r = receiptState.receipts.find(x => x.id === receiptId);
-  if (!r) return;
-
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
-    <html><head><title>收货单 - ${r.customerName}</title>
-    <style>
-      body { font-family: 'Microsoft YaHei', sans-serif; padding: 30px; color: #000; }
-      .title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 5px; }
-      .sub { text-align: center; font-size: 14px; color: #333; margin-bottom: 20px; }
-      table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-      th, td { border: 1px solid #333; padding: 10px; text-align: left; font-size: 14px; }
-      th { background: #f0f0f0; width: 120px; }
-      .signature { display: flex; justify-content: space-between; margin-top: 50px; font-size: 14px; }
-      .photo { max-width: 100%; margin-top: 15px; }
-    </style></head><body>
-    <div class="title">温州鼎炬金属科技有限公司</div>
-    <div class="sub">收货单</div>
-    <table>
-      <tr><th>客户名称</th><td>${escapeHtml(r.customerName || '')}</td><th>发票号</th><td>${escapeHtml(r.batchNo || '')}</td></tr>
-      <tr><th>收货日期</th><td>${r.date || ''}</td><th>录入人</th><td>${escapeHtml(r.operator || '')}</td></tr>
-      <tr><th>商品全名</th><td>${escapeHtml(r.product || '')}</td><th>材质</th><td>${escapeHtml(r.material || '')}</td></tr>
-      <tr><th>加工工艺</th><td>${escapeHtml(r.process || '')}</td><th>收货重量</th><td><strong>${r.receiveWeight || 0} 斤</strong></td></tr>
-      <tr><th>备注</th><td colspan="3">${escapeHtml(r.remark || '')}</td></tr>
-    </table>
-    ${r.photo ? `<img src="${r.photo}" class="photo" alt="收货单照片">` : ''}
-    <div class="signature">
-      <div>送货人签字：____________</div>
-      <div>收货人签字：____________</div>
-    </div>
-    <script>window.onload = function() { window.print(); }<\/script>
-    </body></html>
-  `);
-  printWindow.document.close();
-}
-
-// ===== 收货单事件绑定 =====
-function initReceiptModule() {
-  // 重量模式切换
-  document.querySelectorAll('.weight-mode-tab').forEach(tab => {
-    tab.addEventListener('click', () => setWeightMode(tab.dataset.mode));
-  });
-
-  // 件数计算实时更新
-  const pieceInputs = ['receiptPieceCount', 'receiptPieceRemainder', 'receiptCustomCount', 'receiptCustomWeight'];
-  pieceInputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', updateWeightCalc);
-  });
-
-  // 保存按钮
-  document.getElementById('saveReceiptBtn').addEventListener('click', saveReceipt);
-
-  // 照片上传
-  document.getElementById('receiptPhotoUpload').addEventListener('click', () => {
-    document.getElementById('receiptPhotoInput').click();
-  });
-  document.getElementById('receiptPhotoInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      // 压缩图片
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxW = 800;
-        const scale = Math.min(1, maxW / img.width);
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        receiptState.receiptPhoto = canvas.toDataURL('image/jpeg', 0.7);
-        document.getElementById('receiptPhotoUpload').style.display = 'none';
-        document.getElementById('receiptPhotoPreview').style.display = '';
-        document.getElementById('receiptPhotoImg').src = receiptState.receiptPhoto;
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-  document.getElementById('receiptPhotoRemove').addEventListener('click', () => {
-    receiptState.receiptPhoto = null;
-    document.getElementById('receiptPhotoUpload').style.display = '';
-    document.getElementById('receiptPhotoPreview').style.display = 'none';
-    document.getElementById('receiptPhotoInput').value = '';
-  });
-
-  // 收货单筛选标签
-  document.querySelectorAll('.receipt-filter-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      receiptState.currentFilter = tab.dataset.status;
-      document.querySelectorAll('.receipt-filter-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      renderReceiptList();
-    });
-  });
-
-  // 详情页按钮
-  document.getElementById('editReceiptBtn').addEventListener('click', () => {
-    const id = document.getElementById('receiptDetailBody').dataset.receiptId;
-    closeModal('receiptDetailModal');
-    openReceiptModal(id);
-  });
-  document.getElementById('deleteReceiptBtn').addEventListener('click', deleteReceipt);
-  document.getElementById('printReceiptBtn').addEventListener('click', () => {
-    const id = document.getElementById('receiptDetailBody').dataset.receiptId;
-    printReceipt(id);
-  });
-
-  // 选择收货单
-  document.getElementById('linkReceiptBtn').addEventListener('click', openSelectReceiptModal);
-  document.getElementById('confirmSelectReceiptBtn').addEventListener('click', confirmSelectReceipt);
-  document.getElementById('clearLinkedReceipt').addEventListener('click', clearLinkedReceipt);
-  const searchInput = document.getElementById('selectReceiptSearch');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      clearTimeout(selectReceiptSearchTimer);
-      selectReceiptSearchTimer = setTimeout(() => renderSelectReceiptList(e.target.value.trim()), 200);
-    });
-  }
-
-  // 发货单重量变化时检查警告
-  ['quantity', 'weightPerPiece'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', checkWeightWarning);
-  });
-
-  // 收货单客户联想
-  const receiptCustomerInput = document.getElementById('receiptCustomerName');
-  const receiptCustomerDropdown = document.getElementById('receiptCustomerAutocomplete');
-  if (receiptCustomerInput && receiptCustomerDropdown) {
-    receiptCustomerInput.addEventListener('input', () => {
-      const value = receiptCustomerInput.value.trim().toLowerCase();
-      if (!value) { receiptCustomerDropdown.classList.remove('visible'); return; }
-      // 从发货单和收货单中提取客户名
-      const customers = [...new Set([
-        ...state.records.map(r => r.customerName),
-        ...receiptState.receipts.map(r => r.customerName)
-      ].filter(n => n))];
-      const matches = customers.filter(c => c.toLowerCase().includes(value)).slice(0, 8);
-      if (matches.length === 0) { receiptCustomerDropdown.classList.remove('visible'); return; }
-      receiptCustomerDropdown.innerHTML = matches.map(c =>
-        `<div class="autocomplete-item">${escapeHtml(c)}</div>`
-      ).join('');
-      receiptCustomerDropdown.classList.add('visible');
-      receiptCustomerDropdown.querySelectorAll('.autocomplete-item').forEach(item => {
-        item.addEventListener('click', () => {
-          receiptCustomerInput.value = item.textContent;
-          receiptCustomerDropdown.classList.remove('visible');
-        });
-      });
-    });
-    // 点击其他地方关闭联想
-    document.addEventListener('click', (e) => {
-      if (!receiptCustomerInput.contains(e.target) && !receiptCustomerDropdown.contains(e.target)) {
-        receiptCustomerDropdown.classList.remove('visible');
-      }
-    });
-  }
-
-  // 商品/材质/工艺历史联想（简单的datalist方式）
-  const productInput = document.getElementById('receiptProduct');
-  const materialInput = document.getElementById('receiptMaterial');
-  const processInput = document.getElementById('receiptProcess');
-
-  // 收集历史值
-  function getHistoryValues(field) {
-    const fromReceipts = receiptState.receipts.map(r => r[field]).filter(v => v);
-    const fromRecords = [];
-    if (field === 'product' || field === 'material' || field === 'process') {
-      state.records.forEach(r => {
-        const info = parseStyleField(r.style || '');
-        if (info[field]) fromRecords.push(info[field]);
-      });
-    }
-    return [...new Set([...fromReceipts, ...fromRecords])];
-  }
-
-  // 为输入框添加datalist
-  function addDatalist(input, listId, values) {
-    if (!input) return;
-    // 移除旧的datalist
-    const oldList = document.getElementById(listId);
-    if (oldList) oldList.remove();
-    const list = document.createElement('datalist');
-    list.id = listId;
-    values.forEach(v => {
-      const option = document.createElement('option');
-      option.value = v;
-      list.appendChild(option);
-    });
-    document.body.appendChild(list);
-    input.setAttribute('list', listId);
-  }
-
-  // 打开收货单弹窗时刷新联想列表
-  const origOpenReceiptModal = openReceiptModal;
-  // 不覆盖原函数，在保存后刷新即可
-
-  // 保存收货单后刷新联想
-  const origSaveReceipt = saveReceipt;
-  // 不覆盖，在saveReceipt内部已经调用了renderReceiptList
-
-  // 初始化时添加datalist
-  addDatalist(productInput, 'receiptProductList', getHistoryValues('product'));
-  addDatalist(materialInput, 'receiptMaterialList', getHistoryValues('material'));
-  addDatalist(processInput, 'receiptProcessList', getHistoryValues('process'));
-
-  // 每次打开收货单弹窗时刷新datalist
-  const receiptModal = document.getElementById('receiptModal');
-  if (receiptModal) {
-    receiptModal.addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal-overlay')) {
-        // 点击遮罩关闭时刷新
-      }
-    });
-  }
-}
-
-// 扩展NAV_MODALS
-if (typeof NAV_MODALS !== 'undefined') {
-  NAV_MODALS.push('receiptDetailModal');
-}
 
 // 启动应用
 document.addEventListener('DOMContentLoaded', init);
