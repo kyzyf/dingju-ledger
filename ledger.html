@@ -2743,11 +2743,11 @@ body::before {
         </div>
 
         <!-- 收货单照片 -->
-        <div class="form-group">
-          <label class="form-label">收货单照片<span class="required">*</span></label>
+        <div class="form-group" id="receiptPhotoGroup">
+          <label class="form-label">收货单照片</label>
           <div id="receiptPhotoUpload" class="photo-upload-area">
             <div class="photo-upload-icon">📷</div>
-            <div class="photo-upload-text">点击拍照或上传收货单</div>
+            <div class="photo-upload-text">点击拍照或上传收货单（可选）</div>
             <input type="file" id="receiptPhotoInput" accept="image/*" capture="environment" style="display:none;">
           </div>
           <div id="receiptPhotoPreview" class="photo-preview-wrap" style="display:none;">
@@ -2899,6 +2899,16 @@ body::before {
             <div class="font-size-option" data-size="medium">中</div>
             <div class="font-size-option" data-size="large">大</div>
           </div>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-title">功能</div>
+        <div class="settings-item">
+          <div>
+            <div class="settings-item-label">收货单照片</div>
+            <div class="settings-item-desc">启用后新增收货单时可拍照上传（占用云端存储空间）</div>
+          </div>
+          <div class="toggle-switch" id="receiptPhotoToggle"></div>
         </div>
       </div>
       <div class="settings-group">
@@ -3372,7 +3382,8 @@ let state = {
   amountHidden: false,
   settings: {
     theme: 'dark',
-    fontSize: 'medium'
+    fontSize: 'medium',
+    enableReceiptPhoto: false
   },
   editingRecordId: null,
   selectedCustomer: null,
@@ -5174,6 +5185,17 @@ function applySettings() {
     themeToggle.classList.toggle('active', state.settings.theme === 'light');
   }
 
+  // 收货单照片开关
+  const receiptPhotoToggle = document.getElementById('receiptPhotoToggle');
+  if (receiptPhotoToggle) {
+    receiptPhotoToggle.classList.toggle('active', !!state.settings.enableReceiptPhoto);
+  }
+  // 控制收货单照片上传区域显示
+  const receiptPhotoGroup = document.getElementById('receiptPhotoGroup');
+  if (receiptPhotoGroup) {
+    receiptPhotoGroup.style.display = state.settings.enableReceiptPhoto ? '' : 'none';
+  }
+
   // 更新字体大小选项
   document.querySelectorAll('.font-size-option').forEach(opt => {
     opt.classList.toggle('active', opt.dataset.size === state.settings.fontSize);
@@ -5353,6 +5375,14 @@ function bindEvents() {
     state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark';
     saveSettings();
     applySettings();
+  });
+
+  // 设置 - 收货单照片开关
+  document.getElementById('receiptPhotoToggle').addEventListener('click', () => {
+    state.settings.enableReceiptPhoto = !state.settings.enableReceiptPhoto;
+    saveSettings();
+    applySettings();
+    showToast(state.settings.enableReceiptPhoto ? '已启用收货单照片功能' : '已关闭收货单照片功能', 'success');
   });
 
   // 设置 - 字体大小
@@ -5995,6 +6025,12 @@ function openReceiptModal(receiptId = null) {
   document.getElementById('receiptPhotoPreview').style.display = 'none';
   document.getElementById('receiptPhotoImg').src = '';
 
+  // 根据设置控制照片区域显示
+  const photoGroup = document.getElementById('receiptPhotoGroup');
+  if (photoGroup) {
+    photoGroup.style.display = state.settings.enableReceiptPhoto ? '' : 'none';
+  }
+
   if (receiptId) {
     const r = receiptState.receipts.find(x => x.id === receiptId);
     if (r) {
@@ -6080,7 +6116,8 @@ function saveReceipt() {
   if (!batchNo) { showToast('请输入发票号/批次号', 'warning'); return; }
   if (!product) { showToast('请输入商品全名', 'warning'); return; }
   if (weight <= 0) { showToast('请输入收货重量', 'warning'); return; }
-  if (!receiptState.receiptPhoto) { showToast('请拍摄收货单照片', 'warning'); return; }
+  // 仅在启用照片功能时校验照片
+  if (state.settings.enableReceiptPhoto && !receiptState.receiptPhoto) { showToast('请拍摄收货单照片', 'warning'); return; }
 
   // 批次号重复校验（客户+发票号）
   if (isBatchDuplicate(customerName, batchNo, editingId || null)) {
@@ -6089,11 +6126,17 @@ function saveReceipt() {
   }
 
   const currentUser = getCurrentUser() || 'admin';
+  // 功能关闭且为编辑模式时，保留原有照片
+  let photoValue = receiptState.receiptPhoto;
+  if (!state.settings.enableReceiptPhoto && editingId) {
+    const existing = receiptState.receipts.find(r => r.id === editingId);
+    if (existing && existing.photo) photoValue = existing.photo;
+  }
   const receiptData = {
     customerName, batchNo, date, product, material, process,
     receiveWeight: weight,
     remark,
-    photo: receiptState.receiptPhoto,
+    photo: photoValue,
     operator: currentUser
   };
 
