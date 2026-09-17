@@ -2930,8 +2930,8 @@ body::before {
         <input type="file" id="excelFileInput" accept=".xlsx,.xls" multiple style="display:none;">
         <div class="settings-item" id="exportStatementBtn">
           <div>
-            <div class="settings-item-label">按客户导出对账单</div>
-            <div class="settings-item-desc">按客户分组导出为对账单格式（与1-17格式一致），每个客户一个文件</div>
+            <div class="settings-item-label">导出入库出库对账单</div>
+            <div class="settings-item-desc">按收货单客户分组导出，含单号、入库斤数、出库明细、差异，每个客户一个工作表</div>
           </div>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--text-muted)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
@@ -4659,182 +4659,121 @@ function parseStyleField(style) {
   return result;
 }
 
-// 按客户导出对账单（1-17格式）
+// 按客户导出入库出库对账单（新格式：日期/单号/产品/入库件数/入库斤数/出库记录/出库斤数/差异）
 function exportStatementsByCustomer() {
-  if (state.records.length === 0) {
-    showToast('没有可导出的数据', 'warning');
+  const receipts = (typeof receiptState !== 'undefined' && receiptState.receipts) || [];
+  if (receipts.length === 0) {
+    showToast('没有收货单数据可导出，请先录入收货单', 'warning');
     return;
   }
 
   // 按客户分组
   const customerGroups = {};
-  for (const r of state.records) {
+  for (const r of receipts) {
     const customer = r.customerName || '未知客户';
-    if (!customerGroups[customer]) {
-      customerGroups[customer] = [];
-    }
+    if (!customerGroups[customer]) customerGroups[customer] = [];
     customerGroups[customer].push(r);
   }
-
   const customers = Object.keys(customerGroups).sort();
-  
-  if (!confirm(`将为 ${customers.length} 个客户导出对账单，合并到一个 Excel 文件中（每个客户一个工作表，含该客户全部记录）。\n是否继续？`)) {
+
+  if (!confirm(`将为 ${customers.length} 个客户导出入库出库对账单，合并到一个 Excel 文件（每个客户一个工作表，含单号、入库、出库、差异）。\n是否继续？`)) {
     return;
   }
 
-  // 所有客户合并到一个工作簿，每个客户一个 Sheet，避免浏览器拦截多文件下载
   const wb = XLSX.utils.book_new();
   let exportCount = 0;
   const usedSheetNames = new Set();
 
   for (const customer of customers) {
-    const records = customerGroups[customer].sort((a, b) => a.date.localeCompare(b.date));
-    
-    // 计算日期范围
-    const dates = records.map(r => r.date).sort();
-    const startDate = dates[0];
-    const endDate = dates[dates.length - 1];
-    const periodStr = `${startDate}~${endDate}`;
-    
-    // 构建对账单数据（21列，对应A-U）
+    const group = customerGroups[customer].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     const aoa = [];
-    
-    // 第0行：公司名称
-    const row0 = new Array(21).fill('');
-    row0[0] = '温州鼎炬金属科技有限公司';
-    aoa.push(row0);
-    
-    // 第1行：对账单
-    const row1 = new Array(21).fill('');
-    row1[0] = '对账单';
-    aoa.push(row1);
-    
-    // 第2行：对账单位、对账期间
-    const row2 = new Array(21).fill('');
-    row2[0] = '对账单位：';
-    row2[4] = customer;
-    row2[10] = '对账期间：';
-    row2[13] = periodStr;
-    aoa.push(row2);
-    
-    // 第3行：表头
-    const row3 = new Array(21).fill('');
-    row3[0] = '行号';
-    row3[1] = '单据日期';
-    row3[2] = '单据类型';
-    row3[5] = '商品全名';
-    row3[8] = '材质';
-    row3[9] = '加工工艺';
-    row3[14] = '数量';
-    row3[16] = '单价';
-    row3[18] = '金额';
-    row3[20] = '备注';
-    aoa.push(row3);
-    
-    // 数据行
-    let totalQty = 0;
-    let totalAmount = 0;
-    let totalPaid = 0;
-    
-    records.forEach((r, idx) => {
-      const row = new Array(21).fill('');
-      const parsed = parseStyleField(r.style);
-      const totalWeight = (parseFloat(r.quantity) || 0) * (parseFloat(r.weightPerPiece) || 0);
-      const amount = parseFloat(r.totalAmount) || 0;
-      const paid = parseFloat(r.paidAmount) || 0;
-      
-      row[0] = idx + 1;
-      row[1] = r.date;
-      row[2] = '销售单';
-      row[5] = parsed.product;
-      row[8] = parsed.material || 'A3';
-      row[9] = parsed.process || '渗碳';
-      row[14] = totalWeight;
-      row[16] = parseFloat(r.unitPrice) || 0;
-      row[18] = amount;
-      row[20] = parsed.remark;
-      
-      aoa.push(row);
-      totalQty += totalWeight;
-      totalAmount += amount;
-      totalPaid += paid;
-    });
-    
-    // 合计行
-    const totalRow = new Array(21).fill('');
-    totalRow[0] = '合计：';
-    totalRow[14] = Math.round(totalQty * 100) / 100;
-    totalRow[18] = Math.round(totalAmount * 100) / 100;
-    aoa.push(totalRow);
-    
-    // 空行
-    aoa.push(new Array(21).fill(''));
-    
-    // 余额行
-    const balanceRow = new Array(21).fill('');
-    balanceRow[0] = '上期余额：';
-    balanceRow[6] = '本期销售：';
-    balanceRow[7] = Math.round(totalAmount * 100) / 100;
-    balanceRow[11] = '本期回款：';
-    balanceRow[12] = Math.round(totalPaid * 100) / 100;
-    balanceRow[17] = '本期余额：';
-    balanceRow[19] = Math.round((totalAmount - totalPaid) * 100) / 100;
-    aoa.push(balanceRow);
-    
-    // 客户确认签字行
-    const signRow = new Array(21).fill('');
-    signRow[15] = '客户确认签字:';
-    aoa.push(signRow);
-    
-    // 创建工作表（追加到同一个工作簿）
+
+    aoa.push(['温州鼎炬金属科技有限公司', '', '', '', '', '', '', '']);
+    aoa.push(['入库出库对账单', '', '', '', '', '', '', '']);
+    const startD = group[0].date || '';
+    const endD = group[group.length - 1].date || '';
+    aoa.push(['对账单位：', customer, '', '', '', '对账期间：', `${startD}~${endD}`, '']);
+    aoa.push(['日期', '单号', '产品/规格', '入库件数', '入库斤数', '出库记录', '出库斤数', '差异']);
+
+    let totalIn = 0, totalOut = 0;
+
+    for (const receipt of group) {
+      // 找关联的发货记录
+      const shipRecords = (state.records || []).filter(r => r.receiptId === receipt.id);
+      let shipWeight = 0;
+      let outDetail = '';
+      if (shipRecords.length > 0) {
+        const parts = [];
+        for (const sr of shipRecords) {
+          const q = parseFloat(sr.quantity) || 0;
+          const wp = parseFloat(sr.weightPerPiece) || 0;
+          const w = Math.round(q * wp * 10) / 10;
+          shipWeight += w;
+          parts.push(`${q}×${wp}`);
+        }
+        outDetail = parts.join(' + ');
+      }
+      shipWeight = Math.round(shipWeight * 10) / 10;
+
+      const inW = Math.round((parseFloat(receipt.receiveWeight) || 0) * 10) / 10;
+      const diff = Math.round((inW - shipWeight) * 10) / 10;
+      const diffText = diff === 0 ? '相等' : (diff > 0 ? `少${diff}斤` : `多${Math.abs(diff)}斤`);
+
+      aoa.push([
+        receipt.date || '',
+        receipt.batchNo || '',
+        receipt.product || '',
+        '',
+        inW,
+        outDetail,
+        shipWeight,
+        diffText
+      ]);
+      totalIn += inW;
+      totalOut += shipWeight;
+    }
+
+    aoa.push(['', '', '', '', '', '', '', '']);
+    const diffTotal = Math.round((totalIn - totalOut) * 10) / 10;
+    aoa.push(['汇总：', '', '', '入库总数', Math.round(totalIn), '出库总数：', Math.round(totalOut), `少${diffTotal}斤`]);
+    aoa.push(['', '', '', '', '', '', '客户确认签字：', '']);
+
     const ws = XLSX.utils.aoa_to_sheet(aoa);
-
-    // 设置列宽
     ws['!cols'] = [
-      { wch: 8 }, { wch: 12 }, { wch: 8 }, { wch: 4 }, { wch: 10 },
-      { wch: 25 }, { wch: 4 }, { wch: 4 }, { wch: 6 }, { wch: 8 },
-      { wch: 4 }, { wch: 4 }, { wch: 8 }, { wch: 20 }, { wch: 8 },
-      { wch: 4 }, { wch: 8 }, { wch: 4 }, { wch: 10 }, { wch: 4 },
-      { wch: 20 }
+      { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 10 },
+      { wch: 10 }, { wch: 16 }, { wch: 10 }, { wch: 12 }
     ];
-    
-    // 合并单元格
     ws['!merges'] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 20 } }, // 公司名称
-      { s: { r: 1, c: 0 }, e: { r: 1, c: 20 } }, // 对账单
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
     ];
 
-    // Sheet 名用客户名，去掉非法字符并限制 31 字符，同名时追加序号
     let sheetName = customer.replace(/[\\/?*\[\]:]/g, '_').slice(0, 28) || '客户';
-    let sheetBase = sheetName;
-    let sheetIdx = 2;
+    let sheetBase = sheetName, sheetIdx = 2;
     while (usedSheetNames.has(sheetName)) {
       sheetName = (sheetBase + '_' + sheetIdx).slice(0, 31);
       sheetIdx++;
     }
     usedSheetNames.add(sheetName);
-
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
-
     exportCount++;
   }
-  
-  // 一次性下载整个工作簿
+
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
   const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   const dlUrl = URL.createObjectURL(blob);
   const dlLink = document.createElement('a');
   dlLink.href = dlUrl;
   const todayStr = formatDate(new Date()).replace(/-/g, '');
-  dlLink.download = `对账单_全部客户_${todayStr}.xlsx`;
+  dlLink.download = `入库出库对账单_全部客户_${todayStr}.xlsx`;
   document.body.appendChild(dlLink);
   dlLink.click();
   document.body.removeChild(dlLink);
   setTimeout(() => URL.revokeObjectURL(dlUrl), 1500);
-  
+
   markBackupDone();
-  addAuditLog('export', `按客户导出对账单（${exportCount}个客户，合并单文件）`);
-  showToast(`已导出 ${exportCount} 个客户的对账单（一个文件，每个客户一个工作表）`, 'success');
+  addAuditLog('export', `导出入库出库对账单（${exportCount}个客户）`);
+  showToast(`已导出 ${exportCount} 个客户的入库出库对账单`, 'success');
 }
 
 function importFromExcel(file) {
