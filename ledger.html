@@ -2582,8 +2582,8 @@ body::before {
             <input type="text" class="form-input" id="doorNo" placeholder="如 A-12">
           </div>
           <div class="form-group">
-            <label class="form-label">发票单号</label>
-            <input type="text" class="form-input" id="invoiceNo" placeholder="如 FP26082501">
+            <label class="form-label">出库单号<span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:normal;">（选填）</span></label>
+            <input type="text" class="form-input" id="invoiceNo" placeholder="选填，出库单号">
           </div>
         </div>
         <div class="form-group">
@@ -2671,8 +2671,8 @@ body::before {
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">发票号/批次号<span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:normal;">（选填）</span></label>
-            <input type="text" class="form-input" id="receiptBatchNo" placeholder="选填，如 FP26032001">
+            <label class="form-label">入库单号<span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:normal;">（选填）</span></label>
+            <input type="text" class="form-input" id="receiptBatchNo" placeholder="选填，入库单号">
           </div>
           <div class="form-group">
             <label class="form-label">收货日期</label>
@@ -4688,12 +4688,12 @@ function exportStatementsByCustomer() {
     const group = customerGroups[customer].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     const aoa = [];
 
-    aoa.push(['温州鼎炬金属科技有限公司', '', '', '', '', '', '', '']);
-    aoa.push(['入库出库对账单', '', '', '', '', '', '', '']);
+    aoa.push(['温州鼎炬金属科技有限公司', '', '', '', '', '', '', '', '', '']);
+    aoa.push(['入库出库对账单', '', '', '', '', '', '', '', '', '']);
     const startD = group[0].date || '';
     const endD = group[group.length - 1].date || '';
-    aoa.push(['对账单位：', customer, '', '', '', '对账期间：', `${startD}~${endD}`, '']);
-    aoa.push(['日期', '单号', '产品/规格', '入库件数', '入库斤数', '出库记录', '出库斤数', '差异']);
+    aoa.push(['对账单位：', customer, '', '', '', '对账期间：', `${startD}~${endD}`, '', '', '']);
+    aoa.push(['日期', '入库单号', '产品/规格', '入库件数', '入库斤数', '出库记录', '出库斤数', '出库单号', '差异', '备注']);
 
     let totalIn = 0, totalOut = 0;
 
@@ -4702,6 +4702,7 @@ function exportStatementsByCustomer() {
       const shipRecords = (state.records || []).filter(r => r.receiptId === receipt.id);
       let shipWeight = 0;
       let outDetail = '';
+      let outOrderNos = [];
       if (shipRecords.length > 0) {
         const parts = [];
         for (const sr of shipRecords) {
@@ -4710,6 +4711,7 @@ function exportStatementsByCustomer() {
           const w = Math.round(q * wp * 10) / 10;
           shipWeight += w;
           parts.push(`${q}×${wp}`);
+          if (sr.invoiceNo) outOrderNos.push(sr.invoiceNo);
         }
         outDetail = parts.join(' + ');
       }
@@ -4727,25 +4729,28 @@ function exportStatementsByCustomer() {
         inW,
         outDetail,
         shipWeight,
-        diffText
+        outOrderNos.join(' + '),
+        diffText,
+        receipt.remark || ''
       ]);
       totalIn += inW;
       totalOut += shipWeight;
     }
 
-    aoa.push(['', '', '', '', '', '', '', '']);
+    aoa.push(['', '', '', '', '', '', '', '', '', '']);
     const diffTotal = Math.round((totalIn - totalOut) * 10) / 10;
-    aoa.push(['汇总：', '', '', '入库总数', Math.round(totalIn), '出库总数：', Math.round(totalOut), `少${diffTotal}斤`]);
-    aoa.push(['', '', '', '', '', '', '客户确认签字：', '']);
+    aoa.push(['汇总：', '', '', '入库总数', Math.round(totalIn), '出库总数：', Math.round(totalOut), '', `少${diffTotal}斤`, '']);
+    aoa.push(['', '', '', '', '', '', '', '', '客户确认签字：', '']);
 
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = [
-      { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 10 },
-      { wch: 10 }, { wch: 16 }, { wch: 10 }, { wch: 12 }
+      { wch: 10 }, { wch: 12 }, { wch: 20 }, { wch: 10 },
+      { wch: 10 }, { wch: 16 }, { wch: 10 }, { wch: 12 },
+      { wch: 12 }, { wch: 15 }
     ];
     ws['!merges'] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
-      { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } },
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } },
     ];
 
     let sheetName = customer.replace(/[\\/?*\[\]:]/g, '_').slice(0, 28) || '客户';
