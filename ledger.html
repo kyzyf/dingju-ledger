@@ -3151,8 +3151,50 @@ function updateSyncStatus(text) {
 async function syncToCloud() {
   if (!cloudSyncEnabled || !supabaseClient || isSyncing) return;
   isSyncing = true;
-  updateSyncStatus('同步中...');
+  updateSyncStatus('检查云端...');
   try {
+    // 1. 先拉云端最新数据，做冲突检测
+    const { data: cloudData, error: pullErr } = await withRetry(() =>
+      supabaseClient.from('ledger_sync').select('updated_at, records, receipts').eq('id', 'dingju_ledger_data').maybeSingle()
+    );
+    if (pullErr) throw pullErr;
+
+    const lastSyncStr = localStorage.getItem('dingju_last_sync_time');
+    const lastSyncTime = lastSyncStr ? parseInt(lastSyncStr) : 0;
+    const now = Date.now();
+
+    if (cloudData && cloudData.updated_at) {
+      const cloudTime = new Date(cloudData.updated_at).getTime();
+      // 如果云端数据比上次同步时间新，说明有人在别处改了数据
+      if (cloudTime > lastSyncTime + 5000) {
+        const cloudDate = new Date(cloudTime).toLocaleString();
+        const choice = confirm(
+          `⚠️ 云端数据有更新（${cloudDate}），可能是其他人在其他设备修改过。\n\n` +
+          `点击【确定】= 拉取云端最新数据覆盖本地\n` +
+          `点击【取消】= 强制上传本地数据覆盖云端（谨慎！）`
+        );
+        if (choice) {
+          // 用户选择拉取云端
+          if (cloudData.records) state.records = cloudData.records;
+          if (cloudData.receipts) receiptState.receipts = cloudData.receipts;
+          saveData();
+          saveReceipts();
+          try { recalcAllReceipts(); } catch(e) {}
+          renderAll();
+          renderReceiptList();
+          localStorage.setItem('dingju_last_sync_time', now.toString());
+          updateSyncStatus('已拉取云端 ' + new Date().toLocaleTimeString());
+          addAuditLog('cloud_pull', `从云端拉取数据（${state.records.length}条单据，${receiptState.receipts.length}条收货单）`);
+          isSyncing = false;
+          showToast('已拉取云端最新数据', 'success');
+          return;
+        }
+        // 用户选择强制上传，继续往下走
+      }
+    }
+
+    // 2. 没有冲突，正常上传
+    updateSyncStatus('同步中...');
     const payload = {
       id: 'dingju_ledger_data',
       records: state.records,
@@ -3160,17 +3202,19 @@ async function syncToCloud() {
       settings: state.settings,
       updated_at: new Date().toISOString()
     };
-    // 带重试的上传
     const { error } = await withRetry(() =>
       supabaseClient.from('ledger_sync').upsert(payload)
     );
     if (error) throw error;
+    localStorage.setItem('dingju_last_sync_time', now.toString());
     updateSyncStatus('已同步 ' + new Date().toLocaleTimeString());
     addAuditLog('cloud_sync', `推送到云端（${state.records.length}条单据，${receiptState.receipts.length}条收货单）`);
+    showToast('同步成功', 'success');
   } catch(e) {
     console.error('云端同步失败:', e);
     const msg = e.name === 'AbortError' ? '请求超时，请检查网络' : (e.message || '未知错误');
     updateSyncStatus('同步失败: ' + msg);
+    showToast('同步失败：' + msg, 'error');
   }
   isSyncing = false;
 }
@@ -3336,6 +3380,33 @@ function checkBackupReminder() {
 
 function markBackupDone() {
   localStorage.setItem(LAST_BACKUP_KEY, Date.now().toString());
+}
+
+// ===== localStorage 容量检测 =====
+function checkStorageCapacity() {
+  try {
+    let totalBytes = 0;
+    for (const key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        totalBytes += localStorage[key].length + key.length;
+      }
+    }
+    const totalMB = totalBytes / 1024 / 1024;
+    // 阈值：7MB 警告，9MB 严重（手机 localStorage 一般 5-10MB）
+    if (totalMB > 9) {
+      setTimeout(() => {
+        alert(`⚠️ 本地存储空间已用 ${totalMB.toFixed(1)}MB，即将存满！\n\n` +
+          '存满后将无法新增单据，数据可能丢失。\n' +
+          '请立即：\n' +
+          '1. 导出Excel备份所有数据\n' +
+          '2. 在设置页点击【清空旧数据】或删除多余收货单照片');
+      }, 3000);
+    } else if (totalMB > 7) {
+      setTimeout(() => {
+        showToast(`⚠️ 存储空间已用 ${totalMB.toFixed(1)}MB，建议尽快导出备份`, 'warning', 6000);
+      }, 3000);
+    }
+  } catch(e) { console.warn('容量检测失败:', e); }
 }
 
 // ===== 修改密码 =====
@@ -5618,14 +5689,8 @@ function init() {
   renderAll();
   renderReceiptList();
   if (!checkLogin()) {
-    // 自动登录admin，避免登录按钮点击无响应的问题
-    sessionStorage.setItem(LOGIN_KEY, 'true');
-    sessionStorage.setItem(CURRENT_USER_KEY, 'admin');
-    updateCurrentUserDisplay();
-    if (!localStorage.getItem('dingju_guide_shown')) {
-      setTimeout(startGuide, 800);
-    }
-    setTimeout(checkBackupReminder, 1500);
+    // 未登录：显示登录界面，不自动登录
+    showLogin();
   } else {
     // 更新当前用户显示
     updateCurrentUserDisplay();
@@ -5635,6 +5700,8 @@ function init() {
     }
     // 检查备份提醒
     setTimeout(checkBackupReminder, 1500);
+    // 检查存储空间
+    setTimeout(checkStorageCapacity, 2000);
   }
   // 如果没有数据，显示欢迎提示
   if (checkLogin() && state.records.length === 0) {
